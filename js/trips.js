@@ -24,17 +24,14 @@ function getAllTrips(){
 }
 
 function drawChart(data) {
-    //??? ??? ??? ???
-    //data = JSON.stringify(data);
-    //data = JSON.parse(data);
     var dataArray = [['Number', 'Elapsed time']];
 
-    console.log(data[0].endTime);
     for (i = 0; i < data.length; i++) {
         var myId = data[i]._id;
         if (!(data[i].endTime === undefined)) {
             console.log( new Date(data[i].endTime));
-            dataArray.push([i, new Date(data[i].endTime).getTime() - new Date(data[i].startTime).getTime()/1000])
+            console.log( new Date(data[i].startTime));
+            dataArray.push([i, (new Date(data[i].endTime) - new Date(data[i].startTime))/1000])
         }
     }
     var chartData = google.visualization.arrayToDataTable(dataArray);
