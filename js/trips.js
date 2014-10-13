@@ -10,7 +10,6 @@ function getInit(){
 }
 
 function getAllTrips(){
-    //JSON.useDateParser();
     $.ajax({
         url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
         jsonp: "callback",
@@ -27,7 +26,6 @@ function drawChart(data) {
     var dataArray = [['Number', 'Elapsed time']];
 
     for (i = 0; i < data.length; i++) {
-        var myId = data[i]._id;
         if (!(data[i].endTime === undefined)) {
             console.log( new Date(data[i].endTime));
             console.log( new Date(data[i].startTime));
