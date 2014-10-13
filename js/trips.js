@@ -1,0 +1,49 @@
+google.load('visualization', '1.0', {'packages':['corechart']});
+
+function getInit(){
+
+    $("#getTrips")
+        .click(function( event ) {
+            event.preventDefault();
+            getAllTrips();
+        });
+}
+
+function getAllTrips(){
+    //JSON.useDateParser();
+    $.ajax({
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
+        jsonp: "callback",
+        dataType: "jsonp",
+        success: function(response){
+            $('#receiver').append('<li>' + JSON.stringify(response) + '</li>');
+            //console.log(response);
+            drawChart(response);
+        }
+    });
+}
+
+function drawChart(data) {
+    //??? ??? ??? ???
+    //data = JSON.stringify(data);
+    //data = JSON.parse(data);
+    var dataArray = [['Number', 'Elapsed time']];
+
+    console.log(data[0].endTime);
+    for (i = 0; i < data.length; i++) {
+        var myId = data[i]._id;
+        if (!(data[i].endTime === undefined)) {
+            console.log( new Date(data[i].endTime));
+            dataArray.push([i, new Date(data[i].endTime).getTime() - new Date(data[i].startTime).getTime()/1000])
+        }
+    }
+    var chartData = google.visualization.arrayToDataTable(dataArray);
+
+    var options = {'title':'Elapsed Times over all trips'};
+
+    // Instantiate and draw our chart, passing in some options.
+    var chart = new google.visualization.LineChart($("#chart_div")[0]);
+    chart.draw(chartData, options);
+}
+
+$(document).ready(getInit);
