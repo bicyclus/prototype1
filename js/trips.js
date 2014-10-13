@@ -16,7 +16,6 @@ function getAllTrips(){
         dataType: "jsonp",
         success: function(response){
             $('#receiver').append('<li>' + JSON.stringify(response) + '</li>');
-            //console.log(response);
             drawChart(response);
         }
     });
