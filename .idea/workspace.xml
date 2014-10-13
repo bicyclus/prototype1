@@ -290,7 +290,11 @@
       <created>1413212054755</created>
       <updated>1413212054755</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Deleted jsonDate.js">
+      <created>1413212307853</created>
+      <updated>1413212307853</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
