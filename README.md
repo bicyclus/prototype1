@@ -9,7 +9,7 @@ Project by:
 - Etienne Evert
 
 ## Group
-CWA2
+CWA2: http://bicyclus.wordpress.com/
 
 ## Features
 
