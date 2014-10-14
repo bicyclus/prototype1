@@ -1,6 +1,5 @@
 var bol = bol || {};
 var socket;
-var querying;
 
 /**
  * This file adds the trackers
@@ -39,35 +38,6 @@ bol.connectionHandler = (function() {
                 $('#receiver').append('<li>' + JSON.stringify(data) + '</li>');
                 if (data._id !== undefined) {
                     bol.controller.setTripID(data._id);
-                }
-                if (querying) {
-                    console.log("test1");
-                    var chartData = new google.visualization.DataTable();
-                    chartData.addColumn('string', 'ID');
-                    chartData.addColumn('number', 'Seconds');
-                    var myDate = parseJsonDate(data[0].stopTime);
-                    console.log(myDate);
-                    console.log(myDate.getSeconds());
-                    /*data.addRows([
-                     ['Mushrooms', 3],
-                     ['Onions', 1],
-                     ['Olives', 1],
-                     ['Zucchini', 1],
-                     ['Pepperoni', 2]
-
-                     ]);*/
-                    for (i = 0; i < data.length; i++) {
-                        var myId = data[i].startTime;
-                        console.log(myId);
-                        chartData.addRows(['myId',data[i].stopTime.getSeconds()-data[i].startTime.getSeconds()])
-                    }
-                    var options = {'title':'How Much Pizza I Ate Last Night',
-                        'width':400,
-                        'height':300};
-
-                    // Instantiate and draw our chart, passing in some options.
-                    var chart = new google.visualization.PieChart($("#chart_div")[0]);
-                    chart.draw(chartData, options);
                 }
             });
 
@@ -138,7 +108,6 @@ bol.connectionHandler = (function() {
         else {
 
             socket.emit('trips');
-            querying = true;
         }
     }
 

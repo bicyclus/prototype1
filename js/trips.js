@@ -28,7 +28,11 @@ function drawChart(data) {
         if (!(data[i].endTime === undefined)) {
             console.log( new Date(data[i].endTime));
             console.log( new Date(data[i].startTime));
-            dataArray.push([i, (new Date(data[i].endTime) - new Date(data[i].startTime))/1000])
+            var elap = (new Date(data[i].endTime) - new Date(data[i].startTime))/1000;
+            console.log(Math.abs(elap));
+            if (Math.abs(elap) < 1000){
+                dataArray.push([i, elap])
+            }
         }
     }
     var chartData = google.visualization.arrayToDataTable(dataArray);
