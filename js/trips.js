@@ -1,13 +1,3 @@
-google.load('visualization', '1.0', {'packages':['corechart']});
-
-function getInit(){
-    $("#getTrips") //Button maken
-        .click(function( event ) {
-            event.preventDefault();
-            getAllTrips();
-        });
-}
-
 function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgeven
     $.ajax({
         url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
@@ -16,6 +6,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
         success: function(response){
             $('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
             drawChart(response);
+            drawAccel(response);
         }
     });
 }
@@ -39,4 +30,38 @@ function drawChart(data) {
     chart.draw(chartData, options); //Tekenen
 }
 
-$(document).ready(getInit);
+function drawAccel(data){
+
+    var dataArray = [];
+
+    for (i = 0; i < data.length; i++) { //Iterate over all trips
+        if (!(data[i].sensorData === undefined)) {
+            for (a = 0; a < data[i].sensorData.length; a++) { //Iterate over all sensorData
+                var accelData = data[i].sensorData[a];
+                if ((accelData.sensorID == "5") && !(accelData.data === undefined)) {
+                    for (b = 0; b < accelData.data.length; b++) { //Iterate over all data
+                        var completedata = accelData.data[b].coordinates;
+                        var timestampDate = new Date(accelData.timestamp);
+                        if (timestampDate.getFullYear() > 1971) {
+                            completedata.unshift(timestampDate);
+                            dataArray.push(completedata);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    dataArray.sort(SortByTimestamp);
+    dataArray.unshift(['Time', 'X', 'Y', 'Z']); //Titels
+    console.log(dataArray);
+    var chartData = google.visualization.arrayToDataTable(dataArray);
+
+    var options = {'title':'X Y Z',colors:['red','green','blue'],curveType: 'function'};
+
+    var chart = new google.visualization.LineChart($("#accel_div")[0]); //Chart aanmaken in div
+    chart.draw(chartData, options); //Tekenen
+}
+
+function SortByTimestamp(a, b){
+    return ((a.timestamp < b.timestamp) ? -1 : ((a.timestamp > b.timestamp) ? 1 : 0));
+}
