@@ -3,7 +3,7 @@
 Project by:
 - Beerden Pieter-Jan
 - Bulteel Lennart
-- D'Hont Joren
+- Dhont Joren
 - De Deken Michiel
 - De Winter Brent
 - Etienne Evert
