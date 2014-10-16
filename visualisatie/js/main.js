@@ -6,6 +6,11 @@ function getInit(){
             event.preventDefault();
             getAllTrips();
         });
+    $("#showJSON")
+        .click(function( event ) {
+            event.preventDefault();
+            $('#myReciever').toggle();
+        });
 }
 
 $(document).ready(getInit);

@@ -23,7 +23,7 @@ function drawChart(data) {
     }
     var chartData = google.visualization.arrayToDataTable(dataArray);
 
-    var options = {'title':'Elapsed Times over all trips'};
+    var options = {'title':'Elapsed Times over all trips',backgroundColor:'#f5f5f5'};
 
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.LineChart($("#chart_div")[0]); //Chart aanmaken in div
@@ -56,7 +56,7 @@ function drawAccel(data){
     console.log(dataArray);
     var chartData = google.visualization.arrayToDataTable(dataArray);
 
-    var options = {'title':'X Y Z',colors:['red','green','blue'],curveType: 'function'};
+    var options = {'title':'X Y Z',colors:['red','green','blue'],curveType: 'function',backgroundColor:'#f5f5f5'};
 
     var chart = new google.visualization.LineChart($("#accel_div")[0]); //Chart aanmaken in div
     chart.draw(chartData, options); //Tekenen
