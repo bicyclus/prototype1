@@ -42,7 +42,7 @@ function drawAccel(data){
                     for (b = 0; b < accelData.data.length; b++) { //Iterate over all data
                         var completedata = accelData.data[b].coordinates;
                         var timestampDate = new Date(accelData.timestamp);
-                        if (timestampDate.getFullYear() > 1971) {
+                        if (timestampDate.getDate() == 13) {
                             completedata.unshift(timestampDate);
                             dataArray.push(completedata);
                         }
@@ -51,7 +51,9 @@ function drawAccel(data){
             }
         }
     }
+    console.log(dataArray);
     dataArray.sort(SortByTimestamp);
+    console.log(dataArray);
     dataArray.unshift(['Time', 'X', 'Y', 'Z']); //Titels
     var chartData = google.visualization.arrayToDataTable(dataArray);
 
@@ -62,7 +64,7 @@ function drawAccel(data){
 }
 
 function SortByTimestamp(a, b){
-    return ((a.timestamp < b.timestamp) ? -1 : ((a.timestamp > b.timestamp) ? 1 : 0));
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
 }
 
 function plotGPSmap(){
