@@ -12,11 +12,13 @@
 
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
         <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/main.css" rel="stylesheet">
 
         <script src="js/jquery/dist/jquery.js"></script>
         <script src="js/d3/d3.js"></script>
         <script src="http://dali.cs.kuleuven.be:8080/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRe3g8yoMtuH9aqAaoPNFXbize9YUppvw"></script>
         <script src="js/bootstrap.min.js"></script>
         <script src="js/controller.js"></script>
         <script src="js/connection.js"></script>
@@ -42,18 +44,14 @@
             <!--<button id='queryAll'>Query all bike trips</button>-->
             <!--<button id='clearMessages'>Clear server messages</button><br>-->
             <button id='getTrips' class="btn btn-primary">Get all trips</button>
+            <button id='plotGPS' class="btn btn-primary">Plot GPS</button>
             <button id='showJSON' class="btn btn-default">Show/Hide JSON</button>
 
             <p><div id='chart_div'></div></p>
             <p><div id='accel_div'></div></p>
+            <p><div id='map_div'></div></p>
             <p><div id='myReciever'></div></p>
             <p><ul id='receiver'></ul></p>
-
-            <iframe width="600" height="450" frameborder="0" style="border:0"
-                    src="https://www.google.com/maps/embed/v1/view?zoom=11&center=50.8833%2C4.7000&key=AIzaSyCRe3g8yoMtuH9aqAaoPNFXbize9YUppvw"
-                    ></iframe>
-
-
 
         </div>
     </body>

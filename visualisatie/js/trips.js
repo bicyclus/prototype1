@@ -1,6 +1,6 @@
 function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgeven
     $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/",
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -53,7 +53,6 @@ function drawAccel(data){
     }
     dataArray.sort(SortByTimestamp);
     dataArray.unshift(['Time', 'X', 'Y', 'Z']); //Titels
-    console.log(dataArray);
     var chartData = google.visualization.arrayToDataTable(dataArray);
 
     var options = {'title':'X Y Z',colors:['red','green','blue'],curveType: 'function',backgroundColor:'#f5f5f5'};
@@ -64,4 +63,50 @@ function drawAccel(data){
 
 function SortByTimestamp(a, b){
     return ((a.timestamp < b.timestamp) ? -1 : ((a.timestamp > b.timestamp) ? 1 : 0));
+}
+
+function plotGPSmap(){
+    $.ajax({
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/?userID=r0453111",
+        jsonp: "callback",
+        dataType: "jsonp",
+        success: function(response){
+            $('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+            createMap(response);
+        }
+    });
+}
+
+function createMap(data){
+    var mapOptions = {
+        zoom: 3,
+        center: new google.maps.LatLng(0, -180),
+        mapTypeId: google.maps.MapTypeId.TERRAIN
+    };
+    console.log(data);
+    var map = new google.maps.Map($("#map_div")[0], mapOptions);
+    var flightPlanCoordinates = [];
+
+    for (i = 0; i < data.length; i++) { //Iterate over all trips
+        if (!(data[i].sensorData === undefined)) {
+            for (a = 0; a < data[i].sensorData.length; a++) { //Iterate over all sensorData
+                var gpsData = data[i].sensorData[a];
+                if ((gpsData.sensorID == "1") && !(gpsData.data === undefined)) {
+                    for (b = 0; b < gpsData.data.length; b++) { //Iterate over all data
+                        flightPlanCoordinates.push(new google.maps.LatLng(gpsData.data[b].coordinates[0],gpsData.data[b].coordinates[1]));
+                    }
+                }
+            }
+        }
+    }
+    console.log(flightPlanCoordinates);
+    var flightPath = new google.maps.Polyline({
+        path: flightPlanCoordinates,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+    });
+
+    flightPath.setMap(map);
 }
