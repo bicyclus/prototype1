@@ -77,15 +77,17 @@ function plotGPSmap(){
     });
 }
 
+var map;
+
 function createMap(data){
     var mapOptions = {
         zoom: 3,
         center: new google.maps.LatLng(0, -180),
         mapTypeId: google.maps.MapTypeId.TERRAIN
     };
-    console.log(data);
-    var map = new google.maps.Map($("#map_div")[0], mapOptions);
-    var flightPlanCoordinates = [];
+
+    map = new google.maps.Map($("#map_div")[0], mapOptions);
+    var pathCoords = [];
 
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
@@ -93,15 +95,25 @@ function createMap(data){
                 var gpsData = data[i].sensorData[a];
                 if ((gpsData.sensorID == "1") && !(gpsData.data === undefined)) {
                     for (b = 0; b < gpsData.data.length; b++) { //Iterate over all data
-                        flightPlanCoordinates.push(new google.maps.LatLng(gpsData.data[b].coordinates[0],gpsData.data[b].coordinates[1]));
+                        pathCoords.push(new google.maps.LatLng(gpsData.data[b].coordinates[0],gpsData.data[b].coordinates[1]));
                     }
                 }
             }
         }
     }
-    console.log(flightPlanCoordinates);
+
+    elevator = new google.maps.ElevationService();
+
+    var pathRequest = {
+        'path': pathCoords,
+        'samples': 512
+    }
+
+    // Initiate the path request.
+    elevator.getElevationAlongPath(pathRequest, plotElevation);
+
     var flightPath = new google.maps.Polyline({
-        path: flightPlanCoordinates,
+        path: pathCoords,
         geodesic: true,
         strokeColor: '#FF0000',
         strokeOpacity: 1.0,
@@ -109,4 +121,47 @@ function createMap(data){
     });
 
     flightPath.setMap(map);
+}
+
+function plotElevation(results, status) {
+    if (status != google.maps.ElevationStatus.OK) {
+        return;
+    }
+    var elevations = results;
+
+    // Extract the elevation samples from the returned results
+    // and store them in an array of LatLngs.
+    var elevationPath = [];
+    for (var i = 0; i < results.length; i++) {
+        elevationPath.push(elevations[i].location);
+    }
+
+    // Display a polyline of the elevation path.
+    var pathOptions = {
+        path: elevationPath,
+        strokeColor: '#0000CC',
+        opacity: 0.4,
+        map: map
+    }
+    polyline = new google.maps.Polyline(pathOptions);
+
+    // Extract the data from which to populate the chart.
+    // Because the samples are equidistant, the 'Sample'
+    // column here does double duty as distance along the
+    // X axis.
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Sample');
+    data.addColumn('number', 'Elevation');
+    for (var i = 0; i < results.length; i++) {
+        data.addRow(['', elevations[i].elevation]);
+    }
+
+    chart = new google.visualization.ColumnChart($('#elevation_chart')[0]);
+    $('#elevation_chart').css('display','block');
+
+    chart.draw(data, {
+        height: 150,
+        legend: 'none',
+        titleY: 'Elevation (m)'
+    });
 }
