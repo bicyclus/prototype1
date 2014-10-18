@@ -10,11 +10,13 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/main.css" rel="stylesheet">
+        <link href="css/jquery-ui.css" rel="stylesheet">
 
-        <script src="js/jquery/dist/jquery.js"></script>
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+        <script src="js/jquery/dist/jquery.min.js"></script>
+        <script src="js/jquery/dist/jquery-ui.min.js"></script>
         <script src="http://dali.cs.kuleuven.be:8080/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRe3g8yoMtuH9aqAaoPNFXbize9YUppvw"></script>
@@ -42,10 +44,21 @@
             <!--<button id='endTrip'>End this bike trip</button>-->
             <!--<button id='queryAll'>Query all bike trips</button>-->
             <!--<button id='clearMessages'>Clear server messages</button><br>-->
-            <button id='getTrips' class="btn btn-primary">Get all trips</button>
-            <button id='plotGPS' class="btn btn-primary">Plot GPS</button>
-            <button id='showJSON' class="btn btn-default">Show/Hide JSON</button>
-
+            <p>
+                <div class="btn-group">
+                    <button id='getTrips' class="btn btn-primary">Get all trips</button>
+                    <button id='plotGPS' class="btn btn-primary">Plot GPS</button>
+                    <button id='showJSON' class="btn btn-default">Show/Hide JSON</button>
+                </div>
+            </p>
+            <p>
+                <div class="form-group">
+                    <div id="jrange" class="dates">
+                        <input type="text" id="datepicker">
+                        <div></div>
+                    </div>
+                </div>
+            </p>
             <p><div id='chart_div'></div></p>
             <p><div id='accel_div'></div></p>
             <p><div id='map_div'></div></p>

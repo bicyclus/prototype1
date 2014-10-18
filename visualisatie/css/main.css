@@ -308,3 +308,19 @@ textarea {
     width: 100%;
     height: 400px;
 }
+
+.control-label {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+#jrange input {
+    width: 200px;
+}
+
+.date-range-selected,
+.date-range-selected > .ui-state-active,
+.date-range-selected > .ui-state-default {
+    background: none !important;
+    background-color: #7a8288 !important;
+}

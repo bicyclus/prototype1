@@ -1,6 +1,25 @@
 function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgeven
+    //Check data in box, set getUrl
+    var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips/";
+
+    var dates = $("#datepicker").val().split(" - ");
+    try {
+        dates[0] = dates[0].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
+        dates[1] = dates[1].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
+        if ((Date.parse(dates[0])) && (Date.parse(dates[1]))) { //Check for valid dates
+            getUrl = getUrl + '?fromDate=' + dates[0] + '&toDate=' + dates[1];
+            $("#datepicker").css('border-color','#222222');
+        } else {
+            $("#datepicker").css('border-color','#ee5f5b');
+        }
+    }
+    catch(err){
+        $("#datepicker").css('border-color','#ee5f5b');
+    }
+
+    $('#myReciever').empty();
     $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/",
+        url: getUrl,
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -51,9 +70,7 @@ function drawAccel(data){
             }
         }
     }
-    console.log(dataArray);
     dataArray.sort(SortByTimestamp);
-    console.log(dataArray);
     dataArray.unshift(['Time', 'X', 'Y', 'Z']); //Titels
     var chartData = google.visualization.arrayToDataTable(dataArray);
 
