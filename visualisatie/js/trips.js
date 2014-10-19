@@ -35,7 +35,7 @@ function drawChart(data) {
     for (i = 0; i < data.length; i++) {
         if (!(data[i].endTime === undefined) && !(data[i].startTime === undefined)) { //Endtime moet bestaan
             var elap = (new Date(data[i].endTime) - new Date(data[i].startTime))/1000;//In seconds
-            if (Math.abs(elap) < 1000){ //Fuck uitschieters
+            if (Math.abs(elap) < 1000){ //Negeren van uitschieters
                 dataArray.push([i, elap]);//Data toevoegen op het einde van de array
             }
         }

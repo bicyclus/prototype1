@@ -3,11 +3,16 @@
 
 # TEAM
 
-    <name> -- <role> -- <twitter>
+    - Beerden Pieter-Jan
+    - Bulteel Lennart
+    - D'Hont Joren
+    - De Deken Michiel
+    - De Winter Brent
+    - Etienne Evert
 
 # THANKS
 
-    <name>
+    - P&O 3 Research Assistants
 
 # TECHNOLOGY COLOPHON
 
