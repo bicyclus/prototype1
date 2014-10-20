@@ -6,6 +6,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
     try {
         dates[0] = dates[0].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
         dates[1] = dates[1].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
+
         if ((Date.parse(dates[0])) && (Date.parse(dates[1]))) { //Check for valid dates
             getUrl = getUrl + '?fromDate=' + dates[0] + '&toDate=' + dates[1];
             $("#datepicker").css('border-color','#222222');
@@ -121,29 +122,18 @@ function createMap(data){
         }
     }
 
+    //Elevator + Lineplot
     elevator = new google.maps.ElevationService();
-
     var pathRequest = {
         'path': pathCoords,
         'samples': 512
     }
-
-    // Initiate the path request.
     elevator.getElevationAlongPath(pathRequest, plotElevation);
-
-    var flightPath = new google.maps.Polyline({
-        path: pathCoords,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2
-    });
-
-    flightPath.setMap(map);
 }
 
 function plotElevation(results, status) {
     if (status != google.maps.ElevationStatus.OK) {
+        console.log(status);
         return;
     }
     var elevations = results;
@@ -175,9 +165,8 @@ function plotElevation(results, status) {
         data.addRow(['', elevations[i].elevation]);
     }
 
-    chart = new google.visualization.ColumnChart($('#elevation_chart')[0]);
     $('#elevation_chart').css('display','block');
-
+    chart = new google.visualization.ColumnChart($('#elevation_chart')[0]);
     chart.draw(data, {
         height: 150,
         legend: 'none',
