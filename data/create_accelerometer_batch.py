@@ -5,7 +5,7 @@ from socketIO_client import SocketIO
 import json
 
 
-#DEEL 1: Eerst worden hulpfuncties gedefinieerd.
+#DEEL 1: De hulpfuncties voor de rest van de file worden hier gedefinieerd.
 def accelerometer_pointdata():
     XLoBorg.printFunction = XLoBorg.NoPrint
     XLoBorg.Init()
@@ -37,6 +37,16 @@ def create_batch():
     batch=[{"startTime":starttime,"endTime":endtime,"groupID":"cwa2","userID":"r0462183","sensorData":batch_data,"meta":{}}]
     return batch
 
+def try_connection():
+    try:
+        response=urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/',timeout=1)
+        return True
+    except urllib2.URLError as err: pass
+    return False
+
+def on_response(*args):
+    print 'server_message', args
+
 
 #DEEL 2: Deze loop start wanneer de file wordt gerund. Dit gebruikt de hulpfuncties om een batch aan te maken, die dan worden doorgestuurd in het derde deel van de file.
 k = 0
@@ -51,15 +61,14 @@ while k == 0:
 #DEEL 3: Hierop volgt een laatste deel code om de gegenereerde data te verzenden.
 data = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
 
-
-def on_response(*args):
-    print 'server_message', args
+while try_connection() == False:
+    time.sleep(5)
 
 print json.dumps(batch)
     
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_response)
-socketIO.emit('start', json.dumps(data), on_response)
+a=socketIO.emit('start', json.dumps(data), on_response)
 socketIO.wait(2)
 
 
