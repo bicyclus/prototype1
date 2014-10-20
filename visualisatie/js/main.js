@@ -18,6 +18,12 @@ function getInit(){
         });
     initDatepickers();
 
+    //InfoWindow helper functie
+    google.maps.InfoWindow.prototype.isOpen = function(){
+        var map = infoWindow.getMap();
+        return (map !== null && typeof map !== "undefined");
+    }
+
 }
 
 function initDatepickers() {

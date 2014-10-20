@@ -314,7 +314,7 @@ textarea {
     margin-right: 4px;
 }
 
-#jrange input {
+.form-control {
     width: 200px;
 }
 

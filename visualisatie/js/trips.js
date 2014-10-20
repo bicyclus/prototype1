@@ -1,26 +1,42 @@
 function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgeven
     //Check data in box, set getUrl
-    var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips/";
+    var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
 
+    //UserFilter
+    var userName = $("#inputUserName").val();
+    var userFilter;
+    if (userName==null || userName == ''){
+        userFilter = '';
+        $("#inputUserName").css('border-color','#ee5f5b');
+    } else {
+        userFilter = 'userID=' + userName;
+        $("#inputUserName").css('border-color','#CCC');
+    }
+
+    //DateFilter
     var dates = $("#datepicker").val().split(" - ");
+    var dateFilter;
     try {
         dates[0] = dates[0].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
         dates[1] = dates[1].replace(/(\d{2})-(\d{2})-(\d{4})/, "$2-$1-$3");
 
         if ((Date.parse(dates[0])) && (Date.parse(dates[1]))) { //Check for valid dates
-            getUrl = getUrl + '?fromDate=' + dates[0] + '&toDate=' + dates[1];
-            $("#datepicker").css('border-color','#222222');
+            dateFilter = '&fromDate=' + dates[0] + '&toDate=' + dates[1];
+            $("#datepicker").css('border-color','#CCC');
         } else {
+            dateFilter = '';
             $("#datepicker").css('border-color','#ee5f5b');
         }
     }
     catch(err){
+        dateFilter = '';
         $("#datepicker").css('border-color','#ee5f5b');
     }
 
     $('#myReciever').empty();
+    console.log(getUrl + userFilter + dateFilter);
     $.ajax({
-        url: getUrl,
+        url: getUrl + userFilter + dateFilter,
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -138,14 +154,11 @@ function plotElevation(results, status) {
     }
     var elevations = results;
 
-    // Extract the elevation samples from the returned results
-    // and store them in an array of LatLngs.
     var elevationPath = [];
     for (var i = 0; i < results.length; i++) {
         elevationPath.push(elevations[i].location);
     }
 
-    // Display a polyline of the elevation path.
     var pathOptions = {
         path: elevationPath,
         strokeColor: '#0000CC',
@@ -154,10 +167,15 @@ function plotElevation(results, status) {
     }
     polyline = new google.maps.Polyline(pathOptions);
 
-    // Extract the data from which to populate the chart.
-    // Because the samples are equidistant, the 'Sample'
-    // column here does double duty as distance along the
-    // X axis.
+    var infowindow = new google.maps.InfoWindow({
+        content:"Trip 1"
+    });
+
+    google.maps.event.addListener(polyline, 'click', function(event) {
+        infowindow.setPosition(event.latLng);
+        infowindow.open(map);
+    });
+
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Sample');
     data.addColumn('number', 'Elevation');
