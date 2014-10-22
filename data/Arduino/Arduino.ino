@@ -8,7 +8,7 @@ void setup(){
 void loop(){
   sensorValue = digitalRead(button);
   if (sensorValue == LOW) {
-    Serial.println("Hallo");
+    Serial.println(1);
   }  
   delay(250);
 
