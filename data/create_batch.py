@@ -3,51 +3,65 @@ import time
 import serial
 from socketIO_client import SocketIO
 import json
+import urllib2
 
-def create_batch_data():
-    batch_data = []
-    starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
-    end = 1
-    while end != 0 :
-        if arduino.readline().strip() == '1337':
-            arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
-            ln = eval(arduino.readline().strip())
-            lt = eval(arduino.readline().strip())
-            st = time.strftime("%Y-%m-%dT%H:%M:%S")
-            batch_data +=  [{"sensorID":1,"timestamp":st,"data":[{"type":"Point","coordinates":[ln, lt]}]},]
-            
-        elif arduino.readline().strip() == '1995':
-            end = 0
-            endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
-
-        batch_data += accelerometer_pointdata()
-        
-    return batch_data,starttime,endtime
-
-def create_batch():
-    batch_data,starttime,endtime = create_batch_data()
-    batch=[{"startTime":starttime,"endTime":endtime,"groupID":"cwa2","userID":"r0462183","sensorData":batch_data,"meta":{}}]
-    return batch
-
-#HOOFDFUNCTIE
-k = 0
-while k == 0:
-    ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
-    if ard.readline().strip() == '1995':
-        k=1
-        batch=create_batch()
-
-
-#CONNECTIE TESTEN EN DOORSTUREN NAAR SERVER
+#DEFINING FUNCTIONS
 def try_connection():
+    """Checks if we can connect to the server by checking the availability of http://dali.cs.kuleuven.be:8080/qbike/."""
     try:
         response=urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/',timeout=1)
         return True
     except urllib2.URLError as err: pass
     return False
 
-while try_connection() == False:
-    time.sleep(5)
+def accelerometer_pointdata():
+    """Reads the accelerometer data at this specific moment and puts them in the desired format."""
+    XLoBorg.printFunction = XLoBorg.NoPrint
+    XLoBorg.Init()
+    x, y, z = XLoBorg.ReadAccelerometer()       
+    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    data = [{"sensorID":5,"timestamp":st,"data":[{"type":"point","coordinates":[x,y,z]}]},]
+    return data
+
+def create_batch_data():
+    """Creates all the data to send with the batch."""
+    batch_data = []
+    starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
+    end = 1
+    while end != 0 :
+        if arduino.readline().strip() == '1337':
+            arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+            ln = eval(arduino.readline().strip())
+            lt = eval(arduino.readline().strip())
+            st = time.strftime("%Y-%m-%dT%H:%M:%S")
+            batch_data +=  [{"sensorID":1,"timestamp":st,"data":[{"type":"Point","coordinates":[ln, lt]}]},]
+        elif arduino.readline().strip() == '1995':
+            end = 0
+            endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
+        elif not arduino.readline().strip() == '1995':
+            batch_data += accelerometer_pointdata()
+    return batch_data,starttime,endtime #batch_data contains mixture of data from accelerometer and gps
+
+def create_batch():
+    """Creates the batch itself using the create_atch_data() function."""
+    batch_data,starttime,endtime = create_batch_data()
+    batch=[{"startTime":starttime,"endTime":endtime,"groupID":"cwa2","userID":"r0462183","sensorData":batch_data,"meta":{}}]
+    return batch
+
+def on_response(*args):
+    print 'server_message', args
+
+#MAIN LOOP: RUNS WHEN FILE IS RUNNED
+k = 0
+while k == 0:
+    ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    if ard.readline().strip() == '1995':
+        k=1
+        batch=create_batch()
+
+
+#TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
+while try_connection() == False: time.sleep(5)
 
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_response)

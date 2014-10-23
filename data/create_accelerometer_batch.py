@@ -11,18 +11,15 @@ def accelerometer_pointdata():
     XLoBorg.Init()
     x, y, z = XLoBorg.ReadAccelerometer()       
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    
-
     data = [{"sensorID":5,"timestamp":st,"data":[{"type":"point","coordinates":[x,y,z]}]},]
     return data
-
 
 def create_batch_data():
     batch_data = []
     end = 1
     starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
     while end != 0:
-        arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
+        arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
         if arduino.readline().strip() == '1995':
             end = 0
             endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -49,7 +46,7 @@ def on_response(*args):
 #DEEL 2: Deze loop start wanneer de file wordt gerund. Dit gebruikt de hulpfuncties om een batch aan te maken, die dan worden doorgestuurd in het derde deel van de file.
 k = 0
 while k == 0:
-    ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
+    ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     if ard.readline().strip() == '1995':
         k=1
         batch=create_batch()
