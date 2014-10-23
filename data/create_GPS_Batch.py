@@ -5,6 +5,9 @@ import json
 
 arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
 
+def on_response(*args):
+    print 'server_message', args
+
 def create_batch_data():
     batch_data = []
     starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
