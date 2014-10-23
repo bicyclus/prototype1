@@ -6,11 +6,6 @@ function getInit(){
             event.preventDefault();
             getAllTrips();
         });
-    $("#plotGPS")
-        .click(function( event ) {
-            event.preventDefault();
-            plotGPSmap();
-        });
     $("#showJSON")
         .click(function( event ) {
             event.preventDefault();

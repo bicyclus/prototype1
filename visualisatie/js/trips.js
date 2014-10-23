@@ -43,6 +43,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
             $('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
             drawChart(response);
             drawAccel(response);
+            createMap(response);
         }
     });
 }
@@ -68,56 +69,55 @@ function drawChart(data) {
 
 function drawAccel(data){
 
-    var dataArray = [];
+    var dataArray;
+    var options = {'title':'Accelerometer',colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
 
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
+            dataArray  = [];
             for (a = 0; a < data[i].sensorData.length; a++) { //Iterate over all sensorData
                 var accelData = data[i].sensorData[a];
                 if ((accelData.sensorID == "5") && !(accelData.data === undefined)) {
                     for (b = 0; b < accelData.data.length; b++) { //Iterate over all data
-                        var completedata = accelData.data[b].coordinates;
-                        var timestampDate = new Date(accelData.timestamp);
-                        if (timestampDate.getDate() == 13) {
+                        if (!(accelData.data[b].coordinates === undefined) && (accelData.data[b].coordinates.length == 3)){
+                            var completedata = accelData.data[b].coordinates;
+                            var timestampDate = new Date(accelData.timestamp);
+
                             completedata.unshift(timestampDate);
                             dataArray.push(completedata);
-                        }
-                        //Nieuw formaat
+                            //Nieuw formaat
 //                        try {
 //                            if (!(accelData.data[b].acceleration === undefined)) {
 //                                dataArray.push(accelData.data[b].acceleration);
 //                            }
 //                        }
 //                        catch(err){}
+                        }
                     }
                 }
             }
         }
+        if (dataArray.length > 0) {
+            dataArray.sort(SortByTimestamp);
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'X');
+            chartData.addColumn('number', 'Y');
+            chartData.addColumn('number', 'Z');
+            for (var i = 0; i < dataArray.length; i++) {
+                chartData.addRow(['', dataArray[i][1],dataArray[i][2],dataArray[i][3]]);
+            }
+            var draw_div = $('<div></div>');
+            $("#accel_div").append(draw_div);
+
+            var chart = new google.visualization.LineChart(draw_div[0]); //Chart aanmaken in div
+            chart.draw(chartData, options); //Tekenen
+        }
     }
-    dataArray.sort(SortByTimestamp);
-    dataArray.unshift(['Time', 'X', 'Y', 'Z']); //Titels
-    var chartData = google.visualization.arrayToDataTable(dataArray);
-
-    var options = {'title':'X Y Z',colors:['red','green','blue'],curveType: 'function',backgroundColor:'#f5f5f5'};
-
-    var chart = new google.visualization.LineChart($("#accel_div")[0]); //Chart aanmaken in div
-    chart.draw(chartData, options); //Tekenen
 }
 
 function SortByTimestamp(a, b){
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-}
-
-function plotGPSmap(){
-    $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
-        jsonp: "callback",
-        dataType: "jsonp",
-        success: function(response){
-            $('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
-            createMap(response);
-        }
-    });
 }
 
 var map;
