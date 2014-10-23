@@ -303,6 +303,12 @@ textarea {
     }
 }
 
+.logo_img {
+    float:right;
+    margin: 10px;
+    width: 20%;
+}
+
 #map_div {
     display: block;
     width: 100%;
