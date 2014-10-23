@@ -12,12 +12,7 @@ function getInit(){
             $('#myReciever').toggle();
         });
     initDatepickers();
-
-    //InfoWindow helper functie
-    google.maps.InfoWindow.prototype.isOpen = function(){
-        var map = infoWindow.getMap();
-        return (map !== null && typeof map !== "undefined");
-    }
+    $('#myReciever').toggle();
 
 }
 

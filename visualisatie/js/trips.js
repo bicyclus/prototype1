@@ -40,7 +40,8 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
-            $('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+            //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+            $('#myReciever').append(JSON.stringify(response));
             drawChart(response);
             drawAccel(response);
             createMap(response);
@@ -70,7 +71,7 @@ function drawChart(data) {
 function drawAccel(data){
 
     var dataArray;
-    var options = {'title':'Accelerometer',colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+    var options;
 
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
@@ -99,6 +100,7 @@ function drawAccel(data){
         }
         if (dataArray.length > 0) {
             dataArray.sort(SortByTimestamp);
+            options = {'title':'Accelerometer: '+data[i]._id,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
             var chartData = new google.visualization.DataTable();
             chartData.addColumn('string', 'Time');
             chartData.addColumn('number', 'X');
