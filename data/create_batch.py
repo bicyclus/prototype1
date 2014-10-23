@@ -63,6 +63,8 @@ while k == 0:
 #TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
 while try_connection() == False: time.sleep(5)
 
+data = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
+
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_response)
 a=socketIO.emit('start', json.dumps(data), on_response)
