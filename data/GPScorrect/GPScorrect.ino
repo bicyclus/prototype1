@@ -57,7 +57,7 @@ void setup()
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
   // also spit it out
   Serial.begin(115200);
-  Serial.println("Adafruit GPS library basic test!");
+  //Serial.println("Adafruit GPS library basic test!");
 
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
   GPS.begin(9600);
@@ -115,6 +115,10 @@ void useInterrupt(boolean v) {
 }
 
 uint32_t timer = millis();
+
+int button=8;
+int sensorValue;
+
 void loop()                     // run over and over again
 {
   // in case you are not using the interrupt above, you'll
@@ -139,13 +143,18 @@ void loop()                     // run over and over again
   }
 
   // approximately every 2 seconds or so, print out the current stats
+  sensorValue = digitalRead(button);
+  if (sensorValue == LOW) {
+    Serial.println("1995");
+    delay(250);
+  }  
     if (GPS.fix) {
       Serial.println("1337");
       delay(500);
-      Serial.println(GPS_latitude,4);
+      Serial.println(GPS.latitude,4);
       delay(500);
-      Serial.println(GPS_longitude,4);
+      Serial.println(GPS.longitude,4);
       delay(500);
     }
   }
-}
+
