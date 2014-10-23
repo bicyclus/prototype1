@@ -23,9 +23,7 @@ def create_batch_data():
     starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
     while end != 0:
         arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
-        value = str(arduino.readline())
-        print value
-        if int(value) > 800:
+        if arduino.readline().strip() == '1995':
             end = 0
             endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
         else:
@@ -52,9 +50,7 @@ def on_response(*args):
 k = 0
 while k == 0:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
-    val = str(ard.readline())
-    print(val)
-    if int(val) == 1:
+    if ard.readline().strip() == '1995':
         k=1
         batch=create_batch()
 
