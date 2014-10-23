@@ -28,19 +28,19 @@ def convert_coordinates(coor):
     """Converts the coordinates from dd mm format to dd format."""
     k = 0
     for i in range(0,len(coor)):
-        if abc[i] == ".":
+        if coor[i] == ".":
             k = i
             break
-    minutes = int(abc[k+1:len(coor)])
-    degrees =(abc[0:k])
+    minutes = int(coor[k+1:len(coor)])
+    degrees =(coor[0:k])
     dmin = str(minutes/60.0)
 
     for s in range(0,len(dmin)):
         if dmin[s] == ".":
             k = s
             break
-    dmin1 = dx[0:k]
-    dmin2 = dx[k+1:len(dx)]
+    dmin1 = dmin[0:k]
+    dmin2 = dmin[k+1:len(dmin)]
     dmin = dmin1 + dmin2
 
     coordinates = degrees + "." + dmin
@@ -57,9 +57,9 @@ def create_batch_data():
                 starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
                 first_time = 0
             arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-            ln = eval(arduino.readline().strip())
+            ln = arduino.readline().strip()
             ln = convert_coordinates(ln)
-            lt = eval(arduino.readline().strip())
+            lt = arduino.readline().strip()
             lt = convert_coordinates(lt)
             st = time.strftime("%Y-%m-%dT%H:%M:%S")
             batch_data +=  [{"sensorID":1,"timestamp":st,"data":[{"type":"Point","coordinates":[ln, lt]}]},]
