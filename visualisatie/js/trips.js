@@ -110,7 +110,7 @@ function SortByTimestamp(a, b){
 
 function plotGPSmap(){
     $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips?userID=r0453111",
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips",
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -130,28 +130,52 @@ function createMap(data){
     };
 
     map = new google.maps.Map($("#map_div")[0], mapOptions);
-    var pathCoords = [];
-
+    var pathCoords;
+    elevator = new google.maps.ElevationService();
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
+            pathCoords = [];
             for (a = 0; a < data[i].sensorData.length; a++) { //Iterate over all sensorData
                 var gpsData = data[i].sensorData[a];
                 if ((gpsData.sensorID == "1") && !(gpsData.data === undefined)) {
                     for (b = 0; b < gpsData.data.length; b++) { //Iterate over all data
-                        pathCoords.push(new google.maps.LatLng(gpsData.data[b].coordinates[0],gpsData.data[b].coordinates[1]));
+                        try {
+                            pathCoords.push(new google.maps.LatLng(gpsData.data[b].coordinates[0], gpsData.data[b].coordinates[1]));
+                        }
+                        catch(err){
+                            pathCoords = [];
+                        }
+                        if (pathCoords.length > 1){
+                            //Elevator + Lineplot
+//                            var pathRequest = {
+//                                'path': pathCoords,
+//                                'samples': 128
+//                            }
+                            //Teveel trips met gps data, google: OVER_QUERY_LIMIT
+//                            elevator.getElevationAlongPath(pathRequest, plotElevation);
+                            //Plotten dan maar..
+                            var pathOptions = {
+                                path: pathCoords,
+                                strokeColor: '#0000CC',
+                                opacity: 0.4,
+                                map: map
+                            }
+                            polyline = new google.maps.Polyline(pathOptions);
+
+                            var infowindow = new google.maps.InfoWindow({
+                                content:data[i]._id
+                            });
+
+                            google.maps.event.addListener(polyline, 'click', function(event) {
+                                infowindow.setPosition(event.latLng);
+                                infowindow.open(map);
+                            });
+                        }
                     }
                 }
             }
         }
     }
-
-    //Elevator + Lineplot
-    elevator = new google.maps.ElevationService();
-    var pathRequest = {
-        'path': pathCoords,
-        'samples': 512
-    }
-    elevator.getElevationAlongPath(pathRequest, plotElevation);
 }
 
 function plotElevation(results, status) {
@@ -160,7 +184,6 @@ function plotElevation(results, status) {
         return;
     }
     var elevations = results;
-
     var elevationPath = [];
     for (var i = 0; i < results.length; i++) {
         elevationPath.push(elevations[i].location);
@@ -189,9 +212,9 @@ function plotElevation(results, status) {
     for (var i = 0; i < results.length; i++) {
         data.addRow(['', elevations[i].elevation]);
     }
-
-    $('#elevation_chart').css('display','block');
-    chart = new google.visualization.ColumnChart($('#elevation_chart')[0]);
+    var el_div = $('<div style="display: block"></div>');
+    $("#elevation_chart").append(el_div);
+    chart = new google.visualization.ColumnChart(el_div[0]);
     chart.draw(data, {
         height: 150,
         legend: 'none',
