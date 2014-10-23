@@ -54,7 +54,7 @@ while k == 0:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 9600)
     val = str(ard.readline())
     print(val)
-    if int(val) < 800:
+    if int(val) == 1:
         k=1
         batch=create_batch()
 
