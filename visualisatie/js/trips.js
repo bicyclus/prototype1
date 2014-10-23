@@ -34,7 +34,10 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
     }
 
     $('#myReciever').empty();
-    console.log(getUrl + userFilter + dateFilter);
+    $('#chart_div').empty();
+    $('#accel_div').empty();
+    $('#map_div').empty();
+    $('#elevation_chart').empty();
     $.ajax({
         url: getUrl + userFilter + dateFilter,
         jsonp: "callback",
@@ -127,10 +130,9 @@ var map;
 function createMap(data){
     var mapOptions = {
         zoom: 3,
-        center: new google.maps.LatLng(0, -180),
-        mapTypeId: google.maps.MapTypeId.TERRAIN
+        center: new google.maps.LatLng(0, -180)
     };
-
+    var markers = [];
     map = new google.maps.Map($("#map_div")[0], mapOptions);
     var pathCoords;
     elevator = new google.maps.ElevationService();
@@ -156,6 +158,13 @@ function createMap(data){
                             //Teveel trips met gps data, google: OVER_QUERY_LIMIT
 //                            elevator.getElevationAlongPath(pathRequest, plotElevation);
                             //Plotten dan maar..
+
+                            markers.push(new google.maps.Marker({
+                                position: pathCoords[0],
+                                map: map,
+                                title:data[i]._id
+                            }));
+
                             var pathOptions = {
                                 path: pathCoords,
                                 strokeColor: '#0000CC',
