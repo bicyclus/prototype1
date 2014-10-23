@@ -129,8 +129,8 @@ var map;
 
 function createMap(data){
     var mapOptions = {
-        zoom: 3,
-        center: new google.maps.LatLng(0, -180)
+        zoom: 14,
+        center: new google.maps.LatLng(50.863774, 4.678921)
     };
     var markers = [];
     map = new google.maps.Map($("#map_div")[0], mapOptions);
