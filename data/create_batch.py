@@ -18,29 +18,33 @@ def accelerometer_pointdata():
     """Reads the accelerometer data at this specific moment and puts them in the desired format."""
     XLoBorg.printFunction = XLoBorg.NoPrint
     XLoBorg.Init()
-    x, y, z = XLoBorg.ReadAccelerometer()       
+    x, y, z = XLoBorg.ReadAccelerometer()
+    mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID":5,"timestamp":st,"data":[{"type":"point","coordinates":[x,y,z]}]},]
+    data = [{"sensorID":5,"timestamp":st,"data":[{"acceleration":[{"x":x,"y":y,"z":z}],"orientation":[{"mx":mx,"my":my,"mz":mz}]}]},]
     return data
 
 def create_batch_data():
     """Creates all the data to send with the batch."""
     batch_data = []
-    starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
     end = 1
+    first_time = 1
     while end != 0 :
         if arduino.readline().strip() == '1337':
+            if first_time ==1:
+                starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
+                first_time = 0
             arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
             ln = eval(arduino.readline().strip())
             lt = eval(arduino.readline().strip())
             st = time.strftime("%Y-%m-%dT%H:%M:%S")
             batch_data +=  [{"sensorID":1,"timestamp":st,"data":[{"type":"Point","coordinates":[ln, lt]}]},]
-        elif arduino.readline().strip() == '1995':
+        elif arduino.readline().strip() == '1995' and first_time != 1:
             end = 0
             endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
-        elif not arduino.readline().strip() == '1995':
+        elif not arduino.readline().strip() == '1995' and first_time != 1:
             batch_data += accelerometer_pointdata()
-    return batch_data,starttime,endtime #batch_data contains mixture of data from accelerometer and gps
+    return batch_data,starttime,endtime
 
 def create_batch():
     """Creates the batch itself using the create_atch_data() function."""
@@ -49,6 +53,7 @@ def create_batch():
     return batch
 
 def on_response(*args):
+    """Prints the server message."""
     print 'server_message', args
 
 #MAIN LOOP: RUNS WHEN FILE IS RUNNED
