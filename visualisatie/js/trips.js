@@ -82,6 +82,13 @@ function drawAccel(data){
                             completedata.unshift(timestampDate);
                             dataArray.push(completedata);
                         }
+                        //Nieuw formaat
+//                        try {
+//                            if (!(accelData.data[b].acceleration === undefined)) {
+//                                dataArray.push(accelData.data[b].acceleration);
+//                            }
+//                        }
+//                        catch(err){}
                     }
                 }
             }
@@ -103,7 +110,7 @@ function SortByTimestamp(a, b){
 
 function plotGPSmap(){
     $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/?userID=r0453111",
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips?userID=r0453111",
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){

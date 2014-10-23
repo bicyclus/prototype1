@@ -309,13 +309,9 @@ textarea {
     height: 400px;
 }
 
-.control-label {
-    margin-left: 4px;
-    margin-right: 4px;
-}
 
-.form-control {
-    width: 200px;
+.form-filter {
+    width: 600px;
 }
 
 .date-range-selected,

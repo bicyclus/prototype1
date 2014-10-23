@@ -10,9 +10,9 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/main.css" rel="stylesheet">
         <link href="css/jquery-ui.css" rel="stylesheet">
+        <link href="css/bootstrap.css" rel="stylesheet">
 
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
         <script src="js/jquery/dist/jquery.min.js"></script>
@@ -43,15 +43,24 @@
                     <button id='showJSON' class="btn btn-default">Show/Hide JSON</button>
                 </div>
             </p>
-            <p><div class="form-group">
-                <label for="datepicker" class="control-label">Date</label>
-                <div id="jrange" class="dates">
-                    <input type="text" id="datepicker" class="form-control">
-                    <div></div>
-                </div>
-                <label class="control-label" for="inputUserName">Username</label>
-                <input type="text" class="form-control" id="inputUserName">
-            </div></p>
+            <div class="well">
+                <form class="form-filter">
+                    <fieldset>
+                        <legend>Filter (Press "Get all trips" to filter)</legend>
+                        <div class="form-group">
+                            <label for="datepicker" class="control-label">Date range</label>
+                            <div id="jrange" class="dates">
+                                <input type="text" id="datepicker" class="form-control">
+                                <div></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputUserName" class="control-label">Username</label>
+                            <input type="text" class="form-control" id="inputUserName">
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
             <p><div id='chart_div'></div></p>
             <p><div id='accel_div'></div></p>
             <p><div id='map_div'></div></p>
