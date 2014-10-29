@@ -126,15 +126,26 @@ function SortByTimestamp(a, b){
 }
 
 var map;
+var infowindow;
+var markers = [];
+var polylines = [];
+var paths = [];
+var elevator;
+var elevCnt = -1;
 
 function createMap(data){
     var mapOptions = {
         zoom: 14,
-        center: new google.maps.LatLng(50.863774, 4.678921)
+        center: new google.maps.LatLng(50.863774, 4.678921) //Campus
     };
-    var markers = [];
     map = new google.maps.Map($("#map_div")[0], mapOptions);
+
     var pathCoords;
+
+    var bikeLayer = new google.maps.BicyclingLayer(); //Show bike paths
+    bikeLayer.setMap(map);
+    infowindow = new google.maps.InfoWindow();
+
     elevator = new google.maps.ElevationService();
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
@@ -144,78 +155,71 @@ function createMap(data){
                 if ((gpsData.sensorID == "1") && !(gpsData.data === undefined)) {
                     for (b = 0; b < gpsData.data.length; b++) { //Iterate over all data
                         try {
-                            pathCoords.push(new google.maps.LatLng(gpsData.data[b].coordinates[0], gpsData.data[b].coordinates[1]));
-                        }
-                        catch(err){
-                            pathCoords = [];
-                        }
-                        if (pathCoords.length > 1){
-                            //Elevator + Lineplot
-//                            var pathRequest = {
-//                                'path': pathCoords,
-//                                'samples': 128
-//                            }
-                            //Teveel trips met gps data, google: OVER_QUERY_LIMIT
-//                            elevator.getElevationAlongPath(pathRequest, plotElevation);
-                            //Plotten dan maar..
-
-                            markers.push(new google.maps.Marker({
-                                position: pathCoords[0],
-                                map: map,
-                                title:data[i]._id
-                            }));
-
-                            var pathOptions = {
-                                path: pathCoords,
-                                strokeColor: '#0000CC',
-                                opacity: 0.4,
-                                map: map
+                            var coord = new google.maps.LatLng(gpsData.data[b].coordinates[0], gpsData.data[b].coordinates[1]);
+                            if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                                if (!coord.equals(pathCoords[pathCoords.length - 1])) {
+                                    pathCoords.push(coord);
+                                }
                             }
-                            polyline = new google.maps.Polyline(pathOptions);
-
-                            var infowindow = new google.maps.InfoWindow({
-                                content:data[i]._id
-                            });
-
-                            google.maps.event.addListener(polyline, 'click', function(event) {
-                                infowindow.setPosition(event.latLng);
-                                infowindow.open(map);
-                            });
+                        }
+                        catch (err) {
+                            pathCoords = [];
                         }
                     }
                 }
             }
+            if (pathCoords.length > 1) {
+                markers.push(new google.maps.Marker({
+                    position: pathCoords[0],
+                    map: map,
+                    title: data[i]._id
+                }));
+                paths.push(pathCoords);
+
+                var pathOptions = {
+                    path: pathCoords,
+                    strokeColor: '#0000CC',
+                    opacity: 0.4,
+                    map: map
+                }
+                polylines.push(new google.maps.Polyline(pathOptions));
+
+                polylines[polylines.length - 1].myId = data[i]._id;
+                google.maps.event.addListener(polylines[polylines.length - 1], 'click', function (event) {
+                    infowindow.setPosition(event.latLng);
+                    infowindow.setContent(this.myId);
+                    infowindow.open(map);
+                });
+            }
         }
     }
+    console.log(paths.length);
+    elev();
+}
+
+function elev(){
+    elevCnt = elevCnt+1;
+    console.log(elevCnt);
+    var pathRequest = {
+        'path': paths[elevCnt],
+        'samples': 128//2-512
+    }
+    elevator.getElevationAlongPath(pathRequest, plotElevation);
 }
 
 function plotElevation(results, status) {
     if (status != google.maps.ElevationStatus.OK) {
         console.log(status);
+        if (elevCnt < paths.length-1){
+            elev();
+        }
         return;
     }
     var elevations = results;
-    var elevationPath = [];
-    for (var i = 0; i < results.length; i++) {
-        elevationPath.push(elevations[i].location);
-    }
-
-    var pathOptions = {
-        path: elevationPath,
-        strokeColor: '#0000CC',
-        opacity: 0.4,
-        map: map
-    }
-    polyline = new google.maps.Polyline(pathOptions);
-
-    var infowindow = new google.maps.InfoWindow({
-        content:"Trip 1"
-    });
-
-    google.maps.event.addListener(polyline, 'click', function(event) {
-        infowindow.setPosition(event.latLng);
-        infowindow.open(map);
-    });
+    //var elevationPath = [];
+    //for (var i = 0; i < results.length; i++) {
+    //    elevationPath.push(elevations[i].location);
+    //}
 
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Sample');
@@ -229,6 +233,10 @@ function plotElevation(results, status) {
     chart.draw(data, {
         height: 150,
         legend: 'none',
-        titleY: 'Elevation (m)'
+        titleY: 'Elevation (m)',
+        title: polylines[elevCnt].myId
     });
+    if (elevCnt < paths.length-1){
+        elev();
+    }
 }

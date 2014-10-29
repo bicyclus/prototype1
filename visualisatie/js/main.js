@@ -17,8 +17,6 @@ function getInit(){
 }
 
 function initDatepickers() {
-
-
     var datepicker__updateDatepicker = $.datepicker._updateDatepicker;
     $.datepicker._updateDatepicker = function( inst ) {
         datepicker__updateDatepicker.call( this, inst );
