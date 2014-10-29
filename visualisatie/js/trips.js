@@ -1,4 +1,8 @@
+var PROG_STEPS = 5;
+var ANIM_TIME = 400;
+
 function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgeven
+    $('#tripProgress').show(400);
     //Check data in box, set getUrl
     var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
 
@@ -44,9 +48,14 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar drawChart doorgev
         dataType: "jsonp",
         success: function(response){
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
+            $('#tripProgressBar').width()
+            $('#tripProgressBar').animate({ width: '+='+(100/PROG_STEPS).toString()+'%' },ANIM_TIME);
             $('#myReciever').append(JSON.stringify(response));
+            $('#tripProgressBar').animate({ width: '+='+(100/PROG_STEPS).toString()+'%' },ANIM_TIME);
             drawChart(response);
+            $('#tripProgressBar').animate({ width: '+='+(100/PROG_STEPS).toString()+'%' },ANIM_TIME);
             drawAccel(response);
+            $('#tripProgressBar').animate({ width: '+='+(100/PROG_STEPS).toString()+'%' },ANIM_TIME);
             createMap(response);
         }
     });
@@ -193,13 +202,11 @@ function createMap(data){
             }
         }
     }
-    console.log(paths.length);
     elev();
 }
 
 function elev(){
     elevCnt = elevCnt+1;
-    console.log(elevCnt);
     var pathRequest = {
         'path': paths[elevCnt],
         'samples': 128//2-512
@@ -212,6 +219,9 @@ function plotElevation(results, status) {
         console.log(status);
         if (elevCnt < paths.length-1){
             elev();
+        } else {
+            $('#tripProgressBar').animate({ width: '100%' },ANIM_TIME);
+            $('#tripProgress').hide('blind',5*ANIM_TIME);
         }
         return;
     }
@@ -237,6 +247,9 @@ function plotElevation(results, status) {
         title: polylines[elevCnt].myId
     });
     if (elevCnt < paths.length-1){
-        elev();
+        setTimeout(elev,250);
+    } else {
+        $('#tripProgressBar').animate({ width: '100%' },ANIM_TIME);
+        $('#tripProgress').hide('blind',5*ANIM_TIME);
     }
 }

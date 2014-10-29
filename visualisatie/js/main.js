@@ -12,8 +12,8 @@ function getInit(){
             $('#myReciever').toggle();
         });
     initDatepickers();
-    $('#myReciever').toggle();
-
+    $('#myReciever').hide();
+    $('#tripProgress').hide();
 }
 
 function initDatepickers() {
