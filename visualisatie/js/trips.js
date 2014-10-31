@@ -57,11 +57,11 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
             progressTrips = progressTrips + 100/PROG_STEPS-BEGIN_PERCENT;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-            checkProgressTrips()
+            checkProgressTrips();
             $('#myReciever').append(JSON.stringify(response));
             progressTrips = progressTrips + 100/PROG_STEPS;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-            checkProgressTrips()
+            checkProgressTrips();
             drawChart(response);
             drawAccel(response);
             createMap(response);
@@ -176,22 +176,22 @@ function createMap(data){
                 var gpsData = data[i].sensorData[a];
                 if ((gpsData.sensorID == "1") && !(gpsData.data === undefined)) {
                     for (b = 0; b < gpsData.data.length; b++) { //Iterate over all data
-                        try {
+                        try { //Probeer deze blok uit te voeren
                             var coord = new google.maps.LatLng(gpsData.data[b].coordinates[0], gpsData.data[b].coordinates[1]);
                             if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
                                 if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
                                     tripMapObj.coords.push(coord);
                                 }
                             }
-                        }
-                        catch (err) {
+                        } 
+                        catch (err) { //Ga hier als het ergens een error oproept
                             tripMapObj.coords = [];
                         }
                     }
                 }
             }
             if (tripMapObj.coords.length > 1) {
-                tripMapObj.marker = new google.maps.Marker({
+                tripMapObj.marker = new google.maps.Marker({ //Marker
                     position: tripMapObj.coords[0],
                     map: map,
                     title: tripMapObj.id
@@ -204,9 +204,8 @@ function createMap(data){
                     map: map
                 }
                 tripMapObj.polyline = new google.maps.Polyline(pathOptions);
-
                 tripMapObj.polyline.myId = data[i]._id;
-                google.maps.event.addListener(tripMapObj.polyline, 'click', function (event) {
+                google.maps.event.addListener(tripMapObj.polyline, 'click', function (event) { //Infowindow bij klikken op polyline
                     infowindow.setPosition(event.latLng);
                     infowindow.setContent(this.myId);
                     infowindow.open(map);
