@@ -2,9 +2,10 @@
 var PROG_STEPS = 5;
 var BEGIN_PERCENT = 4;
 var ANIM_TIME = 200;
+var ELEV_SAMPLE = 128//2-512
 
 //Globals
-var progressTrips = BEGIN_PERCENT;
+var progressTrips = BEGIN_PERCENT; //Holds percentage for trips progressbar
 
 function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeven
     $('#tripProgress').show(ANIM_TIME);
@@ -68,7 +69,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
     });
 }
 
-function drawChart(data) {
+function drawChart(data) { //Elapsed time graph of all trips
     var dataArray = [['Number', 'Elapsed time']]; //Titels
     for (var i = 0; i < data.length; i++) {
         if (!(data[i].endTime === undefined) && !(data[i].startTime === undefined)) { //Endtime moet bestaan
@@ -87,14 +88,12 @@ function drawChart(data) {
     chart.draw(chartData, options); //Tekenen
     progressTrips = progressTrips + 100/PROG_STEPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-    checkProgressTrips()
+    checkProgressTrips();
 }
 
 function drawAccel(data){
-
     var dataArray;
     var options;
-
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
             dataArray  = [];
@@ -140,10 +139,10 @@ function drawAccel(data){
     }
     progressTrips = progressTrips + 100/PROG_STEPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-    checkProgressTrips()
+    checkProgressTrips();
 }
 
-function SortByTimestamp(a, b){
+function SortByTimestamp(a, b){ //Sorteren
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
 }
 
@@ -219,20 +218,20 @@ function createMap(data){
     }
 }
 
-function elev(pathCoords){
+function elev(pathCoords){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
-        'samples': 128//2-512
+        'samples': ELEV_SAMPLE
     }
     elevator.getElevationAlongPath(pathRequest,
         function(results, status) {
             if (status != google.maps.ElevationStatus.OK) {
                 console.log(status);
-                if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) {
+                if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) { //Herproberen als we over de limiet zitten.
                     console.log("Retrying");
                     setTimeout(function () {
                         elev(pathCoords);
-                    }, 1000);
+                    }, 500);
                 }
             } else {
                 var elevations = results;
@@ -250,6 +249,7 @@ function elev(pathCoords){
                     if (tripMaps[a].coords.equals(elevationPath)) break;
                 }
 
+                //Chart
                 var el_div = $('<div style="display: block"></div>');
                 $("#elevation_chart").append(el_div);
                 chart = new google.visualization.ColumnChart(el_div[0]);
@@ -261,21 +261,20 @@ function elev(pathCoords){
                 });
                 progressTrips = progressTrips + 100/PROG_STEPS/tripMaps.length;
                 $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-                checkProgressTrips()
+                checkProgressTrips();
             }
         }
     );
 }
 
 function checkProgressTrips(){
-    console.log(progressTrips);
     if (progressTrips >= 100) {
         $('#tripProgressBar').animate({ width: '100%' },0);
         $('#tripProgress').hide('blind',3*ANIM_TIME);
     }
 }
 
-Array.prototype.equals = function (array) {
+Array.prototype.equals = function (array) { //Compare full arrays
     // if the other array is a falsy value, return
     if (!array)
         return false;
