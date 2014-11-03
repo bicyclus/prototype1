@@ -9,9 +9,11 @@ import json
 def accelerometer_pointdata():
     XLoBorg.printFunction = XLoBorg.NoPrint
     XLoBorg.Init()
-    x, y, z = XLoBorg.ReadAccelerometer()       
+    x, y, z = XLoBorg.ReadAccelerometer()
+    mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID":5,"timestamp":st,"data":[{"type":"point","coordinates":[x,y,z]}]},]
+    data = [{"sensorID": 5, "timestamp": st,
+             "data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
     return data
 
 def create_batch_data():
