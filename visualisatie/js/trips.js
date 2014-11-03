@@ -183,7 +183,7 @@ function createMap(data){
                                     tripMapObj.coords.push(coord);
                                 }
                             }
-                        } 
+                        }
                         catch (err) { //Ga hier als het ergens in de try een error oproept.
                             tripMapObj.coords = [];
                         }
@@ -232,38 +232,38 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                         elev(pathCoords);
                     }, 500);
                 }
-            else {
-                var elevations = results;
-                var elevationPath = [];
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Sample');
-                data.addColumn('number', 'Elevation');
+                else {
+                    var elevations = results;
+                    var elevationPath = [];
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', 'Sample');
+                    data.addColumn('number', 'Elevation');
 
-                for (var i = 0; i < elevations.length; i++) {
-                    elevationPath.push(elevations[i].location);
-                    data.addRow(['', elevations[i].elevation]);
+                    for (var i = 0; i < elevations.length; i++) {
+                        elevationPath.push(elevations[i].location);
+                        data.addRow(['', elevations[i].elevation]);
+                    }
+
+                    for (var a = 0; a < tripMaps.length; a++) { //Find trip
+                        if (tripMaps[a].coords.equals(elevationPath)) break;
+                    }
+
+                    //Chart
+                    var el_div = $('<div style="display: block"></div>');
+                    $("#elevation_chart").append(el_div);
+                    chart = new google.visualization.ColumnChart(el_div[0]);
+                    chart.draw(data, {
+                        height: 150,
+                        legend: 'none',
+                        titleY: 'Elevation (m)',
+                        title: tripMaps[a].id
+                    });
+                    progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                    $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+                    checkProgressTrips();
                 }
-
-                for (var a = 0; a < tripMaps.length; a++){ //Find trip
-                    if (tripMaps[a].coords.equals(elevationPath)) break;
-                }
-
-                //Chart
-                var el_div = $('<div style="display: block"></div>');
-                $("#elevation_chart").append(el_div);
-                chart = new google.visualization.ColumnChart(el_div[0]);
-                chart.draw(data, {
-                    height: 150,
-                    legend: 'none',
-                    titleY: 'Elevation (m)',
-                    title: tripMaps[a].id
-                });
-                progressTrips = progressTrips + 100/PROG_STEPS/tripMaps.length;
-                $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
-                checkProgressTrips();
             }
-        }
-    );
+        });
 }
 
 function checkProgressTrips(){

@@ -31,8 +31,8 @@ function initDatepickers() { //DatePicker function
         $('#jrange div')
             .datepicker({
                 //numberOfMonths: 3,
-                changeMonth: true,
-                changeYear: true,
+                changeMonth: false,
+                changeYear: false,
                 showButtonPanel: true,
                 dateFormat: "dd-mm-yy",
 
