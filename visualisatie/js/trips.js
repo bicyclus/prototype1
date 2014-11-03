@@ -3,6 +3,7 @@ var PROG_STEPS = 5;
 var BEGIN_PERCENT = 4;
 var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128//2-512
+var RETRY_COUNT = 10;
 
 //Globals
 var progressTrips = BEGIN_PERCENT; //Holds percentage for trips progressbar
@@ -100,41 +101,32 @@ function drawAccel(data){
             for (a = 0; a < data[i].sensorData.length; a++) { //Iterate over all sensorData
                 var accelData = data[i].sensorData[a];
                 if ((accelData.sensorID == "5") && !(accelData.data === undefined)) {
-                    for (b = 0; b < accelData.data.length; b++) { //Iterate over all data
-                        if (!(accelData.data[b].coordinates === undefined) && (accelData.data[b].coordinates.length == 3)){
-                            var completedata = accelData.data[b].coordinates;
+                    try {
+                        if (!(accelData.data[0].acceleration === undefined)) {
                             var timestampDate = new Date(accelData.timestamp);
-
-                            completedata.unshift(timestampDate);
-                            dataArray.push(completedata);
-                            //Nieuw formaat
-//                        try {
-//                            if (!(accelData.data[b].acceleration === undefined)) {
-//                                dataArray.push(accelData.data[b].acceleration);
-//                            }
-//                        }
-//                        catch(err){}
+                            dataArray.push([timestampDate,accelData.data[0].acceleration.x,accelData.data[0].acceleration.y,accelData.data[0].acceleration.z]);
                         }
                     }
+                    catch(err){console.log(err)}
                 }
             }
-        }
-        if (dataArray.length > 0) {
-            dataArray.sort(SortByTimestamp);
-            options = {'title':'Accelerometer: '+data[i]._id,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
-            var chartData = new google.visualization.DataTable();
-            chartData.addColumn('string', 'Time');
-            chartData.addColumn('number', 'X');
-            chartData.addColumn('number', 'Y');
-            chartData.addColumn('number', 'Z');
-            for (var i = 0; i < dataArray.length; i++) {
-                chartData.addRow(['', dataArray[i][1],dataArray[i][2],dataArray[i][3]]);
-            }
-            var draw_div = $('<div></div>');
-            $("#accel_div").append(draw_div);
+            if (dataArray.length > 0) {
+                dataArray.sort(SortByTimestamp);
+                options = {'title':'Accelerometer: '+data[i]._id,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+                var chartData = new google.visualization.DataTable();
+                chartData.addColumn('string', 'Time');
+                chartData.addColumn('number', 'X');
+                chartData.addColumn('number', 'Y');
+                chartData.addColumn('number', 'Z');
+                for (var i = 0; i < dataArray.length; i++) {
+                    chartData.addRow(['', dataArray[i][1],dataArray[i][2],dataArray[i][3]]);
+                }
+                var draw_div = $('<div></div>');
+                $("#accel_div").append(draw_div);
 
-            var chart = new google.visualization.LineChart(draw_div[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+                var chart = new google.visualization.LineChart(draw_div[0]); //Chart aanmaken in div
+                chart.draw(chartData, options); //Tekenen
+            }
         }
     }
     progressTrips = progressTrips + 100/PROG_STEPS;
@@ -217,6 +209,8 @@ function createMap(data){
     }
 }
 
+var retries = 0;
+
 function elev(pathCoords){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
@@ -227,10 +221,19 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
                 console.log(status);
                 if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) { //Herproberen als we over de limiet zitten.
-                    console.log("Retrying");
-                    setTimeout(function () {
-                        elev(pathCoords);
-                    }, 500);
+                    console.log("Retrying query of length: "+pathCoords.length);
+                    console.log(retries);
+                    if (retries < RETRY_COUNT) {
+                        setTimeout(function () {
+                            elev(pathCoords);
+                        }, 1000);
+                    } else {
+                        alert("Google elevation query error: Not all elevations  will be plotted.");
+                        progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                        $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+                        checkProgressTrips();
+                    }
+                    retries = retries +1;
                 }
                 else {
                     var elevations = results;
