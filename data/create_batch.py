@@ -23,8 +23,7 @@ def accelerometer_pointdata():
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID": 5, "timestamp": st,
-             "data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
+    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
     return data
 
 
@@ -51,31 +50,33 @@ def convert_coordinates(coor):
     coordinates = degrees + "." + dmin
     return coordinates
 
+def gps_pointdata():
+    """Gets gps data of the current point."""
+    ln = eval(arduino.readline().strip())/100
+    lt = eval(arduino.readline().strip())/100
+    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    ln = convert_coordinates(ln)
+    lt = convert_coordinates(lt)
+    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
+    return data
+
 
 def create_batch_data():
     """Creates all the data to send with the batch."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     batch_data = []
     end = 1
-    first_time = 1
+    starttime = time.strftime("%Y-%m-%dT%H:%M:%S") #the gps already has a fix when the function is executed so this is the corect start time
     while end != 0:
+        #adds accelerometer data and data from sometimes one sensor and the accelerometer
         ard_read = arduino.readline().strip()
         if ard_read == '1337':
-            if first_time == 1:
-                starttime = time.strftime("%Y-%m-%dT%H:%M:%S")
-                first_time = 0
-            ln = eval(arduino.readline().strip())/100
-            lt = eval(arduino.readline().strip())/100
-            st = time.strftime("%Y-%m-%dT%H:%M:%S")
-            print ln,lt
-            ln = convert_coordinates(ln)
-            lt = convert_coordinates(lt)
-            batch_data += [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
-        if ard_read == '1995' and first_time != 1:
+            batch_data += gps_pointdata()
+        batch_data += accelerometer_pointdata()
+        #checks whether stop conditions have been met
+        if ard_read == '1995':
             end = 0
             endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
-        if not ard_read == '1995' and first_time != 1:
-            batch_data += accelerometer_pointdata()
     return batch_data, starttime, endtime
 
 
@@ -96,7 +97,7 @@ def on_response(*args):
 k = 0
 while k == 0:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    if ard.readline().strip() == '1995':
+    if ard.readline().strip() == '1337':
         k = 1
         batch = create_batch()
 
