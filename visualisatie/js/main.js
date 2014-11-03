@@ -1,4 +1,4 @@
-google.load('visualization', '1.0', {'packages':['corechart','columnchart']});
+google.load('visualization', '1.0', {'packages':['corechart','columnchart']}); //Google chart libraries
 
 function getInit(){
     $("#getTrips") //Button maken
@@ -9,29 +9,24 @@ function getInit(){
     $("#showJSON")
         .click(function( event ) {
             event.preventDefault();
-            $('#myReciever').toggle();
+            $('#myReciever').toggle(); //Show/Hide
         });
     initDatepickers();
-    $('#myReciever').toggle();
-
+    $('#myReciever').hide();
+    $('#tripProgress').hide();
 }
 
-function initDatepickers() {
-
-
+function initDatepickers() { //DatePicker function
     var datepicker__updateDatepicker = $.datepicker._updateDatepicker;
     $.datepicker._updateDatepicker = function( inst ) {
         datepicker__updateDatepicker.call( this, inst );
-
         var onAfterUpdate = this._get(inst, 'onAfterUpdate');
         if (onAfterUpdate)
             onAfterUpdate.apply((inst.input ? inst.input[0] : null),
                 [(inst.input ? inst.input.val() : ''), inst]);
     }
 
-
     $(function() {
-
         var cur = -1, prv = -1;
         $('#jrange div')
             .datepicker({
@@ -80,14 +75,11 @@ function initDatepickers() {
         $('#jrange input').on('focus', function (e) {
             var v = this.value,
                 d;
-
             try {
                 if ( v.indexOf(' - ') > -1 ) {
                     d = v.split(' - ');
-
                     prv = $.datepicker.parseDate( 'dd-mm-yy', d[0] ).getTime();
                     cur = $.datepicker.parseDate( 'dd-mm-yy', d[1] ).getTime();
-
                 } else if ( v.length > 0 ) {
                     prv = cur = $.datepicker.parseDate( 'dd-mm-yy', v ).getTime();
                 }
@@ -97,7 +89,6 @@ function initDatepickers() {
 
             if ( cur > -1 )
                 $('#jrange div').datepicker('setDate', new Date(cur));
-
             $('#jrange div').datepicker('refresh').show();
         });
 
