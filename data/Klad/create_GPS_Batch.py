@@ -41,12 +41,10 @@ def create_batch_data():
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     while end != 0:
         ard = arduino.readline().strip()
-        print ard
         if ard == '1337':
             ln = eval(arduino.readline().strip())
             lt = eval(arduino.readline().strip())
             st = time.strftime("%Y-%m-%dT%H:%M:%S")
-            print ln, ",", lt
             ln = convert_coordinates(ln)
             lt = convert_coordinates(lt)
             batch_data += [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
