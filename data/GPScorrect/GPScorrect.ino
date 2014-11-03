@@ -148,6 +148,10 @@ void loop()                     // run over and over again
     Serial.println("1995");
     delay(250);
   }  
+    if (sensorValue == HIGH) {
+    Serial.println("1996");
+    delay(250);
+  }  
     if (GPS.fix) {
       Serial.println("1337");
       delay(500);
@@ -155,6 +159,7 @@ void loop()                     // run over and over again
       delay(500);
       Serial.println(GPS.longitude,4);
       delay(500);
+      
     }
   }
 
