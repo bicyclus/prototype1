@@ -183,7 +183,7 @@ function createMap(data){
                                     tripMapObj.coords.push(coord);
                                 }
                             }
-                        } 
+                        }
                         catch (err) { //Ga hier als het ergens een error oproept
                             tripMapObj.coords = [];
                         }
