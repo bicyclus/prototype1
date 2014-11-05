@@ -1,14 +1,15 @@
 //Constanten
 var PROG_STEPS = 5;
-var BEGIN_PERCENT = 4;
+var BEGIN_PERCENT = 1.618;
 var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128//2-512
-var RETRY_COUNT = 15;
+var RETRY_COUNT = 50;
 
 //Globals
-var progressTrips = BEGIN_PERCENT; //Holds percentage for trips progressbar
+var progressTrips; //Holds percentage for trips progressbar
 
 function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeven
+    progressTrips = BEGIN_PERCENT;
     $('#tripProgress').show(ANIM_TIME);
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     //Check data in box, set getUrl
@@ -149,6 +150,7 @@ var infowindow;
 var bikeLayer;
 var elevator;
 var tripMaps = []; //Array of objects
+var retries = 0;
 
 function createMap(data){
     var mapOptions = {
@@ -160,6 +162,7 @@ function createMap(data){
     bikeLayer.setMap(map);
     elevator = new google.maps.ElevationService();
     infowindow = new google.maps.InfoWindow();
+    retries = 0;
 
     for (i = 0; i < data.length; i++) { //Iterate over all trips
         if (!(data[i].sensorData === undefined)) {
@@ -210,8 +213,6 @@ function createMap(data){
     }
 }
 
-var retries = 0;
-
 function elev(pathCoords){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
@@ -222,15 +223,13 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
                 console.log(status);
                 if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) { //Herproberen als we over de limiet zitten.
-                    console.log("Retrying query of length: "+pathCoords.length+". Try #"+retries);
+                    console.log("Retrying query of length: " + pathCoords.length + ". Try #" + retries);
                     if (retries < RETRY_COUNT) {
-                        retries = retries +1;
-                        setTimeout(function () {
-                            elev(pathCoords);
-                        }, 1000);
+                        retries = retries + 1;
+                        setTimeout(function(){elev(pathCoords);}, 1000+Math.floor((Math.random() * 500)));
                     } else {
-                        retries = retries +1;
-                        if (retries = RETRY_COUNT){
+                        retries = retries + 1;
+                        if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
                         progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
@@ -238,36 +237,39 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                         checkProgressTrips();
                     }
                 }
-                else {
-                    var elevations = results;
-                    var elevationPath = [];
-                    var data = new google.visualization.DataTable();
-                    data.addColumn('string', 'Sample');
-                    data.addColumn('number', 'Elevation');
+            } else {
+                var elevations = results;
+                var elevationPath = [];
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Sample');
+                data.addColumn('number', 'Elevation');
 
-                    for (var i = 0; i < elevations.length; i++) {
-                        elevationPath.push(elevations[i].location);
-                        data.addRow(['', elevations[i].elevation]);
-                    }
-
-                    for (var a = 0; a < tripMaps.length; a++) { //Find trip
-                        if (tripMaps[a].coords.equals(elevationPath)) break;
-                    }
-
-                    //Chart
-                    var el_div = $('<div style="display: block"></div>');
-                    $("#elevation_chart").append(el_div);
-                    chart = new google.visualization.ColumnChart(el_div[0]);
-                    chart.draw(data, {
-                        height: 150,
-                        legend: 'none',
-                        titleY: 'Elevation (m)',
-                        title: tripMaps[a].id
-                    });
-                    progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
-                    $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
-                    checkProgressTrips();
+                for (var i = 0; i < elevations.length; i++) {
+                    elevationPath.push(elevations[i].location);
+                    data.addRow(['', elevations[i].elevation]);
                 }
+
+                var tempTitle = '';
+                for (var a = 0; a < tripMaps.length; a++) { //Find trip
+                    if (tripMaps[a].coords.equals(pathCoords)){
+                        tempTitle = tripMaps[a].id;
+                        break;
+                    }
+                }
+
+                //Chart
+                var el_div = $('<div style="display: block"></div>');
+                $("#elevation_chart").append(el_div);
+                chart = new google.visualization.ColumnChart(el_div[0]);
+                chart.draw(data, {
+                    height: 150,
+                    legend: 'none',
+                    titleY: 'Elevation (m)',
+                    title: tempTitle
+                });
+                progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+                checkProgressTrips();
             }
         }
     );
