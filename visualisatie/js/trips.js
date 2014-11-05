@@ -3,7 +3,7 @@ var PROG_STEPS = 5;
 var BEGIN_PERCENT = 4;
 var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128//2-512
-var RETRY_COUNT = 10;
+var RETRY_COUNT = 15;
 
 //Globals
 var progressTrips = BEGIN_PERCENT; //Holds percentage for trips progressbar
@@ -104,7 +104,7 @@ function drawAccel(data){
                     try {
                         if (!(accelData.data[0].acceleration === undefined)) {
                             var timestampDate = new Date(accelData.timestamp);
-                            dataArray.push([timestampDate,accelData.data[0].acceleration.x,accelData.data[0].acceleration.y,accelData.data[0].acceleration.z]);
+                            dataArray.push([timestampDate,accelData.data[0].acceleration[0].x,accelData.data[0].acceleration[0].y,accelData.data[0].acceleration[0].z]);
                         }
                     }
                     catch(err){console.log(err)}
@@ -118,8 +118,8 @@ function drawAccel(data){
                 chartData.addColumn('number', 'X');
                 chartData.addColumn('number', 'Y');
                 chartData.addColumn('number', 'Z');
-                for (var i = 0; i < dataArray.length; i++) {
-                    chartData.addRow(['', dataArray[i][1],dataArray[i][2],dataArray[i][3]]);
+                for (var b = 0; b < dataArray.length; b++) {
+                    chartData.addRow(['', dataArray[b][1],dataArray[b][2],dataArray[b][3]]);
                 }
                 var draw_div = $('<div></div>');
                 $("#accel_div").append(draw_div);
@@ -188,13 +188,14 @@ function createMap(data){
                     map: map,
                     title: tripMapObj.id
                 });
-
+                //Random kleur van ID
+                var stringHexNumber = (parseInt(parseInt(tripMapObj.id, 36).toExponential().slice(2,-5), 10) & 0xFFFFFF).toString(16).toUpperCase(); //http://stackoverflow.com/questions/17845584/converting-a-random-string-into-a-hex-colour
                 var pathOptions = {
                     path: tripMapObj.coords,
-                    strokeColor: '#0000CC',
+                    strokeColor: '#' + ('000000' + stringHexNumber).slice(-6), //Lengte aanpassen
                     opacity: 0.4,
                     map: map
-                }
+                };
                 tripMapObj.polyline = new google.maps.Polyline(pathOptions);
                 tripMapObj.polyline.myId = data[i]._id;
                 google.maps.event.addListener(tripMapObj.polyline, 'click', function (event) { //Infowindow bij klikken op polyline
@@ -221,19 +222,21 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
                 console.log(status);
                 if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) { //Herproberen als we over de limiet zitten.
-                    console.log("Retrying query of length: "+pathCoords.length);
-                    console.log(retries);
+                    console.log("Retrying query of length: "+pathCoords.length+". Try #"+retries);
                     if (retries < RETRY_COUNT) {
+                        retries = retries +1;
                         setTimeout(function () {
                             elev(pathCoords);
                         }, 1000);
                     } else {
-                        alert("Google elevation query error: Not all elevations  will be plotted.");
+                        retries = retries +1;
+                        if (retries = RETRY_COUNT){
+                            alert("Google elevation query error: Not all elevations  will be plotted.");
+                        }
                         progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
                         $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
                         checkProgressTrips();
                     }
-                    retries = retries +1;
                 }
                 else {
                     var elevations = results;
@@ -266,7 +269,8 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     checkProgressTrips();
                 }
             }
-        });
+        }
+    );
 }
 
 function checkProgressTrips(){
