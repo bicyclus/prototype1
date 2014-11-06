@@ -5,6 +5,7 @@ var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128//2-512
 var RETRY_COUNT = 50;
 
+
 //Globals
 var progressTrips; //Holds percentage for trips progressbar
 
