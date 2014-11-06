@@ -11,10 +11,7 @@ function getInit(){
             event.preventDefault();
             $('#myReciever').toggle(); //Show/Hide
         });
-    $("#calendar")
-        .click(function visitPage(){
-        window.location='calendar.html'
-        });
+    $("#calendarButton").click(function visitPage(){window.location='calendar.html'}); //Buttonlink
     initDatepickers();
     $('#myReciever').hide();
     $('#tripProgress').hide();
