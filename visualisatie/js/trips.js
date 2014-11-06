@@ -150,25 +150,6 @@ function getTemperature(data) {
                         var timestampDate = new Date(temp.timestamp);
                         tempArray.push([timestampDate, temp.data[0].value]);
                     }
-                    if ((temp.sensorID == "3") && !(temp.data === undefined)) {
-                        var timestampDate = new Date(temp.timestamp);
-                        console.log(temp.data[0]);
-                        tempArray.push([timestampDate, temp.data[0].value]);
-                    }
-                }
-                if (tempArray.length > 0) {
-                    tempArray.sort(SortByTimestamp);
-                    options = {'title': 'Temperature: ' + data[i]._id, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
-                    var chartData = new google.visualization.DataTable();
-                    chartData.addColumn('string', 'Time');
-                    chartData.addColumn('number', 'Temperature');
-                    for (var b = 0; b < tempArray.length; b++) {
-                        chartData.addRow(['', tempArray[b][1]]);
-                    }
-                    var draw_temp_div = $('<div></div>');
-                    $("#temp_div").append(draw_temp_div);
-                    var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
-                    chart.draw(chartData, options); //Tekenen
 
                 }
                 if (tempArray.length > 0) {
@@ -184,6 +165,7 @@ function getTemperature(data) {
                     $("#temp_div").append(draw_temp_div);
                     var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
                     chart.draw(chartData, options); //Tekenen
+
                 }
             }
         }
