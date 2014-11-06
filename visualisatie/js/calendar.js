@@ -2,8 +2,10 @@
 var progressCal; //Holds percentage for trips progressbar
 var calData; //all calendar events
 var myCal;
+var allTrips;
 
 function initCalendar(){
+    $('#tripInfoDiv').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -18,6 +20,7 @@ function initCalendar(){
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
+            allTrips = response;
             fillCalendar(response);
         }
     });
@@ -42,13 +45,27 @@ function fillCalendar(data){
                     linkText = linkText+' - '+tripEnd.getDay()+'/'+tripEnd.getMonth()+'/'+tripEnd.getFullYear()+' '+tripEnd.getHours()+':'+tripEnd.getMinutes();
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#" id=data[i]._id>' +linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="#" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
         }
     }
     myCal.setData(calData);
     progressCal = progressCal + 100/PROG_STEPS_CAL;
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     checkProgressCal();
+}
+
+function showTripInfo(tripId){
+    $('#tripInfoDiv').empty();
+    for (var i = 0; i < allTrips.length; i++) {
+        if (allTrips[i]._id == tripId){
+            var curTrip = allTrips[i];
+            break;
+        }
+    }
+    var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
+    var timeDiv = $('<div>'+'Trip Time: '+curTime+'</div>');
+    $('#tripInfoDiv').append(timeDiv);
+    $('#tripInfoDiv').show('blind', { direction: "down" },ANIM_TIME);
 }
 
 function calendarFcts() {
@@ -86,10 +103,9 @@ function calendarFcts() {
     }
 
     function showEvents( $contentEl, dateProperties ) {
-
         hideEvents();
 
-        var $events = $( '<div id="custom-content-reveal" class="custom-content-reveal"><h4>Events for ' + dateProperties.monthname + ' ' + dateProperties.day + ', ' + dateProperties.year + '</h4></div>' );
+        var $events = $( '<div id="custom-content-reveal" class="custom-content-reveal"><h4>Trips for ' + dateProperties.day +'/'+ dateProperties.month + '/' + dateProperties.year + '</h4></div>' );
         var $close = $( '<span class="custom-content-close"></span>' ).on( 'click', hideEvents );
 
         $events.append( $contentEl.html() , $close ).insertAfter( $wrapper );
@@ -103,11 +119,14 @@ function calendarFcts() {
 
         var $events = $( '#custom-content-reveal' );
         if( $events.length > 0 ) {
-
             $events.css( 'top', '100%' );
             Modernizr.csstransitions ? $events.on( transEndEventName, function() { $( this ).remove(); } ) : $events.remove();
         }
     }
+
+    $("body").on("click",".tripEventLink",function(){
+        showTripInfo($(this).attr('id'));
+    });
 }
 
 function checkProgressCal(){

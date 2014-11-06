@@ -1,6 +1,24 @@
 //Globals
 var progressTrips; //Holds percentage for trips progressbar
 
+function tripInit(){
+    $("#getTrips") //Button maken
+        .click(function( event ) {
+            event.preventDefault();
+            getAllTrips();
+        });
+    $("#showJSON")
+        .click(function( event ) {
+            event.preventDefault();
+            $('#myReciever').toggle(); //Show/Hide
+        });
+    $("#calendarButton").click(function visitPage(){window.location='calendar.html'}); //Buttonlink
+    initDatepickers();
+    $('#myReciever').hide();
+    $('#tripProgress').hide();
+
+}
+
 function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeven
     progressTrips = BEGIN_PERCENT;
     $('#tripProgress').show(ANIM_TIME);
@@ -315,26 +333,86 @@ function checkProgressTrips(){
     }
 }
 
-Array.prototype.equals = function (array) { //Compare full arrays
-    // if the other array is a falsy value, return
-    if (!array)
-        return false;
-
-    // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
-
-    for (var i = 0, l=this.length; i < l; i++) {
-        // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].equals(array[i]))
-                return false;
-        }
-        else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-        }
+function initDatepickers() { //DatePicker function
+    var datepicker__updateDatepicker = $.datepicker._updateDatepicker;
+    $.datepicker._updateDatepicker = function( inst ) {
+        datepicker__updateDatepicker.call( this, inst );
+        var onAfterUpdate = this._get(inst, 'onAfterUpdate');
+        if (onAfterUpdate)
+            onAfterUpdate.apply((inst.input ? inst.input[0] : null),
+                [(inst.input ? inst.input.val() : ''), inst]);
     }
-    return true;
+
+    $(function() {
+        var cur = -1, prv = -1;
+        $('#jrange div')
+            .datepicker({
+                //numberOfMonths: 3,
+                changeMonth: false,
+                changeYear: false,
+                showButtonPanel: true,
+                dateFormat: "dd-mm-yy",
+
+                beforeShowDay: function ( date ) {
+                    return [true, ( (date.getTime() >= Math.min(prv, cur) && date.getTime() <= Math.max(prv, cur)) ? 'date-range-selected' : '')];
+                },
+
+                onSelect: function ( dateText, inst ) {
+                    var d1, d2;
+
+                    prv = cur;
+                    cur = (new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay)).getTime();
+                    if ( prv == -1 || prv == cur ) {
+                        prv = cur;
+                        $('#jrange input').val( dateText );
+                    } else {
+                        d1 = $.datepicker.formatDate( 'dd-mm-yy', new Date(Math.min(prv,cur)), {} );
+                        d2 = $.datepicker.formatDate( 'dd-mm-yy', new Date(Math.max(prv,cur)), {} );
+                        $('#jrange input').val( d1+' - '+d2 );
+                    }
+                },
+
+                onChangeMonthYear: function ( year, month, inst ) {
+                    //prv = cur = -1;
+                },
+
+                onAfterUpdate: function ( inst ) {
+                    $('<button type="button" class="ui-datepicker-close ui-state-default ui-priority-primary ui-corner-all" data-handler="hide" data-event="click">Done</button>')
+                        .appendTo($('#jrange div .ui-datepicker-buttonpane'))
+                        .on('click', function () { $('#jrange div').hide();  });
+                }
+            })
+            .position({
+                my: 'left top',
+                at: 'left bottom',
+                of: $('#jrange input')
+            })
+            .hide();
+
+        $('#jrange input').on('focus', function (e) {
+            var v = this.value,
+                d;
+            try {
+                if ( v.indexOf(' - ') > -1 ) {
+                    d = v.split(' - ');
+                    prv = $.datepicker.parseDate( 'dd-mm-yy', d[0] ).getTime();
+                    cur = $.datepicker.parseDate( 'dd-mm-yy', d[1] ).getTime();
+                } else if ( v.length > 0 ) {
+                    prv = cur = $.datepicker.parseDate( 'dd-mm-yy', v ).getTime();
+                }
+            } catch ( e ) {
+                cur = prv = -1;
+            }
+
+            if ( cur > -1 )
+                $('#jrange div').datepicker('setDate', new Date(cur));
+            $('#jrange div').datepicker('refresh').show();
+        });
+
+    });
+
 }
+
+$(document).ready(tripInit);
+
+$.datepicker._defaults.onAfterUpdate = null;
