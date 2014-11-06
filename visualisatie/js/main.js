@@ -15,6 +15,7 @@ function getInit(){
     initDatepickers();
     $('#myReciever').hide();
     $('#tripProgress').hide();
+
 }
 
 function initDatepickers() { //DatePicker function

@@ -52,6 +52,7 @@ def convert_coordinates(coor):
 
 def gps_pointdata():
     """Gets gps data of the current point."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     ln = eval(arduino.readline().strip())/100
     lt = eval(arduino.readline().strip())/100
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -60,16 +61,28 @@ def gps_pointdata():
     data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
     return data
 
+def get_temphum():  
+    """
+    Gets temperature and humidity.
+    """
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    humi = eval(arduino.readline().strip())
+    temp = eval(arduino.readline().strip())
+    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    data = [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
+    return data
 
 def create_batch_data():
     """Creates all the data to send with the batch."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     batch_data = []
     end = 1
-    starttime = time.strftime("%Y-%m-%dT%H:%M:%S") #the gps already has a fix when the function is executed so this is the corect start time
+    starttime = time.strftime("%Y-%m-%dT%H:%M:%S") # The gps already has a fix when the function is executed so this is the corect start time
     while end != 0:
         #adds accelerometer data and data from sometimes one sensor and the accelerometer
         ard_read = arduino.readline().strip()
+        if ard_read == '1234':
+            batch_data += get_temphum()
         if ard_read == '1337':
             batch_data += gps_pointdata()
         batch_data += accelerometer_pointdata()
@@ -93,7 +106,7 @@ def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
 
-#MAIN LOOP: RUNS WHEN FILE IS RUNNED
+#MAIN LOOP: RUNS WHEN FILE IS RAN
 k = 0
 while k == 0:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
