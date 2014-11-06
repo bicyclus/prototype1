@@ -337,11 +337,6 @@ Array.prototype.equals = function (array) { //Compare full arrays
         }
     }
     return true;
-<<<<<<< HEAD
-};
-=======
-}
-
 
 function getTemperature(data) {
     var dataArrayTemp;
@@ -375,4 +370,3 @@ function getTemperature(data) {
         }
     }
 }
->>>>>>> 846e264434e95053aa714660ec8313a550ecfd11
