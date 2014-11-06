@@ -1,10 +1,3 @@
-//Constanten
-var PROG_STEPS = 5;
-var BEGIN_PERCENT = 1.618;
-var ANIM_TIME = 200;
-var ELEV_SAMPLE = 128//2-512
-var RETRY_COUNT = 50;
-
 //Globals
 var progressTrips; //Holds percentage for trips progressbar
 
@@ -14,7 +7,6 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     //Check data in box, set getUrl
     var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
-
     //UserFilter
     var userName = $("#inputUserName").val();
     var userFilter;
@@ -57,11 +49,11 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
         dataType: "jsonp",
         success: function(response){
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
-            progressTrips = progressTrips + 100/PROG_STEPS-BEGIN_PERCENT;
+            progressTrips = progressTrips + 100/PROG_STEPS_TRIPS-BEGIN_PERCENT;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             checkProgressTrips();
             $('#myReciever').append(JSON.stringify(response));
-            progressTrips = progressTrips + 100/PROG_STEPS;
+            progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             checkProgressTrips();
             drawChart(response);
@@ -88,7 +80,7 @@ function drawChart(data) { //Elapsed time graph of all trips
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.LineChart($("#chart_div")[0]); //Chart aanmaken in div
     chart.draw(chartData, options); //Tekenen
-    progressTrips = progressTrips + 100/PROG_STEPS;
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
@@ -130,7 +122,7 @@ function drawAccel(data){
             }
         }
     }
-    progressTrips = progressTrips + 100/PROG_STEPS;
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
@@ -217,7 +209,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
-    }
+    };
     elevator.getElevationAlongPath(pathRequest,
         function(results, status) {
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
@@ -226,13 +218,13 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     console.log("Retrying query of length: " + pathCoords.length + ". Try #" + retries);
                     if (retries < RETRY_COUNT) {
                         retries = retries + 1;
-                        setTimeout(function(){elev(pathCoords);}, 1000+Math.floor((Math.random() * 500)));
+                        setTimeout(function(){elev(pathCoords);}, 2000+Math.floor((Math.random() * 500)));
                     } else {
                         retries = retries + 1;
                         if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
-                        progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                        progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
                         $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
                         checkProgressTrips();
                     }
@@ -267,7 +259,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     titleY: 'Elevation (m)',
                     title: tempTitle
                 });
-                progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
                 $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
                 checkProgressTrips();
             }
@@ -304,4 +296,4 @@ Array.prototype.equals = function (array) { //Compare full arrays
         }
     }
     return true;
-}
+};
