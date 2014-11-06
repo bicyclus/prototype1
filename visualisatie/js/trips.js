@@ -1,11 +1,3 @@
-//Constanten
-var PROG_STEPS = 5;
-var BEGIN_PERCENT = 1.618;
-var ANIM_TIME = 200;
-var ELEV_SAMPLE = 128//2-512
-var RETRY_COUNT = 50;
-
-
 //Globals
 var progressTrips; //Holds percentage for trips progressbar
 
@@ -15,7 +7,6 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     //Check data in box, set getUrl
     var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
-
     //UserFilter
     var userName = $("#inputUserName").val();
     var userFilter;
@@ -60,11 +51,11 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
         dataType: "jsonp",
         success: function(response){
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
-            progressTrips = progressTrips + 100/PROG_STEPS-BEGIN_PERCENT;
+            progressTrips = progressTrips + 100/PROG_STEPS_TRIPS-BEGIN_PERCENT;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             checkProgressTrips();
             $('#myReciever').append(JSON.stringify(response));
-            progressTrips = progressTrips + 100/PROG_STEPS;
+            progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
             $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             checkProgressTrips();
             drawChart(response);
@@ -93,7 +84,7 @@ function drawChart(data) { //Elapsed time graph of all trips
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.LineChart($("#chart_div")[0]); //Chart aanmaken in div
     chart.draw(chartData, options); //Tekenen
-    progressTrips = progressTrips + 100/PROG_STEPS;
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
@@ -135,7 +126,7 @@ function drawAccel(data){
             }
         }
     }
-    progressTrips = progressTrips + 100/PROG_STEPS;
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
@@ -144,40 +135,60 @@ function SortByTimestamp(a, b){ //Sorteren
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
 }
 
-function getTemperature(data){
+function getTemperature(data) {
     var tempArray;
     var options;
 
-    for (i=0; i<data.length; i++){ // Iterate over all trips
-        if (!(data[i].sensorData === undefined)){
+    for (i = 0; i < data.length; i++) { // Iterate over all trips
+        if (!(data[i].sensorData === undefined)) {
             tempArray = [];
-            for (a=0 ; a<data[i].sensorData.length; a++) {
+            for (a = 0; a < data[i].sensorData.length; a++) {
                 var temp = data[i].sensorData[a];
+
                 if ((temp.sensorID == "3") && !(temp.data[0] === undefined)) {
                     if ((temp.data[0].value % 1 === 0) && (typeof temp.data[0].value == 'number') && (isFinite(temp.data[0].value))) {
                         var timestampDate = new Date(temp.timestamp);
                         tempArray.push([timestampDate, temp.data[0].value]);
                     }
+                    if ((temp.sensorID == "3") && !(temp.data === undefined)) {
+                        var timestampDate = new Date(temp.timestamp);
+                        console.log(temp.data[0]);
+                        tempArray.push([timestampDate, temp.data[0].value]);
+                    }
                 }
-            }
-            if (tempArray.length>0){
-                tempArray.sort(SortByTimestamp);
-                options={'title':'Temperature: '+data[i]._id,colors:['red'],curveType:'function',backgroundColor:'#f5f5f5'};
-                var chartData = new google.visualization.DataTable();
-                chartData.addColumn('string', 'Time');
-                chartData.addColumn('number', 'Temperature');
-                for (var b = 0; b < tempArray.length; b++){
-                    chartData.addRow(['',tempArray[b][1]]);
+                if (tempArray.length > 0) {
+                    tempArray.sort(SortByTimestamp);
+                    options = {'title': 'Temperature: ' + data[i]._id, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
+                    var chartData = new google.visualization.DataTable();
+                    chartData.addColumn('string', 'Time');
+                    chartData.addColumn('number', 'Temperature');
+                    for (var b = 0; b < tempArray.length; b++) {
+                        chartData.addRow(['', tempArray[b][1]]);
+                    }
+                    var draw_temp_div = $('<div></div>');
+                    $("#temp_div").append(draw_temp_div);
+                    var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
+                    chart.draw(chartData, options); //Tekenen
+
                 }
-                var draw_temp_div = $('<div></div>');
-                $("#temp_div").append(draw_temp_div);
-                var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
-                chart.draw(chartData, options); //Tekenen
+                if (tempArray.length > 0) {
+                    tempArray.sort(SortByTimestamp);
+                    options = {'title': 'Temperature: ' + data[i]._id, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
+                    var chartData = new google.visualization.DataTable();
+                    chartData.addColumn('string', 'Time');
+                    chartData.addColumn('number', 'Temperature');
+                    for (var b = 0; b < tempArray.length; b++) {
+                        chartData.addRow(['', tempArray[b][1]]);
+                    }
+                    var draw_temp_div = $('<div></div>');
+                    $("#temp_div").append(draw_temp_div);
+                    var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
+                    chart.draw(chartData, options); //Tekenen
+                }
             }
         }
     }
 }
-
 
 function getHumidity(data) {
     var humArray;
@@ -292,7 +303,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
-    }
+    };
     elevator.getElevationAlongPath(pathRequest,
         function(results, status) {
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
@@ -301,13 +312,13 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     console.log("Retrying query of length: " + pathCoords.length + ". Try #" + retries);
                     if (retries < RETRY_COUNT) {
                         retries = retries + 1;
-                        setTimeout(function(){elev(pathCoords);}, 1000+Math.floor((Math.random() * 500)));
+                        setTimeout(function(){elev(pathCoords);}, 2000+Math.floor((Math.random() * 500)));
                     } else {
                         retries = retries + 1;
                         if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
-                        progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                        progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
                         $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
                         checkProgressTrips();
                     }
@@ -342,7 +353,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     titleY: 'Elevation (m)',
                     title: tempTitle
                 });
-                progressTrips = progressTrips + 100 / PROG_STEPS / tripMaps.length;
+                progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
                 $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
                 checkProgressTrips();
             }
@@ -378,6 +389,5 @@ Array.prototype.equals = function (array) { //Compare full arrays
             return false;
         }
     }
-    return true;
-}
+    return true;}
 
