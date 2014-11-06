@@ -62,10 +62,16 @@ function showTripInfo(tripId){
             break;
         }
     }
+    //Close
+    var closeDiv = $('<a id="tripInfoClose">X</a>');
+    closeDiv.click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
     var timeDiv = $('<div>'+'Trip Time: '+curTime+'</div>');
+    //Create
+    $('#tripInfoDiv').append(closeDiv);
     $('#tripInfoDiv').append(timeDiv);
-    $('#tripInfoDiv').show('blind', { direction: "down" },ANIM_TIME);
+    $('#tripInfoDiv').show('blind',ANIM_TIME);
 }
 
 function calendarFcts() {

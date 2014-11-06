@@ -443,7 +443,6 @@ function initDatepickers() { //DatePicker function
                 $('#jrange div').datepicker('setDate', new Date(cur));
             $('#jrange div').datepicker('refresh').show();
         });
-
     });
 }
 
