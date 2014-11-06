@@ -4,7 +4,7 @@ var BEGIN_PERCENT = 1.618;
 var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128//2-512
 var RETRY_COUNT = 50;
-// test 
+
 
 //Globals
 var progressTrips; //Holds percentage for trips progressbar
@@ -141,6 +141,45 @@ function drawAccel(data){
 function SortByTimestamp(a, b){ //Sorteren
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
 }
+
+function getTemperature(data){
+    var tempArray;
+    var options;
+
+    for (i=0; i<data.length; i++){ // Iterate over all trips
+        if (!(data[i].sensorData === undefined)){
+            tempArray = [];
+            for (a=0 ; a<data[i].sensorData.length; a++){
+                var temp = data[i].sensorData[a];
+                if ((temp.sensorID=="3")&& !(temp.data === undefined)){
+                    var timestampDate = new Date(temp.timestamp);
+                    console.log(timestampDate,temp.data[0]);
+                    tempArray.push([timestampDate,temp.data[0].temperature]);
+                    if (tempArray.length>0){
+                        tempArray.sort(SortByTimestamp);
+                        options={'title':'Temperature: '+data[i]._id,colors:['red'],curveType:'function',backgroundColor:'#f5f5f5'};
+                        var chartData = new google.visualization.DataTable();
+                        chartData.addColumn('string', 'Time');
+                        chartData.addColumn('number', 'Temperature');
+                        for (var b = 0; b < tempArray.length; b++){
+                            chartData.addRow(['',tempArray[b][1]]);
+                        }
+                        var draw_temp_div = $('<div></div>');
+                        $("#temp_div").append(draw_temp_div);
+                        var chart = new google.visualization.LineChart(draw_temp_div[0]); //Chart aanmaken in div
+                        chart.draw(chartData, options); //Tekenen
+
+                   }
+                }
+            }
+        }
+    }
+
+
+
+
+}
+
 
 //TripMap class:
 //- id
