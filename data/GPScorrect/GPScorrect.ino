@@ -116,6 +116,13 @@ void useInterrupt(boolean v) {
 
 uint32_t timer = millis();
 
+
+#include <dht11.h>
+
+dht11 DHT11
+#define DHT11PIN 6
+
+
 int button=8;
 int sensorValue;
 
@@ -143,6 +150,7 @@ void loop()                     // run over and over again
   }
 
   // approximately every 2 seconds or so, print out the current stats
+  
   sensorValue = digitalRead(button);
   if (sensorValue == LOW) {
     Serial.println("1995");
@@ -160,6 +168,14 @@ void loop()                     // run over and over again
       Serial.println(GPS.longitude,4);
       delay(500);
       
+        int chk = DHT11.read(DHT11PIN);
+  
+      Serial.println("1234");
+      delay(500);
+      Serial.println((float)DHT11.humidity, 2);
+      delay(500);
+      Serial.println((float)DHT11.temperature, 2);
+      delay(500);
     }
   }
 }
