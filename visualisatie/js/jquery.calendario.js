@@ -291,6 +291,12 @@
 			this._generateTemplate();
 
 		},
+		setNewData : function( caldata ) {
+
+			this.caldata = caldata;
+			this._generateTemplate();
+
+		},
 		// goes to today's month/year
 		gotoNow : function( callback ) {
 

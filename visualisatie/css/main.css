@@ -329,6 +329,7 @@ textarea {
 
 #tripInfoDiv {
     width: 100%;
+    display: none;
 }
 
 #tripInfoClose {

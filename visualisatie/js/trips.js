@@ -369,7 +369,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
 function checkProgressTrips(){
     if (progressTrips >= 100) {
         $('#tripProgressBar').animate({ width: '100%' },0);
-        $('#tripProgress').hide('blind',3*ANIM_TIME); //doet progressbar verdwijnen
+        setTimeout($('#tripProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME); //doet progressbar verdwijnen
     }
 }
 
