@@ -193,6 +193,9 @@ function getTemperature(data) {
             }
         }
     }
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
+    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
+    checkProgressTrips();
 }
 
 function getHumidity(data) {
@@ -227,6 +230,9 @@ function getHumidity(data) {
             }
         }
     }
+    progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
+    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
+    checkProgressTrips();
 }
 
 
