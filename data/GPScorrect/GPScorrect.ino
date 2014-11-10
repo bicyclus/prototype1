@@ -13,14 +13,10 @@
 
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
-#include <dht11.h>
-
-#include <dht11.h>
-
-dht11 DHT11;
-
-#define DHT11PIN 6
-
+#include <DHT.h>
+#define DHTPIN 6
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
 
 //  VARIABLES
 int pulsePin = 0;                 // Pulse Sensor purple wire connected to analog pin 0
@@ -157,6 +153,8 @@ void sendDataToProcessing(char symbol, int data ){
     Serial.println(data);                // the data to send culminating in a carriage return
 }
 
+
+
 void loop()                     // run over and over again
 {
   // in case you are not using the interrupt above, you'll
@@ -196,14 +194,12 @@ void loop()                     // run over and over again
       delay(500);
       Serial.println(GPS.longitude,4);
       delay(500);
-      
-      int chk = DHT11.read(DHT11PIN);
-  
+        
       Serial.println("1234");
       delay(500);
-      Serial.println((float)DHT11.humidity, 2);
+      Serial.println((float)dht.readHumidity(), 2);
       delay(500);
-      Serial.println((float)DHT11.temperature, 2);
+      Serial.println((float)dht.readTemperature(), 2);
       delay(500);
     
       
@@ -221,7 +217,7 @@ void loop()                     // run over and over again
 
 
   
-  }
+   }
 
 
 
