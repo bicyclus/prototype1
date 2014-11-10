@@ -134,7 +134,6 @@ function showTripInfo(tripId){
         var curData=curTrip.sensorData[i];
         if ((curData.sensorID == "3") && !(curData.data[0] === undefined)) {
             counter+=1;
-            console.log(curData.data[0].value);
             sum_of_elements+=parseInt(curData.data[0].value);
 
         }
