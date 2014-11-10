@@ -194,28 +194,7 @@ function getTemperature(data) {
     progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
     checkProgressTrips();
 }
-function averageTemperature(data){
-    var temperatureArray;
-    var temperatureAverage;
 
-    for (i=0; i<data.length;i++) { // iterate over all trips
-        if ((data[i]._id == curTrip._id) & (!(data[i].sensorData === undefined))) { // filters the current trip data
-            temperatureArray = [];
-            for (a = 0; a < data[i].sensorData.length; a++) {   // iterate over all sensor data of current trip
-                var tripdata = data[i].sensorData[a];
-                if (( tripdata.sensorID == "3") && !(tripdata.data[0] === undefined)) {
-                    if (( tripdata.data[0].value % 1 === 0) && (typeof  tripdata.data[0].value == 'number') && (isFinite( tripdata.data[0].value))) {
-                        temperatureArray.push([ tripdata.data[0].value]);
-                    }
-                }
-            }
-        }
-    }
-    for (b =0; b<temperatureArray.length){
-        sum_of_elements += parseInt( temperatureArray[b], 10 );
-    }
-    temperatureAverage = sum_of_elements/temperatureArray.length;
-}
 function getHumidity(data) {
     var humArray;
     var options;

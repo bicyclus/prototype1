@@ -120,6 +120,21 @@ function showTripInfo(tripId){
     $('#tripInfoTime').text('Trip Time: '+curTime);
     //UserID
     $('#tripInfoUser').text('UserID: '+curTrip.userID);
+    //Average Temperature
+    var curTemperatureAverage=0;
+    var counter=0;
+    var sum_of_elements=0;
+    for (i=0;i<curTrip.sensorData.length;i++){
+        var curData=curTrip.sensorData[i];
+        if ((curData.sensorID == "3") && !(curData.data[0] === undefined)) {
+            counter+=1;
+            console.log(curData.data[0].value);
+            sum_of_elements+=parseInt(curData.data[0].value);
+
+        }
+    }
+    curTemperatureAverage = sum_of_elements/counter;
+    $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage);
     //Google map trip
     var coords;
     var bounds = new google.maps.LatLngBounds();
