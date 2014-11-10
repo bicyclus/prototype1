@@ -19,6 +19,10 @@ def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
 
+def return_response(*args):
+    """Returns the server message."""
+    return args
+
 def convert_coordinates(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format."""
     k = 0
@@ -105,7 +109,7 @@ metadata = {} #the set of metadata is empty: no metadata used
         
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_response)
-trip_server_info = socketIO.emit('start', json.dumps(info), on_response)
+trip_server_info = socketIO.emit('start', json.dumps(info_start), on_response)
 info_end = {"_id":trip_server_info["_id"], "meta": metadata}
 socketIO.wait(2)
 
