@@ -114,6 +114,7 @@ sensordata = realtime()
 while sensordata != 'END':
     if try_connection() == False:
         print "Cannot send data. Please connect to the internet."
+        time.sleep(2)
     elif not sensordata == None:
         socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":sensordata})
         socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":accelerometer_pointdata()})
