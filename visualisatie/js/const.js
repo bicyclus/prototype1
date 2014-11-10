@@ -1,5 +1,5 @@
 //Constanten
-var PROG_STEPS_TRIPS = 5;
+var PROG_STEPS_TRIPS = 8;
 var PROG_STEPS_CAL = 2;
 var BEGIN_PERCENT = 1.618;
 var ANIM_TIME = 200;
