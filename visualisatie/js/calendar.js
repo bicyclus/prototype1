@@ -4,13 +4,22 @@ var calData; //all calendar events
 var myCal;
 var allTrips;
 var userNames;
+var map;
+var bikeLayer;
+var elevator;
+var infowindow;
+var tripMapObj;
+var curMapBounds;
 
 function initCalendar(){
     $('#calProgress').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
+    //Initfcts
     calendarFcts();
+    initGMap();
+    $('tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     checkProgressCal();
@@ -73,11 +82,10 @@ function fillCalendar(data){
                     linkText = linkText+' - '+tripEnd.getDay()+'/'+tripEnd.getMonth()+'/'+tripEnd.getFullYear()+' '+tripEnd.getHours()+':'+tripEnd.getMinutes();
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="javascript:;" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
         }
 
     }
-    console.log($('#inputUserName option').length);
     if ($('#inputUserName option').length < 2){
         $.each( userNames, function( key, value ) {
             $('#inputUserName')
@@ -93,26 +101,89 @@ function fillCalendar(data){
 }
 
 function showTripInfo(tripId){
-    $('#tripInfoDiv').empty();
+    //Clean
+    $('.tripInfo').empty();
+    if (!(tripMapObj === undefined)){
+        tripMapObj.marker.setMap(null);
+        tripMapObj.polyline.setMap(null);
+    }
+    //Find trip
     for (var i = 0; i < allTrips.length; i++) {
         if (allTrips[i]._id == tripId){
             var curTrip = allTrips[i];
             break;
         }
     }
-    //Close
-    var closeDiv = $('<a id="tripInfoClose">X</a>');
-    closeDiv.click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
-    var timeDiv = $('<div>'+'Trip Time: '+curTime+'</div>');
+    $('#tripInfoTime').text('Trip Time: '+curTime);
     //UserID
-    var userDiv = $('<div>'+'UserID: '+curTrip.userID+'</div>');
-    //Create
-    $('#tripInfoDiv').append(closeDiv);
-    $('#tripInfoDiv').append(timeDiv);
-    $('#tripInfoDiv').append(userDiv);
-    $('#tripInfoDiv').show('blind',ANIM_TIME);
+    $('#tripInfoUser').text('UserID: '+curTrip.userID);
+    //Google map trip
+    var coords;
+    var bounds = new google.maps.LatLngBounds();
+    if (!(curTrip.sensorData === undefined)) {
+        if (tripMapObj === undefined){
+            tripMapObj = {}; //Create tripMap object
+        }
+        tripMapObj.id = curTrip._id;
+        tripMapObj.coords = [];
+
+        for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
+            var sensorData = curTrip.sensorData[a];
+            if ((sensorData.sensorID == "1") && !(sensorData.data === undefined)) {
+                for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
+                    var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
+                    if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                        if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
+                            tripMapObj.coords.push(coord);
+                            bounds.extend(coord);
+                        }
+                    }
+                }
+            }
+        }
+        if (tripMapObj.coords.length > 1) {
+            tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
+                position: tripMapObj.coords[0],
+                map: map,
+                title: tripMapObj.id
+            });
+            //Random kleur van ID
+            var stringHexNumber = (parseInt(parseInt(tripMapObj.id, 36).toExponential().slice(2,-5), 10) & 0xFFFFFF).toString(16).toUpperCase(); //http://stackoverflow.com/questions/17845584/converting-a-random-string-into-a-hex-colour
+            var pathOptions = {
+                path: tripMapObj.coords,
+                strokeColor: '#' + ('000000' + stringHexNumber).slice(-6), //Lengte aanpassen
+                opacity: 0.4,
+                map: map
+            };
+            tripMapObj.polyline = new google.maps.Polyline(pathOptions);
+            tripMapObj.polyline.myId = curTrip._id;
+            google.maps.event.addListener(tripMapObj.polyline, 'click', function (event) { //Infowindow bij klikken op polyline
+                infowindow.setPosition(event.latLng);
+                infowindow.setContent(this.myId);
+                infowindow.open(map);
+            });
+            curMapBounds = bounds;
+            //elev(tripMapObj.coords);
+        }
+    }
+
+    //Google  Elev
+
+    $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
+        google.maps.event.trigger(map, 'resize');
+        map.fitBounds(curMapBounds);
+    });
+}
+
+function initGMap(){
+    map = new google.maps.Map($("#tripInfoMap")[0]);
+    bikeLayer = new google.maps.BicyclingLayer(); //Show bike paths
+    bikeLayer.setMap(map);
+    elevator = new google.maps.ElevationService();
+    infowindow = new google.maps.InfoWindow();
 }
 
 function calendarFcts() {
