@@ -218,7 +218,7 @@
 	margin: -10px 0 0 -15px;
 	color: #686a6e;
 	font-weight: 400;
-	pointer-events: color: #d1ecf4 ;
+	pointer-events:none;
 }
 
 .fc-calendar .fc-row > div.fc-today {
