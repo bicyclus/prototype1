@@ -178,7 +178,7 @@ function hideEvents() {
 }
 
 function checkProgressCal(){
-    if (progressCal >= 100) {
+    if (progressCal >= 99.9) {
         $('#calProgressBar').animate({ width: '100%' },0);
         setTimeout($('#calProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME); //doet progressbar verdwijnen
     }

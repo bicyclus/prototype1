@@ -69,11 +69,9 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
         success: function(response){
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
             progressTrips = progressTrips + 100/PROG_STEPS_TRIPS-BEGIN_PERCENT;
-            $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             checkProgressTrips();
             $('#myReciever').append(JSON.stringify(response));
             progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
-            $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
             console.log('1');
             checkProgressTrips();
             drawChart(response);
@@ -108,7 +106,6 @@ function drawChart(data) { //Elapsed time graph of all trips
     var chart = new google.visualization.LineChart($("#chart_div")[0]); //Chart aanmaken in div
     chart.draw(chartData, options); //Tekenen
     progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
-    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
 
@@ -150,7 +147,6 @@ function drawAccel(data){
         }
     }
     progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
-    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
 
@@ -194,7 +190,6 @@ function getTemperature(data) {
         }
     }
     progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
-    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
 
@@ -231,7 +226,6 @@ function getHumidity(data) {
         }
     }
     progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
-    $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
     checkProgressTrips();
 }
 
@@ -329,8 +323,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                         if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
-                        progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
-                        $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+                        progressTrips = progressTrips + (100/PROG_STEPS_TRIPS)/tripMaps.length;
                         checkProgressTrips();
                     }
                 }
@@ -364,8 +357,7 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
                     titleY: 'Elevation (m)',
                     title: tempTitle
                 });
-                progressTrips = progressTrips + 100 / PROG_STEPS_TRIPS / tripMaps.length;
-                $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+                progressTrips = progressTrips + (100/PROG_STEPS_TRIPS)/tripMaps.length;
                 checkProgressTrips();
             }
         }
@@ -373,7 +365,9 @@ function elev(pathCoords){ //Plot elevation graphs, attention: async
 }
 
 function checkProgressTrips(){
-    if (progressTrips >= 100) {
+    console.log('prog: '+progressTrips.toString());
+    $('#tripProgressBar').animate({width: progressTrips.toString() + '%'}, ANIM_TIME);
+    if (progressTrips >= 99.9) {
         $('#tripProgressBar').animate({ width: '100%' },0);
         setTimeout($('#tripProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME); //doet progressbar verdwijnen
     }

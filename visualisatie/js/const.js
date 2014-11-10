@@ -1,5 +1,12 @@
 //Constanten
-var PROG_STEPS_TRIPS = 8;
+var PROG_STEPS_TRIPS = 7;
+//- Get JSON
+//- Append
+//- Elapsed chart
+//- Accel chart
+//- Temperature chart
+//- Humidity chart
+//- Elevation plots
 var PROG_STEPS_CAL = 2;
 var BEGIN_PERCENT = 1.618;
 var ANIM_TIME = 200;
