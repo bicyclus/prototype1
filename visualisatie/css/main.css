@@ -309,7 +309,7 @@ textarea {
     width: 20%;
 }
 
-#map_div {
+#map_div, #tripInfoMap {
     display: block;
     width: 100%;
     height: 400px;
@@ -332,7 +332,7 @@ textarea {
     display: none;
 }
 
-#tripInfoClose {
+#tripInfoClose{
     float: right;
     text-decoration: none;
     cursor: pointer;
