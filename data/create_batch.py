@@ -20,7 +20,7 @@ def on_response(*args):
     print 'server_message', args
 
 def convert_coordinates(coor):
-    """Changes GPS coordinates from degrees-minutes.decimals format to degrees.decimals format."""
+    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format."""
     k = 0
     coor = str(coor)
 
@@ -81,7 +81,7 @@ def accelerometer_pointdata():
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
+    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}], "unit": "google"}]}, ]
     return data
 
 def create_batch():
@@ -119,7 +119,7 @@ while k == 0:
 
 #TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
 while not try_connection():
-    time.sleep(2)
+    time.sleep(1)
 
 info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
 
