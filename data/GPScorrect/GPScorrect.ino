@@ -13,6 +13,24 @@
 
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
+#include <DHT.h>
+#define DHTPIN 6
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+//  VARIABLES
+int pulsePin = 0;                 // Pulse Sensor purple wire connected to analog pin 0
+int blinkPin = 13;                // pin to blink led at each beat
+int fadePin = 5;                  // pin to do fancy classy fading blink at each beat
+int fadeRate = 0;                 // used to fade LED on with PWM on fadePin
+
+// these variables are volatile because they are used during the interrupt service routine!
+volatile int BPM;                   // used to hold the pulse rate
+volatile int Signal;                // holds the incoming raw data
+volatile int IBI = 600;             // holds the time between beats, must be seeded! 
+volatile boolean Pulse = false;     // true when pulse wave is high, false when it's low
+volatile boolean QS = false;        // becomes true when Arduoino finds a beat.
+
 
 // If you're using a GPS module:
 // Connect the GPS Power pin to 5V
@@ -56,7 +74,9 @@ void setup()
     
   // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
   // also spit it out
-  Serial.begin(115200);
+  pinMode(blinkPin,OUTPUT);         // pin that will blink to your heartbeat!
+  pinMode(fadePin,OUTPUT);          // pin that will fade to your heartbeat!
+  Serial.begin(115200);             // we agree to talk fast!
   //Serial.println("Adafruit GPS library basic test!");
 
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
@@ -85,6 +105,8 @@ void setup()
   delay(1000);
   // Ask for firmware version
   mySerial.println(PMTK_Q_RELEASE);
+  interruptSetup();
+
 }
 
 
@@ -117,14 +139,21 @@ void useInterrupt(boolean v) {
 uint32_t timer = millis();
 
 
-#include <dht11.h>
-
-dht11 DHT11
-#define DHT11PIN 6
-
 
 int button=8;
 int sensorValue;
+
+void ledFadeToBeat(){
+      fadeRate -= 15;                         //  set LED fade value
+      fadeRate = constrain(fadeRate,0,255);   //  keep LED fade value from going into negative numbers!
+      analogWrite(fadePin,fadeRate);          //  fade LED
+}
+      
+void sendDataToProcessing(char symbol, int data ){
+    Serial.println(data);                // the data to send culminating in a carriage return
+}
+
+
 
 void loop()                     // run over and over again
 {
@@ -157,9 +186,7 @@ void loop()                     // run over and over again
     delay(250);
   }  
     if (sensorValue == HIGH) {
-    //Serial.println("1996");
-    delay(250);
- 
+    delay(250);  
     if (GPS.fix) {
       Serial.println("1337");
       delay(500);
@@ -167,15 +194,37 @@ void loop()                     // run over and over again
       delay(500);
       Serial.println(GPS.longitude,4);
       delay(500);
-      
-        int chk = DHT11.read(DHT11PIN);
-  
+        
       Serial.println("1234");
       delay(500);
-      Serial.println((float)DHT11.humidity, 2);
+      Serial.println((float)dht.readHumidity(), 2);
       delay(500);
-      Serial.println((float)DHT11.temperature, 2);
+      Serial.println((float)dht.readTemperature(), 2);
       delay(500);
-    }
+    
+      
+      if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
+      fadeRate = 255;        // Set 'fadeRate' Variable to 255 to fade LED with pulse
+      Serial.println("1996");
+      delay(500);
+      sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
+      QS = false;                      // reset the Quantified Self flag for next time    
+     }
+  
+      ledFadeToBeat();
+  
+      delay(500);                             //  take a break
+
+
+  
+   }
+
+
+
+
+
+
+
+    
   }
 }

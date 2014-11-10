@@ -19,6 +19,7 @@ function tripInit(){
 }
 
 function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeven
+    $('#tripProgressBar').animate({ width: '0' },ANIM_TIME);
     progressTrips = BEGIN_PERCENT;
     $('#tripProgress').show(ANIM_TIME);
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
@@ -68,7 +69,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
         dataType: "jsonp",
         success: function(response){
             //$('#myReciever').append('<pre>' + JSON.stringify(response, null, 2) + '</pre>');
-            progressTrips = progressTrips + 100/PROG_STEPS_TRIPS-BEGIN_PERCENT;
+            progressTrips = progressTrips + 100/(PROG_STEPS_TRIPS-BEGIN_PERCENT);
             checkProgressTrips();
             $('#myReciever').append(JSON.stringify(response));
             progressTrips = progressTrips + 100/PROG_STEPS_TRIPS;
@@ -153,6 +154,7 @@ function drawAccel(data){
 function SortByTimestamp(a, b){ //Sorteren
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
 }
+
 
 function getTemperature(data) {
     var tempArray;
