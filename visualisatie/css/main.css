@@ -303,6 +303,19 @@ textarea {
     }
 }
 
+.date-range-selected,
+.date-range-selected > .ui-state-active,
+.date-range-selected > .ui-state-default {
+    background: none !important;
+    background-color: #7a8288 !important;
+}
+
+#tripInfoClose{
+    float: right;
+    text-decoration: none;
+    cursor: pointer;
+}
+
 .logo_img {
     float:right;
     margin: 10px;
@@ -315,25 +328,6 @@ textarea {
     height: 400px;
 }
 
-
 .form-filter {
     width: 600px;
-}
-
-.date-range-selected,
-.date-range-selected > .ui-state-active,
-.date-range-selected > .ui-state-default {
-    background: none !important;
-    background-color: #7a8288 !important;
-}
-
-#tripInfoDiv {
-    width: 100%;
-    display: none;
-}
-
-#tripInfoClose{
-    float: right;
-    text-decoration: none;
-    cursor: pointer;
 }

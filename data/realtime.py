@@ -84,45 +84,42 @@ def accelerometer_pointdata():
     data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
     return data
 
-def create_batch():
-    """Collects all the data for the batch (whereafter the batch itself is to be created with create_batch())."""
+def realtime():
+    """Starts realtime data collection."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    batch_data = []
-    starttime = time.strftime("%Y-%m-%dT%H:%M:%S") #the gps already has a fix when the function is executed so this is the correct start time
-    ard_read = arduino.readline().strip() #added to prevent error first run of the while-loop
-    while ard_read != '1995': #Stop condition: arduino sending '1995' to the Pi
-        #adds accelerometer data and most of the time data from one sensor (GPS, humidity, temperature or heartbeat) to the batch_data list
-        ard_read = arduino.readline().strip()
-        if ard_read == '1234':
-            batch_data += temphum_pointdata()
-        if ard_read == '1337':
-            batch_data += gps_pointdata()
-        if ard_read == '1996':
-            batch_data += beat_pointdata()
-        batch_data += accelerometer_pointdata()
-    endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
-    batch = [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
-    return batch
-
-
-#MAIN LOOP: RUNS WHEN FILE IS EXECUTED
-k = 0
-while k == 0:
-    ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    if ard.readline().strip() == '1337': #the arduino nano sends 1337 to the pi when the gps has a fix so the collection of all data can start
-        k = 1
-        batch = create_batch() #creates the batch corresponding to the trip
-
-
-#TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
-while not try_connection():
-    time.sleep(1)
-
-info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
-
+    ard_read = arduino.readline().strip()
+    if ard_read == '1234':
+        return temphum_pointdata()
+    elif ard_read == '1337':
+        return gps_pointdata()
+    elif ard_read == '1996':
+        return beat_pointdata()
+    elif ard_read == '1995':
+        return 'END'
+    else:
+        return None
+    
+#CONNECTING TO THE SERVER, STARTING THE TRIP AND STORING THE ID
+info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r0462183"}
+metadata = {} #the set of metadata is empty: no metadata used
+        
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_response)
-socketIO.emit('start', json.dumps(info), on_response)
+trip_server_info = socketIO.emit('start', json.dumps(info), on_response)
+info_end = {"_id":trip_server_info["_id"], "meta": metadata}
 socketIO.wait(2)
-socketIO.emit('batch-tripdata', json.dumps(batch), on_response)
+
+#SENDING REALTIME DATA
+sensordata = realtime()
+while sensordata != 'END':
+    if try_connection() == False:
+        print "Cannot send data. Please connect to the internet."
+        time.sleep(2)
+    elif not sensordata == None:
+        socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":sensordata})
+        socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":accelerometer_pointdata()})
+    sensordata = realtime()
+
+#ENDING THE TRIP
+socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
 socketIO.wait(5)

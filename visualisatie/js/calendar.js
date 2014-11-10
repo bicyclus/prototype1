@@ -1,5 +1,6 @@
 //Globals
 var progressCal; //Holds percentage for trips progressbar
+var progressSingle; //Holds percentage for trips progressbar
 var calData; //all calendar events
 var myCal;
 var allTrips;
@@ -13,6 +14,8 @@ var curMapBounds;
 
 function initCalendar(){
     $('#calProgress').hide();
+    $('#singleProgress').hide();
+    $('#tripInfoDiv').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -21,14 +24,13 @@ function initCalendar(){
     initGMap();
     $('tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
-    $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     checkProgressCal();
     var userFilter = '';
     $('#inputUserName').on('change', function() { //Userselect
         progressCal = 100/PROG_STEPS_CAL;
-        $('#calProgressBar').animate({ width: 0+'%' },0);
+        $('#calProgressBar').animate({ width: '0%' },0);
         $('#calProgress').show(ANIM_TIME);
-        $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
+        checkProgressCal();
         hideEvents();
         $("#tripInfoDiv").hide('blind',ANIM_TIME);
         var userName = $(this).val();
@@ -96,13 +98,15 @@ function fillCalendar(data){
     }
     myCal.setNewData(calData);
     progressCal = progressCal + 100/PROG_STEPS_CAL;
-    $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     checkProgressCal();
 }
 
 function showTripInfo(tripId){
     //Clean
     $('.tripInfo').empty();
+    progressSingle = BEGIN_PERCENT;
+    $('#singleProgress').show(ANIM_TIME);
+    $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },ANIM_TIME);
     if (!(tripMapObj === undefined)){
         tripMapObj.marker.setMap(null);
         tripMapObj.polyline.setMap(null);
@@ -114,6 +118,8 @@ function showTripInfo(tripId){
             break;
         }
     }
+    progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP-BEGIN_PERCENT;
+    checkProgressSingle();
 
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
@@ -184,13 +190,66 @@ function showTripInfo(tripId){
             //elev(tripMapObj.coords);
         }
     }
+    progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+    checkProgressSingle();
 
     //Google  Elev
+    elev(tripMapObj.coords,tripId);
+}
 
-    $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
-        google.maps.event.trigger(map, 'resize');
-        map.fitBounds(curMapBounds);
-    });
+function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
+    var pathRequest = {
+        'path': pathCoords,
+        'samples': ELEV_SAMPLE
+    };
+    elevator.getElevationAlongPath(pathRequest,
+        function(results, status) {
+            if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
+                console.log(status);
+                if (status == google.maps.ElevationStatus.OVER_QUERY_LIMIT) { //Herproberen als we over de limiet zitten.
+                    console.log("Retrying query of length: " + pathCoords.length + ". Try #" + retries);
+                    if (retries < RETRY_COUNT) {
+                        retries = retries + 1;
+                        setTimeout(function(){elev(pathCoords);}, 2000+Math.floor((Math.random() * 500)));
+                    } else {
+                        retries = retries + 1;
+                        if (retries = RETRY_COUNT) {
+                            alert("Google elevation query error: Not all elevations  will be plotted.");
+                        }
+                        progressCal = progressCal + 100/PROG_STEPS_CAL;
+                        checkProgressCal();
+                    }
+                }
+            } else {
+                var elevations = results;
+                var elevationPath = [];
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Sample');
+                data.addColumn('number', 'Elevation');
+
+                for (var i = 0; i < elevations.length; i++) {
+                    elevationPath.push(elevations[i].location);
+                    data.addRow(['', elevations[i].elevation]);
+                }
+
+                //Chart
+                chart = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
+                $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
+                    //Callback
+                    google.maps.event.trigger(map, 'resize');
+                    map.fitBounds(curMapBounds);
+                    chart.draw(data, {
+                        height: 150,
+                        legend: 'none',
+                        titleY: 'Elevation (m)',
+                        title: elevId
+                    });
+                });
+                progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+                checkProgressSingle();
+            }
+        }
+    );
 }
 
 function initGMap(){
@@ -265,9 +324,20 @@ function hideEvents() {
 }
 
 function checkProgressCal(){
+    $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     if (progressCal >= 99.9) {
-        $('#calProgressBar').animate({ width: '100%' },0);
-        setTimeout($('#calProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME); //doet progressbar verdwijnen
+        $('#calProgressBar').animate({ width: '100%' },0,function(){
+            setTimeout($('#calProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME); //doet progressbar verdwijnen
+        });
+    }
+}
+
+function checkProgressSingle(){
+    $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },ANIM_TIME);
+    if (progressSingle >= 99.9) {
+        $('#singleProgressBar').animate({ width: '100%' },0,function(){
+            setTimeout($('#singleProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME);
+        });
     }
 }
 

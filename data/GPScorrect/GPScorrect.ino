@@ -81,7 +81,6 @@ void setup()
   pinMode(blinkPin,OUTPUT);         // pin that will blink to your heartbeat!
   pinMode(fadePin,OUTPUT);          // pin that will fade to your heartbeat!
   Serial.begin(115200);             // we agree to talk fast!
-  interruptSetup();
   //Serial.println("Adafruit GPS library basic test!");
 
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
@@ -110,6 +109,8 @@ void setup()
   delay(1000);
   // Ask for firmware version
   mySerial.println(PMTK_Q_RELEASE);
+  interruptSetup();
+
 }
 
 
@@ -187,9 +188,7 @@ void loop()                     // run over and over again
     delay(250);
   }  
     if (sensorValue == HIGH) {
-    //Serial.println("1996");
-    delay(250);
- 
+    delay(250);  
     if (GPS.fix) {
       Serial.println("1337");
       delay(500);
@@ -211,13 +210,14 @@ void loop()                     // run over and over again
       if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
       fadeRate = 255;        // Set 'fadeRate' Variable to 255 to fade LED with pulse
       Serial.println("1996");
+      delay(500);
       sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
       QS = false;                      // reset the Quantified Self flag for next time    
      }
   
       ledFadeToBeat();
   
-      delay(20);                             //  take a break
+      delay(500);                             //  take a break
 
 
   
