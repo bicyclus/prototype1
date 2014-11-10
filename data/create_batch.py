@@ -71,7 +71,7 @@ def gps_pointdata():
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
     ln = convert_coordinates(ln)
     lt = convert_coordinates(lt)
-    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
+    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
     return data
 
 def accelerometer_pointdata():
@@ -81,7 +81,7 @@ def accelerometer_pointdata():
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}], "unit": "google"}]}, ]
+    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
     return data
 
 def create_batch():
