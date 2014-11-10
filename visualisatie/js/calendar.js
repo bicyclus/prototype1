@@ -137,6 +137,7 @@ function showTripInfo(tripId){
         tripMapObj.coords = [];
         var accData = [];
         var posData = [];
+        var tempData = [];
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
@@ -158,6 +159,13 @@ function showTripInfo(tripId){
                     var timestampDate = new Date(sensorData.timestamp);
                     accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
                     posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
+                }
+            }
+            //Temp
+            if ((sensorData.sensorID == "3") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                if (!(sensorData.data[0].value === undefined)) {
+                    var timestampDate = new Date(sensorData.timestamp);
+                    tempData.push([timestampDate,sensorData.data[0].value[0]])
                 }
             }
         }
@@ -220,6 +228,22 @@ function showTripInfo(tripId){
             }
 
             var chart = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
+            chart.draw(chartData, options); //Tekenen
+        }
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        //Temp
+        if (tempData.length > 0) {
+            tempData.sort(SortByTimestamp);
+            options = {'title': 'Temperature: ' + tripId, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'Temperature');
+            for (var b = 0; b < tempData.length; b++) {
+                chartData.addRow(['', tempData[b][1]]);
+            }
+
+            var chart = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
             chart.draw(chartData, options); //Tekenen
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
