@@ -20,7 +20,7 @@ def on_response(*args):
     print 'server_message', args
 
 def convert_coordinates(coor):
-    """Changes GPS coordinates from degrees-minutes.decimals format to degrees.decimals format."""
+    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format."""
     k = 0
     coor = str(coor)
 
@@ -71,7 +71,7 @@ def gps_pointdata():
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
     ln = convert_coordinates(ln)
     lt = convert_coordinates(lt)
-    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}]}, ]
+    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
     return data
 
 def accelerometer_pointdata():
@@ -119,7 +119,7 @@ while k == 0:
 
 #TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
 while not try_connection():
-    time.sleep(2)
+    time.sleep(1)
 
 info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
 
