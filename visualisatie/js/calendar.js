@@ -4,6 +4,7 @@ var calData; //all calendar events
 var myCal;
 var allTrips;
 var userNames;
+
 function initCalendar(){
     $('#calProgress').hide();
     progressCal = BEGIN_PERCENT;
