@@ -21,6 +21,7 @@ function initCalendar(){
         $('#calProgress').show(ANIM_TIME);
         $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
         hideEvents();
+        $("#tripInfoDiv").hide('blind',ANIM_TIME);
         var userName = $(this).val();
         if (userName=="all"){
             userFilter = '';
