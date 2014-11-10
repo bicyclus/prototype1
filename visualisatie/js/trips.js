@@ -19,6 +19,7 @@ function tripInit(){
 }
 
 function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeven
+    $('#tripProgressBar').animate({ width: '0' },ANIM_TIME);
     progressTrips = BEGIN_PERCENT;
     $('#tripProgress').show(ANIM_TIME);
     $('#tripProgressBar').animate({ width: progressTrips.toString()+'%' },ANIM_TIME);
