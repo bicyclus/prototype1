@@ -178,7 +178,6 @@ function showTripInfo(tripId){
             if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
                 counter_temperature+=1;
                 sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
-                console.log('counter_temperature is '+counter_temperature);
             }
             //Average Humidity
             if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
@@ -187,13 +186,12 @@ function showTripInfo(tripId){
             }
 
         }
-
         // Weergeven van "Average Temperature" and "Average Humidity"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
         $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
-
+        //GPS
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
