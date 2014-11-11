@@ -139,6 +139,11 @@ function showTripInfo(tripId){
         var posData = [];
         var tempData = [];
         var drawCharts = [];
+        var counter_temperature=0;
+        var counter_humidity =0;
+        var sum_of_elements_temperature=0;
+        var sum_of_elements_humidity=0;
+
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             //GPS
@@ -168,7 +173,26 @@ function showTripInfo(tripId){
                     tempData.push([timestampDate,sensorData.data[0].value[0]])
                 }
             }
+            //Average Temperature
+            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
+                counter_temperature+=1;
+                sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
+                console.log('counter_temperature is '+counter_temperature);
+            }
+            //Average Humidity
+            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
+                counter_humidity+=1;
+                sum_of_elements_humidity+=parseInt(sensorData.data[0].value);
+            }
+
         }
+
+        // Weergeven van "Average Temperature" and "Average Humidity"
+        curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
+        $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+        curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
+        $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
@@ -298,7 +322,6 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                         titleY: 'Elevation (m)',
                         title: elevId
                     });
-                    console.log(charts);
                     for (var i = 0; i < charts.length; i++) {
                         charts[i][0].draw(charts[i][1],charts[i][2]);
                     }
