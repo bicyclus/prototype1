@@ -174,7 +174,7 @@ function showTripInfo(tripId){
                 }
             }
             //Average Temperature
-            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
+            if ((sensorData.sensorID == "3") && !(sensorData.data[0] === undefined)) {
                 counter_temperature+=1;
                 sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
             }
