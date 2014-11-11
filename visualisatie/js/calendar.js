@@ -64,7 +64,7 @@ function initCalendar(){
 }
 
 function fillCalendar(data){
-    var calData = {};
+    calData = {};
     userNames = {};
     for (var i = 0; i < data.length; i++) {
         if (!(data[i].startTime === undefined)) { //startTime moet bestaan
@@ -75,7 +75,7 @@ function fillCalendar(data){
             if (calData[curDate] === undefined) {
                 calData[curDate] = '';
             }
-            if (data[i].startTime == data[i].endTime){ //Trip op 1 dag
+            if (tripStart.getDay() == tripEnd.getDay()){ //Trip op 1 dag
                 var linkText = tripStart.getHours() + ':' + tripStart.getMinutes() + ' - ' + tripEnd.getHours() + ':' + tripEnd.getMinutes();
             } else {
                 var linkText = tripStart.getDay()+'/'+tripStart.getMonth()+'/'+tripStart.getFullYear()+' '+tripStart.getHours()+':'+tripStart.getMinutes();
@@ -84,7 +84,7 @@ function fillCalendar(data){
                     linkText = linkText+' - '+tripEnd.getDay()+'/'+tripEnd.getMonth()+'/'+tripEnd.getFullYear()+' '+tripEnd.getHours()+':'+tripEnd.getMinutes();
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="javascript:;" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
         }
 
     }
@@ -126,36 +126,6 @@ function showTripInfo(tripId){
     $('#tripInfoTime').text('Trip Time: '+curTime);
     //UserID
     $('#tripInfoUser').text('UserID: '+curTrip.userID);
-    //Average Temperature
-    var curTemperatureAverage=0;
-    var counter=0;
-    var sum_of_elements=0;
-    for (i=0;i<curTrip.sensorData.length;i++){
-        var curData=curTrip.sensorData[i];
-        if ((curData.sensorID == "3") && !(curData.data[0] === undefined)) {
-            counter+=1;
-            sum_of_elements+=parseInt(curData.data[0].value);
-
-
-        }
-    }
-    curTemperatureAverage = Math.round(sum_of_elements/counter);
-    $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
-
-    //Average Humidity
-    var curHumidityAverage=0;
-    var counter=0;
-    var sum_of_elements=0;
-    for (i=0;i<curTrip.sensorData.length;i++){
-        var curData=curTrip.sensorData[i];
-        if ((curData.sensorID == "4") && !(curData.data[0] === undefined)) {
-            counter+=1;
-            sum_of_elements+=parseInt(curData.data[0].value);
-
-        }
-    }
-    curHumidityAverage = Math.round(sum_of_elements/counter);
-    $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
     //Google map trip
     var coords;
     var bounds = new google.maps.LatLngBounds();
@@ -165,9 +135,13 @@ function showTripInfo(tripId){
         }
         tripMapObj.id = curTrip._id;
         tripMapObj.coords = [];
+        var accData = [];
+        var posData = [];
+        var tempData = [];
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
+            //GPS
             if ((sensorData.sensorID == "1") && !(sensorData.data === undefined)) {
                 for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
                     var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
@@ -179,7 +153,23 @@ function showTripInfo(tripId){
                     }
                 }
             }
+            //Accel
+            if ((sensorData.sensorID == "5") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                if (!(sensorData.data[0].acceleration === undefined)) {
+                    var timestampDate = new Date(sensorData.timestamp);
+                    accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
+                    posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
+                }
+            }
+            //Temp
+            if ((sensorData.sensorID == "3") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                if (!(sensorData.data[0].value === undefined)) {
+                    var timestampDate = new Date(sensorData.timestamp);
+                    tempData.push([timestampDate,sensorData.data[0].value[0]])
+                }
+            }
         }
+        //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
                 position: tripMapObj.coords[0],
@@ -202,14 +192,63 @@ function showTripInfo(tripId){
                 infowindow.open(map);
             });
             curMapBounds = bounds;
-            //elev(tripMapObj.coords);
         }
-    }
-    progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
-    checkProgressSingle();
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        //Google  Elev
+        elev(tripMapObj.coords,tripId);
+        //Accel
+        if (accData.length > 0) {
+            accData.sort(SortByTimestamp);
+            options = {'title':'Accelerometer acceleration: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'X');
+            chartData.addColumn('number', 'Y');
+            chartData.addColumn('number', 'Z');
+            for (var b = 0; b < accData.length; b++) {
+                chartData.addRow(['', accData[b][1],accData[b][2],accData[b][3]]);
+            }
 
-    //Google  Elev
-    elev(tripMapObj.coords,tripId);
+            var chart = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
+            chart.draw(chartData, options); //Tekenen
+        }
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        if (posData.length > 0) {
+            posData.sort(SortByTimestamp);
+            options = {'title':'Accelerometer orientation: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'X');
+            chartData.addColumn('number', 'Y');
+            chartData.addColumn('number', 'Z');
+            for (var b = 0; b < posData.length; b++) {
+                chartData.addRow(['', posData[b][1],posData[b][2],posData[b][3]]);
+            }
+
+            var chart = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
+            chart.draw(chartData, options); //Tekenen
+        }
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        //Temp
+        if (tempData.length > 0) {
+            tempData.sort(SortByTimestamp);
+            options = {'title': 'Temperature: ' + tripId, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'Temperature');
+            for (var b = 0; b < tempData.length; b++) {
+                chartData.addRow(['', tempData[b][1]]);
+            }
+
+            var chart = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
+            chart.draw(chartData, options); //Tekenen
+        }
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+    }
 }
 
 function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
