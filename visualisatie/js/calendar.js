@@ -120,36 +120,7 @@ function showTripInfo(tripId){
     }
     progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP-BEGIN_PERCENT;
     checkProgressSingle();
-    //Average Temperature
-    var curTemperatureAverage=0;
-    var counter=0;
-    var sum_of_elements=0;
-    for (i=0;i<curTrip.sensorData.length;i++){
-        var curData=curTrip.sensorData[i];
-        if ((curData.sensorID == "3") && !(curData.data[0] === undefined)) {
-            counter+=1;
-            sum_of_elements+=parseInt(curData.data[0].value);
 
-
-        }
-    }
-    curTemperatureAverage = Math.round(sum_of_elements/counter);
-    $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
-
-    //Average Humidity
-    var curHumidityAverage=0;
-    var counter=0;
-    var sum_of_elements=0;
-    for (i=0;i<curTrip.sensorData.length;i++){
-        var curData=curTrip.sensorData[i];
-        if ((curData.sensorID == "4") && !(curData.data[0] === undefined)) {
-            counter+=1;
-            sum_of_elements+=parseInt(curData.data[0].value);
-
-        }
-    }
-    curHumidityAverage = Math.round(sum_of_elements/counter);
-    $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
     $('#tripInfoTime').text('Trip Time: '+curTime);
@@ -167,6 +138,12 @@ function showTripInfo(tripId){
         var accData = [];
         var posData = [];
         var tempData = [];
+        var counter_temperature=0;
+        var counter_humidity =0;
+        var sum_of_elements_temperature=0;
+        var sum_of_elements_humidity=0;
+
+
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
@@ -197,7 +174,26 @@ function showTripInfo(tripId){
                     tempData.push([timestampDate,sensorData.data[0].value[0]])
                 }
             }
+            //Average Temperature
+            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
+                counter_temperature+=1;
+                sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
+                console.log('counter_temperature is '+counter_temperature);
+            }
+            //Average Humidity
+            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
+                counter_humidity+=1;
+                sum_of_elements_humidity+=parseInt(sensorData.data[0].value);
+            }
+
         }
+
+        // Weergeven van "Average Temperature" and "Average Humidity"
+        curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
+        $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+        curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
+        $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
