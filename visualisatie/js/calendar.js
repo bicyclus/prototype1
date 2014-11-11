@@ -138,7 +138,7 @@ function showTripInfo(tripId){
         var accData = [];
         var posData = [];
         var tempData = [];
-
+        var drawCharts = [];
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             //GPS
@@ -195,8 +195,6 @@ function showTripInfo(tripId){
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
-        //Google  Elev
-        elev(tripMapObj.coords,tripId);
         //Accel
         if (accData.length > 0) {
             accData.sort(SortByTimestamp);
@@ -210,8 +208,8 @@ function showTripInfo(tripId){
                 chartData.addRow(['', accData[b][1],accData[b][2],accData[b][3]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
+            drawCharts.push([chartAccel,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -227,8 +225,8 @@ function showTripInfo(tripId){
                 chartData.addRow(['', posData[b][1],posData[b][2],posData[b][3]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
+            drawCharts.push([chartPos,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -243,15 +241,17 @@ function showTripInfo(tripId){
                 chartData.addRow(['', tempData[b][1]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
+            drawCharts.push([chartTemp,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
+        //Google  Elev
+        elev_and_plot(tripMapObj.coords,tripId,drawCharts);
     }
 }
 
-function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
+function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
@@ -298,6 +298,10 @@ function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
                         titleY: 'Elevation (m)',
                         title: elevId
                     });
+                    console.log(charts);
+                    for (var i = 0; i < charts.length; i++) {
+                        charts[i][0].draw(charts[i][1],charts[i][2]);
+                    }
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
