@@ -120,7 +120,36 @@ function showTripInfo(tripId){
     }
     progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP-BEGIN_PERCENT;
     checkProgressSingle();
+    //Average Temperature
+    var curTemperatureAverage=0;
+    var counter=0;
+    var sum_of_elements=0;
+    for (i=0;i<curTrip.sensorData.length;i++){
+        var curData=curTrip.sensorData[i];
+        if ((curData.sensorID == "3") && !(curData.data[0] === undefined)) {
+            counter+=1;
+            sum_of_elements+=parseInt(curData.data[0].value);
 
+
+        }
+    }
+    curTemperatureAverage = Math.round(sum_of_elements/counter);
+    $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+
+    //Average Humidity
+    var curHumidityAverage=0;
+    var counter=0;
+    var sum_of_elements=0;
+    for (i=0;i<curTrip.sensorData.length;i++){
+        var curData=curTrip.sensorData[i];
+        if ((curData.sensorID == "4") && !(curData.data[0] === undefined)) {
+            counter+=1;
+            sum_of_elements+=parseInt(curData.data[0].value);
+
+        }
+    }
+    curHumidityAverage = Math.round(sum_of_elements/counter);
+    $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
     $('#tripInfoTime').text('Trip Time: '+curTime);
