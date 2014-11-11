@@ -76,12 +76,12 @@ function fillCalendar(data){
                 calData[curDate] = '';
             }
             if (tripStart.getDay() == tripEnd.getDay()){ //Trip op 1 dag
-                var linkText = tripStart.getHours() + ':' + tripStart.getMinutes() + ' - ' + tripEnd.getHours() + ':' + tripEnd.getMinutes();
+                var linkText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
             } else {
-                var linkText = tripStart.getDay()+'/'+tripStart.getMonth()+'/'+tripStart.getFullYear()+' '+tripStart.getHours()+':'+tripStart.getMinutes();
+                var linkText = addZero(tripStart.getDay())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
 
                 if (!(data[i].endTime === undefined)) {
-                    linkText = linkText+' - '+tripEnd.getDay()+'/'+tripEnd.getMonth()+'/'+tripEnd.getFullYear()+' '+tripEnd.getHours()+':'+tripEnd.getMinutes();
+                    linkText = linkText+' - '+addZero(tripEnd.getDay())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
             calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
@@ -418,6 +418,13 @@ function checkProgressSingle(){
             setTimeout($('#singleProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME);
         });
     }
+}
+
+function addZero(i) { //Voor data en uren enzo
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
 }
 
 $(document).ready(initCalendar);
