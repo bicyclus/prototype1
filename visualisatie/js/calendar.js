@@ -118,17 +118,6 @@ function showTripInfo(tripId){
             break;
         }
     }
-
-    //Close
-    var curTripTemp = [];
-    var closeDiv = $('<a id="tripInfoClose">X</a>');
-    closeDiv.click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
-    for (var j = 0; j < curTrip.sensorData.length; j++){
-        if ((curTrip.sensorData[j].sensorID == "3")) {
-            curTripTemp.push([curTrip.sensorData[j].data[0].value[0]]);
-        }
-    }
-
     progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP-BEGIN_PERCENT;
     checkProgressSingle();
 
@@ -136,15 +125,6 @@ function showTripInfo(tripId){
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
     $('#tripInfoTime').text('Trip Time: '+curTime);
     //UserID
-    var userDiv = $('<div>'+'UserID: '+curTrip.userID+'</div>');
-    var tempDiv =$('<div>'+'Trip Temp: '+curTripTemp+'</div>');
-    //Create
-    $('#tripInfoDiv').append(closeDiv);
-    $('#tripInfoDiv').append(timeDiv);
-    $('#tripInfoDiv').append(userDiv);
-    $('#tripInfoDiv').append(tempDiv);
-    $('#tripInfoDiv').show('blind',ANIM_TIME);
-
     $('#tripInfoUser').text('UserID: '+curTrip.userID);
     //Average Temperature
     var curTemperatureAverage=0;
