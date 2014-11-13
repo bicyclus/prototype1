@@ -141,12 +141,12 @@
 	cursor: pointer;
 	line-height: 13px;
 	padding: 0;
+	font-size: 18px;
+	color: #ffffff;
 }
 
 .custom-content-reveal span.custom-content-close:after {
-	content: 'x';
-	font-size: 18px;
-	color: #fff;
+	/*content: 'x';*/
 }
 
 .custom-content-reveal a,
