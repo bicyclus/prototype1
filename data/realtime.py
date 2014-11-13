@@ -19,6 +19,12 @@ def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
 
+def on_emit(*args):
+    """Prints the server message."""
+    global startID
+    startID = args[0]
+    print 'server_message', args
+
 def return_response(*args):
     """Returns the server message."""
     return args
@@ -108,9 +114,9 @@ info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r04621
 metadata = {} #the set of metadata is empty: no metadata used
         
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
-socketIO.on('server_message', on_response)
-trip_server_info = socketIO.emit('start', json.dumps(info_start), on_response)
-info_end = {"_id":trip_server_info["_id"], "meta": metadata}
+socketIO.on('server_message', on_emit)
+socketIO.emit('start', json.dumps(info_start), on_emit)
+info_end = {"_id":startID, "meta": metadata}
 socketIO.wait(2)
 
 #SENDING REALTIME DATA
@@ -120,8 +126,8 @@ while sensordata != 'END':
         print "Cannot send data. Please connect to the internet."
         time.sleep(2)
     elif not sensordata == None:
-        socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":sensordata})
-        socketIO.emit('rt-sensordata',{"_id":trip_server_info["_id"], "sensorData":accelerometer_pointdata()})
+        socketIO.emit('rt-sensordata',{"_id":startID, "sensorData":sensordata})
+        socketIO.emit('rt-sensordata',{"_id":startID, "sensorData":accelerometer_pointdata()})
     sensordata = realtime()
 
 #ENDING THE TRIP
