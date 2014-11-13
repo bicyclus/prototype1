@@ -4,7 +4,6 @@
 
 $(function heartbeat() {
     $('#container').highcharts({
-        var Day = new Date(curTrip.startTime).getDate()
         chart: {
             type: 'spline'
         },
