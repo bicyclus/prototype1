@@ -20,7 +20,7 @@ def on_response(*args):
     print 'server_message', args
 
 def on_emit(*args):
-    """Prints the server message."""
+    """Prints the server message and stores the ID."""
     global startID
     startID = args[0]
     print 'server_message', args
@@ -105,15 +105,24 @@ def realtime():
     else:
         return None
     
-#CONNECTING TO THE SERVER, STARTING THE TRIP AND STORING THE ID
+#CONNECTING TO THE SERVER, STARTING THE TRIP AND STORING THE ID, AND WAITING FOR THE STARTING SIGNAL   
 info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r0462183"}
 metadata = {} #the set of metadata is empty: no metadata used
-        
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
+while try_connection() == False:
+    time.sleep(2)  
 socketIO.on('server_message', on_emit)
+while try_connection() == False:
+    time.sleep(2)  
 socketIO.emit('start', json.dumps(info_start), on_emit)
 socketIO.wait(2)
 info_end = {"_id":startID, "meta": metadata}
+
+arduin = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+arduin_read = arduino.readline().strip()
+while True:
+    if arduin_read == 1337:
+        break
 
 #SENDING REALTIME DATA
 condition = realtime()
@@ -129,5 +138,7 @@ while condition != 'END':
     sensordata = realtime()
 
 #ENDING THE TRIP
+while try_connection() == False:
+    time.sleep(2)  
 socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
 socketIO.wait(5)
