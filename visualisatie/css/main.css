@@ -342,3 +342,8 @@ textarea {
     margin-bottom: 0;
     border-color: #ddd;
 }
+
+blockquote{
+    padding: 5px 20px;
+    font-size: 14px;
+}

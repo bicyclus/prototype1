@@ -45,6 +45,14 @@ function initCalendar(){
         $("#timeCaret").toggleClass("fa-caret-square-o-right");
         $("#timeCaret").toggleClass("fa-caret-square-o-down");
     });
+    $('#tripInfoAccel').click(function(){
+        $("#tripInfoAccelAcc").toggle();
+        $("#tripInfoAccelPos").toggle();
+        drawChartObj(chartAccObj);
+        drawChartObj(chartPosObj);
+        $("#accelCaret").toggleClass("fa-caret-square-o-right");
+        $("#accelCaret").toggleClass("fa-caret-square-o-down");
+    });
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     var userFilter = '';
@@ -264,6 +272,7 @@ function showTripInfo(tripId){
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Accel
+        $('#tripInfoAccel').append('<i class="fa fa-caret-square-o-right" id="accelCaret">&nbsp;</i>'+'Bouncy/Smooth');
         if (accData.length > 0) {
             accData.sort(SortByTimestamp);
             options = {'title':'Accelerometer acceleration: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
@@ -372,9 +381,6 @@ function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: a
                     map.fitBounds(curMapBounds);
                     options = {legend: 'none',titleY: 'Elevation (m)',title: elevId,backgroundColor:'#f5f5f5'};
                     chartElevObj = [chartElev,data,options];
-                    drawChartObj(chartAccObj);
-                    drawChartObj(chartPosObj);
-                    drawChartObj(chartTempObj);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
