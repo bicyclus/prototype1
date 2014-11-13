@@ -11,6 +11,9 @@ var elevator;
 var infowindow;
 var tripMapObj;
 var curMapBounds;
+var chartAccObj;
+var chartPosObj;
+var chartTempObj;
 
 function initCalendar(){
     $('#calProgress').hide();
@@ -22,7 +25,7 @@ function initCalendar(){
     //Initfcts
     calendarFcts();
     initGMap();
-    $('tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     var userFilter = '';
@@ -84,7 +87,7 @@ function fillCalendar(data){
                     linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
         }
 
     }
@@ -123,9 +126,9 @@ function showTripInfo(tripId){
 
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
-    $('#tripInfoTime').text('Trip Time: '+curTime);
+    $('#tripInfoTime').append('<i class="fa fa-clock-o">&nbsp;</i>'+curTime);
     //UserID
-    $('#tripInfoUser').text('UserID: '+curTrip.userID);
+    $('#tripInfoUser').append('<i class="fa fa-user">&nbsp;</i>'+curTrip.userID);
     //Google map trip
     var coords;
     var bounds = new google.maps.LatLngBounds();
@@ -212,12 +215,11 @@ function showTripInfo(tripId){
         }
         // Weergeven van "Average Temperature", "Average Humidity" en "Heart rate Average"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
-        $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+        $('#tripInfoTemperature').append('<i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
-        $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+        $('#tripInfoHumidity').append('<i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
         curHeartbeatAverage = Math.round(sum_of_elements_heartbeat/counter_heartbeat);
         $('#tripInfoHeartbeat').text('Average Heartbeat: '+curHeartbeatAverage+ 'beats per minute');
-
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
@@ -258,7 +260,7 @@ function showTripInfo(tripId){
             }
 
             var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            drawCharts.push([chartAccel,chartData,options]);
+            chartAccObj = [chartAccel,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -275,7 +277,7 @@ function showTripInfo(tripId){
             }
 
             var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            drawCharts.push([chartPos,chartData,options]);
+            chartPosObj = [chartPos,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -291,16 +293,16 @@ function showTripInfo(tripId){
             }
 
             var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            drawCharts.push([chartTemp,chartData,options]);
+            chartTempObj = [chartTemp,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Google  Elev
-        elev_and_plot(tripMapObj.coords,tripId,drawCharts);
+        elev_and_plot(tripMapObj.coords,tripId);
     }
 }
 
-function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, attention: async
+function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
@@ -319,8 +321,8 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                         if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
-                        progressCal = progressCal + 100/PROG_STEPS_CAL;
-                        checkProgressCal();
+                        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+                        checkProgressSingle();
                     }
                 }
             } else {
@@ -330,11 +332,21 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                 data.addColumn('string', 'Sample');
                 data.addColumn('number', 'Elevation');
 
+                var up = 0;
+                var down = 0;
                 for (var i = 0; i < elevations.length; i++) {
                     elevationPath.push(elevations[i].location);
                     data.addRow(['', elevations[i].elevation]);
+                    //analyze up/downhill
+                    if (i>0){
+                        if (elevations[i].elevation > elevations[i-1].elevation){
+                            up +=  (elevations[i].elevation-elevations[i-1].elevation);
+                        }else{
+                            down +=  -(elevations[i].elevation-elevations[i-1].elevation);
+                        }
+                    }
                 }
-
+                $("#tripInfoHeight").append('<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
                 //Chart
                 chart = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
                 $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
@@ -347,9 +359,9 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                         titleY: 'Elevation (m)',
                         title: elevId
                     });
-                    for (var i = 0; i < charts.length; i++) {
-                        charts[i][0].draw(charts[i][1],charts[i][2]);
-                    }
+                    chartAccObj[0].draw(chartAccObj[1],chartAccObj[2]);
+                    chartPosObj[0].draw(chartPosObj[1],chartPosObj[2]);
+                    chartTempObj[0].draw(chartTempObj[1],chartTempObj[2]);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
@@ -386,7 +398,7 @@ function calendarFcts() {
             //caldata : codropsEvents,
             displayWeekAbbr : true
         } );
-        $month = $( '#custom-month' ).html( myCal.getMonthName() );
+        $month = $( '#custom-month' ).html('<i class="fa fa-calendar">&nbsp;</i>'+myCal.getMonthName() );
         $year = $( '#custom-year' ).html( myCal.getYear() );
 
     $( '#custom-next' ).on( 'click', function() {
@@ -396,7 +408,7 @@ function calendarFcts() {
         myCal.gotoPreviousMonth( updateMonthYear );
     } );
     function updateMonthYear() {
-        $month.html( myCal.getMonthName() );
+        $month.html('<i class="fa fa-calendar">&nbsp;</i>'+myCal.getMonthName() );
         $year.html( myCal.getYear() );
     }
 
@@ -411,7 +423,7 @@ function showEvents( $contentEl, dateProperties ) {
     hideEvents();
 
     var $events = $( '<div id="custom-content-reveal" class="custom-content-reveal"><h4>Trips for ' + dateProperties.day +'/'+ dateProperties.month + '/' + dateProperties.year + '</h4></div>' );
-    var $close = $( '<span class="custom-content-close"></span>' ).on( 'click', hideEvents );
+    var $close = $( '<span class="custom-content-close"><i class="fa fa-times"></i></span>' ).on( 'click', hideEvents );
 
     $events.append( $contentEl.html() , $close ).insertAfter( $wrapper );
 
