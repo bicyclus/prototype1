@@ -334,6 +334,11 @@ textarea {
     width: 600px;
 }
 
-#tripInfoHeight,#tripInfoTemperature{
+.tripInfoToggle {
     cursor: pointer;
+}
+
+#tripInfoTimeInfo{
+    margin-bottom: 0;
+    border-color: #ddd;
 }

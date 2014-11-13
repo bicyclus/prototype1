@@ -20,8 +20,7 @@ function initCalendar(){
     $('#calProgress').hide();
     $('#singleProgress').hide();
     $('#tripInfoDiv').hide();
-    $('#tripInfoElev').hide();
-    $('#tripInfoTemp').hide();
+    $('.tripInfoExtra').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -40,6 +39,11 @@ function initCalendar(){
         drawChartObj(chartTempObj);
         $("#tempCaret").toggleClass("fa-caret-square-o-right");
         $("#tempCaret").toggleClass("fa-caret-square-o-down");
+    });
+    $('#tripInfoTime').click(function(){
+        $("#tripInfoTimeInfo").toggle();
+        $("#timeCaret").toggleClass("fa-caret-square-o-right");
+        $("#timeCaret").toggleClass("fa-caret-square-o-down");
     });
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
@@ -140,8 +144,20 @@ function showTripInfo(tripId){
     checkProgressSingle();
 
     //Elap time
-    var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
-    $('#tripInfoTime').append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>'+curTime);
+    var tripStart = new Date(curTrip.startTime);
+    var tripEnd = new Date(curTrip.endTime);
+    var curTime = ((tripEnd - tripStart)/1000).toString().toHHMMSS();
+    $('#tripInfoTime').append('<i class="fa fa-caret-square-o-right" id="timeCaret">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>'+curTime);
+    if (tripStart.getDate() == tripEnd.getDate()){ //Trip op 1 dag
+        var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
+    } else {
+        var timeText = addZero(tripStart.getDate())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
+
+        if (!(data[i].endTime === undefined)) {
+            timeText = timeText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
+        }
+    }
+    $("#tripInfoTimeInfo").append(timeText);
     //UserID
     $('#tripInfoUser').append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-user">&nbsp;</i>'+curTrip.userID);
     //Google map trip
