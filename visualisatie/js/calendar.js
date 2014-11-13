@@ -75,13 +75,13 @@ function fillCalendar(data){
             if (calData[curDate] === undefined) {
                 calData[curDate] = '';
             }
-            if (tripStart.getDay() == tripEnd.getDay()){ //Trip op 1 dag
-                var linkText = tripStart.getHours() + ':' + tripStart.getMinutes() + ' - ' + tripEnd.getHours() + ':' + tripEnd.getMinutes();
+            if (tripStart.getDate() == tripEnd.getDate()){ //Trip op 1 dag
+                var linkText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
             } else {
-                var linkText = tripStart.getDay()+'/'+tripStart.getMonth()+'/'+tripStart.getFullYear()+' '+tripStart.getHours()+':'+tripStart.getMinutes();
+                var linkText = addZero(tripStart.getDate())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
 
                 if (!(data[i].endTime === undefined)) {
-                    linkText = linkText+' - '+tripEnd.getDay()+'/'+tripEnd.getMonth()+'/'+tripEnd.getFullYear()+' '+tripEnd.getHours()+':'+tripEnd.getMinutes();
+                    linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
             calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
@@ -138,37 +138,73 @@ function showTripInfo(tripId){
         var accData = [];
         var posData = [];
         var tempData = [];
+        var drawCharts = [];
+        var counter_temperature=0;
+        var counter_humidity =0;
+        var sum_of_elements_temperature=0;
+        var sum_of_elements_humidity=0;
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
-            //GPS
-            if ((sensorData.sensorID == "1") && !(sensorData.data === undefined)) {
-                for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
-                    var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
-                    if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
-                        if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
-                            tripMapObj.coords.push(coord);
-                            bounds.extend(coord);
+            switch (sensorData.sensorID){
+                case 1: //GPS
+                    if (!(sensorData.data === undefined)) {
+                        for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
+                            var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
+                            if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                                if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
+                                    tripMapObj.coords.push(coord);
+                                    bounds.extend(coord);
+                                }
+                            }
                         }
                     }
-                }
-            }
-            //Accel
-            if ((sensorData.sensorID == "5") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
-                if (!(sensorData.data[0].acceleration === undefined)) {
-                    var timestampDate = new Date(sensorData.timestamp);
-                    accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
-                    posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
-                }
-            }
-            //Temp
-            if ((sensorData.sensorID == "3") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
-                if (!(sensorData.data[0].value === undefined)) {
-                    var timestampDate = new Date(sensorData.timestamp);
-                    tempData.push([timestampDate,sensorData.data[0].value[0]])
-                }
+                    break;
+                case 2: //Light
+                    break;
+                case 3: //Temperature
+                    if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                        if (!(sensorData.data[0].value === undefined)) {
+                            var timestampDate = new Date(sensorData.timestamp);
+                            tempData.push([timestampDate,sensorData.data[0].value[0]])
+                            counter_temperature+=1;
+                            sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
+                        }
+                    }
+                    break;
+                case 4: //Humidity
+                    if (!(sensorData.data[0] === undefined)) {
+                        counter_humidity+=1;
+                        sum_of_elements_humidity+=parseInt(sensorData.data[0].value);
+                    }
+                    break;
+                case 5: //Accelerometer
+                    if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                        if (!(sensorData.data[0].acceleration === undefined)) {
+                            var timestampDate = new Date(sensorData.timestamp);
+                            accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
+                            posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
+                        }
+                    }
+                    break;
+                case 6: //Air quality
+                    break;
+                case 7: //Noise
+                    break;
+                case 8: //Camera
+                    break;
+                case 9: //Heartbeat
+                    break;
+                case 10: //Barometer
+                    break;
             }
         }
+        // Weergeven van "Average Temperature" and "Average Humidity"
+        curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
+        $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+        curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
+        $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+        //GPS
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
@@ -195,8 +231,6 @@ function showTripInfo(tripId){
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
-        //Google  Elev
-        elev(tripMapObj.coords,tripId);
         //Accel
         if (accData.length > 0) {
             accData.sort(SortByTimestamp);
@@ -210,8 +244,8 @@ function showTripInfo(tripId){
                 chartData.addRow(['', accData[b][1],accData[b][2],accData[b][3]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
+            drawCharts.push([chartAccel,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -227,8 +261,8 @@ function showTripInfo(tripId){
                 chartData.addRow(['', posData[b][1],posData[b][2],posData[b][3]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
+            drawCharts.push([chartPos,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -243,15 +277,17 @@ function showTripInfo(tripId){
                 chartData.addRow(['', tempData[b][1]]);
             }
 
-            var chart = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            chart.draw(chartData, options); //Tekenen
+            var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
+            drawCharts.push([chartTemp,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
+        //Google  Elev
+        elev_and_plot(tripMapObj.coords,tripId,drawCharts);
     }
 }
 
-function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
+function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
@@ -298,6 +334,9 @@ function elev(pathCoords,elevId){ //Plot elevation graphs, attention: async
                         titleY: 'Elevation (m)',
                         title: elevId
                     });
+                    for (var i = 0; i < charts.length; i++) {
+                        charts[i][0].draw(charts[i][1],charts[i][2]);
+                    }
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
@@ -393,6 +432,13 @@ function checkProgressSingle(){
             setTimeout($('#singleProgress').hide('blind',2*ANIM_TIME),2*ANIM_TIME);
         });
     }
+}
+
+function addZero(i) { //Voor data en uren enzo
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
 }
 
 $(document).ready(initCalendar);
