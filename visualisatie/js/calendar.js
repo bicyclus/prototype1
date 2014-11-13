@@ -75,13 +75,13 @@ function fillCalendar(data){
             if (calData[curDate] === undefined) {
                 calData[curDate] = '';
             }
-            if (tripStart.getDay() == tripEnd.getDay()){ //Trip op 1 dag
+            if (tripStart.getDate() == tripEnd.getDate()){ //Trip op 1 dag
                 var linkText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
             } else {
-                var linkText = addZero(tripStart.getDay())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
+                var linkText = addZero(tripStart.getDate())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
 
                 if (!(data[i].endTime === undefined)) {
-                    linkText = linkText+' - '+addZero(tripEnd.getDay())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
+                    linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
             calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
@@ -146,44 +146,58 @@ function showTripInfo(tripId){
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
-            //GPS
-            if ((sensorData.sensorID == "1") && !(sensorData.data === undefined)) {
-                for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
-                    var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
-                    if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
-                        if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
-                            tripMapObj.coords.push(coord);
-                            bounds.extend(coord);
+            switch (sensorData.sensorID){
+                case 1: //GPS
+                    if (!(sensorData.data === undefined)) {
+                        for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
+                            var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
+                            if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                                if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
+                                    tripMapObj.coords.push(coord);
+                                    bounds.extend(coord);
+                                }
+                            }
                         }
                     }
-                }
+                    break;
+                case 2: //Light
+                    break;
+                case 3: //Temperature
+                    if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                        if (!(sensorData.data[0].value === undefined)) {
+                            var timestampDate = new Date(sensorData.timestamp);
+                            tempData.push([timestampDate,sensorData.data[0].value[0]])
+                            counter_temperature+=1;
+                            sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
+                        }
+                    }
+                    break;
+                case 4: //Humidity
+                    if (!(sensorData.data[0] === undefined)) {
+                        counter_humidity+=1;
+                        sum_of_elements_humidity+=parseInt(sensorData.data[0].value);
+                    }
+                    break;
+                case 5: //Accelerometer
+                    if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
+                        if (!(sensorData.data[0].acceleration === undefined)) {
+                            var timestampDate = new Date(sensorData.timestamp);
+                            accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
+                            posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
+                        }
+                    }
+                    break;
+                case 6: //Air quality
+                    break;
+                case 7: //Noise
+                    break;
+                case 8: //Camera
+                    break;
+                case 9: //Heartbeat
+                    break;
+                case 10: //Barometer
+                    break;
             }
-            //Accel
-            if ((sensorData.sensorID == "5") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
-                if (!(sensorData.data[0].acceleration === undefined)) {
-                    var timestampDate = new Date(sensorData.timestamp);
-                    accData.push([timestampDate,sensorData.data[0].acceleration[0].x,sensorData.data[0].acceleration[0].y,sensorData.data[0].acceleration[0].z]);
-                    posData.push([timestampDate,sensorData.data[0].orientation[0].mx,sensorData.data[0].orientation[0].my,sensorData.data[0].orientation[0].mz]);
-                }
-            }
-            //Temp
-            if ((sensorData.sensorID == "3") && !(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
-                if (!(sensorData.data[0].value === undefined)) {
-                    var timestampDate = new Date(sensorData.timestamp);
-                    tempData.push([timestampDate,sensorData.data[0].value[0]])
-                }
-            }
-            //Average Temperature
-            if ((sensorData.sensorID == "3") && !(sensorData.data[0] === undefined)) {
-                counter_temperature+=1;
-                sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
-            }
-            //Average Humidity
-            if ((sensorData.sensorID == "4") && !(sensorData.data[0] === undefined)) {
-                counter_humidity+=1;
-                sum_of_elements_humidity+=parseInt(sensorData.data[0].value);
-            }
-
         }
         // Weergeven van "Average Temperature" and "Average Humidity"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
