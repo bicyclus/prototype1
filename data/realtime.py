@@ -52,13 +52,13 @@ def convert_coordinates(coor):
     coordinates = degrees + "." + dmin
     return coordinates
 
-def beat_pointdata():
-    """Collects heartbeat data of a specific moment (one value)."""
-    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    hb = eval(arduino.readline().strip())
-    st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
-    return data
+##def beat_pointdata():
+##    """Collects heartbeat data of a specific moment (one value)."""
+##    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+##    hb = eval(arduino.readline().strip())
+##    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+##    data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
+##    return data
 
 def temphum_pointdata():
     """Gets temperature and humidity data at a specific moment."""
@@ -98,16 +98,21 @@ def realtime():
         return temphum_pointdata()
     elif ard_read == '1337':
         return gps_pointdata()
-    elif ard_read == '1996':
-        return beat_pointdata()
+##    elif ard_read == '1996':
+##        return beat_pointdata()
     elif ard_read == '1995':
         return 'END'
     else:
         return None
     
-#CONNECTING TO THE SERVER, STARTING THE TRIP AND STORING THE ID, AND WAITING FOR THE STARTING SIGNAL   
+#CONNECTING TO THE SERVER, STARTING THE TRIP, STORING THE ID AND WAITING FOR THE STARTING SIGNAL
+arduin = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+arduin_read = arduino.readline().strip() #defined beforehand so no connection is made with server if arduino is not connected
+
 info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r0462183"}
 metadata = {} #the set of metadata is empty: no metadata used
+while try_connection() == False: #connection tests before each server interaction to minimise amount of errors
+    time.sleep(2) 
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 while try_connection() == False:
     time.sleep(2)  
@@ -118,8 +123,6 @@ socketIO.emit('start', json.dumps(info_start), on_emit)
 socketIO.wait(2)
 info_end = {"_id":startID, "meta": metadata}
 
-arduin = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-arduin_read = arduino.readline().strip()
 while True:
     if arduin_read == 1337:
         break
