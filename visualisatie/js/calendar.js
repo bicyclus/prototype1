@@ -11,18 +11,49 @@ var elevator;
 var infowindow;
 var tripMapObj;
 var curMapBounds;
+var chartAccObj;
+var chartPosObj;
+var chartTempObj;
+var chartElevObj;
+var chartSpeedObj;
 
 function initCalendar(){
     $('#calProgress').hide();
     $('#singleProgress').hide();
     $('#tripInfoDiv').hide();
+    $('.tripInfoExtra').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     //Initfcts
     calendarFcts();
     initGMap();
-    $('tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoHeight').click(function(){
+        $("#tripInfoElev").toggle();
+        drawChartObj(chartElevObj);
+        $("#heightCaret").toggleClass("fa-caret-square-o-right");
+        $("#heightCaret").toggleClass("fa-caret-square-o-down");
+    });
+    $('#tripInfoTemperature').click(function(){
+        $("#tripInfoTemp").toggle();
+        drawChartObj(chartTempObj);
+        $("#tempCaret").toggleClass("fa-caret-square-o-right");
+        $("#tempCaret").toggleClass("fa-caret-square-o-down");
+    });
+    $('#tripInfoTime').click(function(){
+        $("#tripInfoTimeInfo").toggle();
+        $("#timeCaret").toggleClass("fa-caret-square-o-right");
+        $("#timeCaret").toggleClass("fa-caret-square-o-down");
+    });
+    $('#tripInfoAccel').click(function(){
+        $("#tripInfoAccelAcc").toggle();
+        $("#tripInfoAccelPos").toggle();
+        drawChartObj(chartAccObj);
+        drawChartObj(chartPosObj);
+        $("#accelCaret").toggleClass("fa-caret-square-o-right");
+        $("#accelCaret").toggleClass("fa-caret-square-o-down");
+    });
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     var userFilter = '';
@@ -84,7 +115,7 @@ function fillCalendar(data){
                     linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
         }
 
     }
@@ -146,10 +177,22 @@ function showTripInfo(tripId){
     checkProgressSingle();
 
     //Elap time
-    var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
-    $('#tripInfoTime').text('Trip Time: '+curTime);
+    var tripStart = new Date(curTrip.startTime);
+    var tripEnd = new Date(curTrip.endTime);
+    var curTime = ((tripEnd - tripStart)/1000).toString().toHHMMSS();
+    $('#tripInfoTime').append('<i class="fa fa-caret-square-o-right" id="timeCaret">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>'+curTime);
+    if (tripStart.getDate() == tripEnd.getDate()){ //Trip op 1 dag
+        var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
+    } else {
+        var timeText = addZero(tripStart.getDate())+'/'+addZero(tripStart.getMonth())+'/'+addZero(tripStart.getFullYear())+' '+addZero(tripStart.getHours())+':'+addZero(tripStart.getMinutes());
+
+        if (!(data[i].endTime === undefined)) {
+            timeText = timeText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
+        }
+    }
+    $("#tripInfoTimeInfo").append(timeText);
     //UserID
-    $('#tripInfoUser').text('UserID: '+curTrip.userID);
+    $('#tripInfoUser').append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-user">&nbsp;</i>'+curTrip.userID);
     //Google map trip
     var coords;
     var bounds = new google.maps.LatLngBounds();
@@ -162,7 +205,6 @@ function showTripInfo(tripId){
         var accData = [];
         var posData = [];
         var tempData = [];
-        var drawCharts = [];
         var counter_temperature=0;
         var counter_humidity =0;
         var sum_of_elements_temperature=0;
@@ -250,14 +292,14 @@ function showTripInfo(tripId){
         }
         // Weergeven van "Average Temperature" and "Average Humidity" and "Average Speed"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
-        $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
+        $('#tripInfoTemperature').append('<i class="fa fa-caret-square-o-right" id="tempCaret">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
-        $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+
+        $('#tripInfoHumidity').append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
         var totaltimesecsplit = curTime.split(':');
         var totaltimesec = (+totaltimesecsplit[0]) * 3600 + (+totaltimesecsplit[1]) * 60 + (+totaltimesecsplit[2]);
         curSpeedAverage = Math.round((totaldist/(totaltimesec/3600))*100)/100;
         $('#tripInfoAverageSpeed').text('Average Speed: '+curSpeedAverage+ ' km/h');
-        //GPS
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
@@ -285,6 +327,7 @@ function showTripInfo(tripId){
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Accel
+        $('#tripInfoAccel').append('<i class="fa fa-caret-square-o-right" id="accelCaret">&nbsp;</i>'+'Bouncy/Smooth');
         if (accData.length > 0) {
             accData.sort(SortByTimestamp);
             options = {'title':'Accelerometer acceleration: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
@@ -298,7 +341,7 @@ function showTripInfo(tripId){
             }
 
             var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            drawCharts.push([chartAccel,chartData,options]);
+            chartAccObj = [chartAccel,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -315,7 +358,7 @@ function showTripInfo(tripId){
             }
 
             var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            drawCharts.push([chartPos,chartData,options]);
+            chartPosObj = [chartPos,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -331,7 +374,7 @@ function showTripInfo(tripId){
             }
 
             var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            drawCharts.push([chartTemp,chartData,options]);
+            chartTempObj = [chartTemp,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -347,16 +390,16 @@ function showTripInfo(tripId){
             }
 
             var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed')[0]); //Chart aanmaken in div
-            drawCharts.push([chartSpeed,chartData,options]);
+            chartSpeedObj = [chartSpeed,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Google  Elev
-        elev_and_plot(tripMapObj.coords,tripId,drawCharts);
+        elev_and_plot(tripMapObj.coords,tripId);
     }
 }
 
-function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, attention: async
+function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
@@ -375,8 +418,8 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                         if (retries = RETRY_COUNT) {
                             alert("Google elevation query error: Not all elevations  will be plotted.");
                         }
-                        progressCal = progressCal + 100/PROG_STEPS_CAL;
-                        checkProgressCal();
+                        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+                        checkProgressSingle();
                     }
                 }
             } else {
@@ -386,26 +429,30 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                 data.addColumn('string', 'Sample');
                 data.addColumn('number', 'Elevation');
 
+                var up = 0;
+                var down = 0;
                 for (var i = 0; i < elevations.length; i++) {
                     elevationPath.push(elevations[i].location);
                     data.addRow(['', elevations[i].elevation]);
+                    //analyze up/downhill
+                    if (i>0){
+                        if (elevations[i].elevation > elevations[i-1].elevation){
+                            up +=  (elevations[i].elevation-elevations[i-1].elevation);
+                        }else{
+                            down +=  -(elevations[i].elevation-elevations[i-1].elevation);
+                        }
+                    }
                 }
-
+                $("#tripInfoHeight").append('<i class="fa fa-caret-square-o-right" id="heightCaret">&nbsp;</i><i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
                 //Chart
-                chart = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
+                chartElev = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
                 $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
                     //Callback
                     google.maps.event.trigger(map, 'resize');
                     map.fitBounds(curMapBounds);
-                    chart.draw(data, {
-                        height: 150,
-                        legend: 'none',
-                        titleY: 'Elevation (m)',
-                        title: elevId
-                    });
-                    for (var i = 0; i < charts.length; i++) {
-                        charts[i][0].draw(charts[i][1],charts[i][2]);
-                    }
+                    options = {legend: 'none',titleY: 'Elevation (m)',title: elevId,backgroundColor:'#f5f5f5'};
+                    chartElevObj = [chartElev,data,options];
+                    drawChartObj(chartSpeedObj);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
@@ -442,7 +489,7 @@ function calendarFcts() {
             //caldata : codropsEvents,
             displayWeekAbbr : true
         } );
-        $month = $( '#custom-month' ).html( myCal.getMonthName() );
+        $month = $( '#custom-month' ).html('<i class="fa fa-calendar">&nbsp;</i>'+myCal.getMonthName() );
         $year = $( '#custom-year' ).html( myCal.getYear() );
 
     $( '#custom-next' ).on( 'click', function() {
@@ -452,7 +499,7 @@ function calendarFcts() {
         myCal.gotoPreviousMonth( updateMonthYear );
     } );
     function updateMonthYear() {
-        $month.html( myCal.getMonthName() );
+        $month.html('<i class="fa fa-calendar">&nbsp;</i>'+myCal.getMonthName() );
         $year.html( myCal.getYear() );
     }
 
@@ -467,7 +514,7 @@ function showEvents( $contentEl, dateProperties ) {
     hideEvents();
 
     var $events = $( '<div id="custom-content-reveal" class="custom-content-reveal"><h4>Trips for ' + dateProperties.day +'/'+ dateProperties.month + '/' + dateProperties.year + '</h4></div>' );
-    var $close = $( '<span class="custom-content-close"></span>' ).on( 'click', hideEvents );
+    var $close = $( '<span class="custom-content-close"><i class="fa fa-times"></i></span>' ).on( 'click', hideEvents );
 
     $events.append( $contentEl.html() , $close ).insertAfter( $wrapper );
 
@@ -510,5 +557,8 @@ function addZero(i) { //Voor data en uren enzo
     return i;
 }
 
+function drawChartObj(chartObj) {
+    chartObj[0].draw(chartObj[1],chartObj[2]);
+}
 
 $(document).ready(initCalendar);

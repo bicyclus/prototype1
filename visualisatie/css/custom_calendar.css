@@ -122,6 +122,7 @@
 	top: 100%;
 	left: 0px;
 	text-align: center;
+	overflow: auto;
 	-webkit-transition: all 0.6s ease-in-out;
 	-moz-transition: all 0.6s ease-in-out;
 	-o-transition: all 0.6s ease-in-out;
@@ -141,12 +142,12 @@
 	cursor: pointer;
 	line-height: 13px;
 	padding: 0;
+	font-size: 18px;
+	color: #ffffff;
 }
 
 .custom-content-reveal span.custom-content-close:after {
-	content: 'x';
-	font-size: 18px;
-	color: #fff;
+	/*content: 'x';*/
 }
 
 .custom-content-reveal a,
