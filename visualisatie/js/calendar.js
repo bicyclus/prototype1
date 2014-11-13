@@ -11,6 +11,9 @@ var elevator;
 var infowindow;
 var tripMapObj;
 var curMapBounds;
+var chartAccObj;
+var chartPosObj;
+var chartTempObj;
 
 function initCalendar(){
     $('#calProgress').hide();
@@ -138,7 +141,6 @@ function showTripInfo(tripId){
         var accData = [];
         var posData = [];
         var tempData = [];
-        var drawCharts = [];
         var counter_temperature=0;
         var counter_humidity =0;
         var sum_of_elements_temperature=0;
@@ -244,7 +246,7 @@ function showTripInfo(tripId){
             }
 
             var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            drawCharts.push([chartAccel,chartData,options]);
+            chartAccObj = [chartAccel,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -261,7 +263,7 @@ function showTripInfo(tripId){
             }
 
             var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            drawCharts.push([chartPos,chartData,options]);
+            chartPosObj = [chartPos,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -277,16 +279,16 @@ function showTripInfo(tripId){
             }
 
             var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            drawCharts.push([chartTemp,chartData,options]);
+            chartTempObj = [chartTemp,chartData,options];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Google  Elev
-        elev_and_plot(tripMapObj.coords,tripId,drawCharts);
+        elev_and_plot(tripMapObj.coords,tripId);
     }
 }
 
-function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, attention: async
+function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: async
     var pathRequest = {
         'path': pathCoords,
         'samples': ELEV_SAMPLE
@@ -343,9 +345,9 @@ function elev_and_plot(pathCoords,elevId,charts){ //Plot elevation graphs, atten
                         titleY: 'Elevation (m)',
                         title: elevId
                     });
-                    for (var i = 0; i < charts.length; i++) {
-                        charts[i][0].draw(charts[i][1],charts[i][2]);
-                    }
+                    chartAccObj[0].draw(chartAccObj[1],chartAccObj[2]);
+                    chartPosObj[0].draw(chartPosObj[1],chartPosObj[2]);
+                    chartTempObj[0].draw(chartTempObj[1],chartTempObj[2]);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
