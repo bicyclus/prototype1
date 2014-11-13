@@ -101,6 +101,29 @@ function fillCalendar(data){
     checkProgressCal();
 }
 
+function calcCrow(lat1, lon1, lat2, lon2)
+{
+    var R = 6371; // km
+    var dLat = toRad(lat2-lat1);
+    var dLon = toRad(lon2-lon1);
+    var lat1 = toRad(lat1);
+    var lat2 = toRad(lat2);
+
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
+    return d;
+}
+
+// Converts numeric degrees to radians
+function toRad(Value)
+{
+    return Value * Math.PI / 180;
+}
+
+
+
 function showTripInfo(tripId){
     //Clean
     $('.tripInfo').empty();
@@ -118,6 +141,7 @@ function showTripInfo(tripId){
             break;
         }
     }
+
     progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP-BEGIN_PERCENT;
     checkProgressSingle();
 
@@ -143,11 +167,36 @@ function showTripInfo(tripId){
         var counter_humidity =0;
         var sum_of_elements_temperature=0;
         var sum_of_elements_humidity=0;
+        var variab = [];
+        var speedData = [];
+        var totaldist = 0;
+
+
+        for (b = 0; b < curTrip.sensorData.length; b++) {
+            if (curTrip.sensorData[b].sensorID == "1") {
+                if (!(curTrip.sensorData[b].data === undefined)) {
+                    if (!(curTrip.sensorData[b].data[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[1] === undefined)) {
+                        variab.push(b)
+                    }
+                }
+            }
+        }
+
+        for (c = 0; c < (variab.length-1); c++){
+            var timestampDate = new Date(curTrip.sensorData[variab[c]].timestamp);
+            var distint =  calcCrow(curTrip.sensorData[variab[c]].data[0].coordinates[0],curTrip.sensorData[variab[c]].data[0].coordinates[1],curTrip.sensorData[variab[c+1]].data[0].coordinates[0],curTrip.sensorData[variab[c+1]].data[0].coordinates[1]);
+            var timedif = ((new Date(curTrip.sensorData[variab[c+1]].timestamp) - new Date(curTrip.sensorData[variab[c]].timestamp)) / 1000).toString().toHHMMSS();
+            var totalsec = timedif.split(':');
+            var timedifsec = (+totalsec[0]) * 3600 + (+totalsec[1]) * 60 + (+totalsec[2]);
+            var speedint = ((distint) / (timedifsec/3600));
+            speedData.push([timestampDate,speedint]);
+            totaldist += parseFloat(distint);
+            }
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             switch (sensorData.sensorID){
-                case 1: //GPS
+                case 1: //GPS + Speed
                     if (!(sensorData.data === undefined)) {
                         for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
                             var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
@@ -199,11 +248,15 @@ function showTripInfo(tripId){
                     break;
             }
         }
-        // Weergeven van "Average Temperature" and "Average Humidity"
+        // Weergeven van "Average Temperature" and "Average Humidity" and "Average Speed"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
         $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
+        var totaltimesecsplit = curTime.split(':');
+        var totaltimesec = (+totaltimesecsplit[0]) * 3600 + (+totaltimesecsplit[1]) * 60 + (+totaltimesecsplit[2]);
+        curSpeedAverage = Math.round((totaldist/(totaltimesec/3600))*100)/100;
+        $('#tripInfoAverageSpeed').text('Average Speed: '+curSpeedAverage+ ' km/h');
         //GPS
         //GPS
         if (tripMapObj.coords.length > 1) {
@@ -279,6 +332,22 @@ function showTripInfo(tripId){
 
             var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
             drawCharts.push([chartTemp,chartData,options]);
+        }
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        // Speed
+        if (speedData.length > 0) {
+            speedData.sort(SortByTimestamp);
+            options = {'title': 'Speed: ' + tripId, colors: ['Yellow'], curveType: 'function', backgroundColor: '#f5f5f5'};
+            var chartData = new google.visualization.DataTable();
+            chartData.addColumn('string', 'Time');
+            chartData.addColumn('number', 'Speed');
+            for (var b = 0; b < speedData.length; b++) {
+                chartData.addRow(['', speedData[b][1]]);
+            }
+
+            var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed')[0]); //Chart aanmaken in div
+            drawCharts.push([chartSpeed,chartData,options]);
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -440,5 +509,6 @@ function addZero(i) { //Voor data en uren enzo
     }
     return i;
 }
+
 
 $(document).ready(initCalendar);
