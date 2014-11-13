@@ -25,10 +25,6 @@ def on_emit(*args):
     startID = args[0]
     print 'server_message', args
 
-def return_response(*args):
-    """Returns the server message."""
-    return args
-
 def convert_coordinates(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format."""
     k = 0
@@ -91,7 +87,7 @@ def accelerometer_pointdata():
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
+    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}]
     return data
 
 def realtime():
@@ -116,18 +112,20 @@ metadata = {} #the set of metadata is empty: no metadata used
 socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
 socketIO.on('server_message', on_emit)
 socketIO.emit('start', json.dumps(info_start), on_emit)
-info_end = {"_id":startID, "meta": metadata}
 socketIO.wait(2)
+info_end = {"_id":startID, "meta": metadata}
 
 #SENDING REALTIME DATA
-sensordata = realtime()
-while sensordata != 'END':
+condition = realtime()
+sensordata1 = {"_id":startID, "sensorData":condition}
+while condition != 'END':
     if try_connection() == False:
         print "Cannot send data. Please connect to the internet."
         time.sleep(2)
-    elif not sensordata == None:
-        socketIO.emit('rt-sensordata',{"_id":startID, "sensorData":sensordata})
-        socketIO.emit('rt-sensordata',{"_id":startID, "sensorData":accelerometer_pointdata()})
+    elif not condition == None:
+        socketIO.emit('rt-sensordata',sensordata1)
+        sensordata2 = {"_id":startID, "sensorData":accelerometer_pointdata()}
+        socketIO.emit('rt-sensordata',json.dumps(sensordata2))
     sensordata = realtime()
 
 #ENDING THE TRIP
