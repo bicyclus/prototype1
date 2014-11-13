@@ -14,11 +14,14 @@ var curMapBounds;
 var chartAccObj;
 var chartPosObj;
 var chartTempObj;
+var chartElevObj;
 
 function initCalendar(){
     $('#calProgress').hide();
     $('#singleProgress').hide();
     $('#tripInfoDiv').hide();
+    $('#tripInfoElev').hide();
+    $('#tripInfoTemp').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -26,6 +29,18 @@ function initCalendar(){
     calendarFcts();
     initGMap();
     $('#tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoHeight').click(function(){
+        $("#tripInfoElev").toggle();
+        drawChartObj(chartElevObj);
+        $("#heightCaret").toggleClass("fa-caret-square-o-right");
+        $("#heightCaret").toggleClass("fa-caret-square-o-down");
+    });
+    $('#tripInfoTemperature').click(function(){
+        $("#tripInfoTemp").toggle();
+        drawChartObj(chartTempObj);
+        $("#tempCaret").toggleClass("fa-caret-square-o-right");
+        $("#tempCaret").toggleClass("fa-caret-square-o-down");
+    });
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     var userFilter = '';
@@ -126,9 +141,9 @@ function showTripInfo(tripId){
 
     //Elap time
     var curTime = ((new Date(curTrip.endTime) - new Date(curTrip.startTime))/1000).toString().toHHMMSS();
-    $('#tripInfoTime').append('<i class="fa fa-clock-o">&nbsp;</i>'+curTime);
+    $('#tripInfoTime').append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>'+curTime);
     //UserID
-    $('#tripInfoUser').append('<i class="fa fa-user">&nbsp;</i>'+curTrip.userID);
+    $('#tripInfoUser').append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-user">&nbsp;</i>'+curTrip.userID);
     //Google map trip
     var coords;
     var bounds = new google.maps.LatLngBounds();
@@ -203,9 +218,9 @@ function showTripInfo(tripId){
         }
         // Weergeven van "Average Temperature" and "Average Humidity"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
-        $('#tripInfoTemperature').append('<i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
+        $('#tripInfoTemperature').append('<i class="fa fa-caret-square-o-right" id="tempCaret">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
-        $('#tripInfoHumidity').append('<i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
+        $('#tripInfoHumidity').append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
@@ -332,22 +347,18 @@ function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: a
                         }
                     }
                 }
-                $("#tripInfoHeight").append('<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
+                $("#tripInfoHeight").append('<i class="fa fa-caret-square-o-right" id="heightCaret">&nbsp;</i><i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
                 //Chart
-                chart = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
+                chartElev = new google.visualization.ColumnChart($('#tripInfoElev')[0]);
                 $('#tripInfoDiv').show('blind',ANIM_TIME,function(){
                     //Callback
                     google.maps.event.trigger(map, 'resize');
                     map.fitBounds(curMapBounds);
-                    chart.draw(data, {
-                        height: 150,
-                        legend: 'none',
-                        titleY: 'Elevation (m)',
-                        title: elevId
-                    });
-                    chartAccObj[0].draw(chartAccObj[1],chartAccObj[2]);
-                    chartPosObj[0].draw(chartPosObj[1],chartPosObj[2]);
-                    chartTempObj[0].draw(chartTempObj[1],chartTempObj[2]);
+                    options = {legend: 'none',titleY: 'Elevation (m)',title: elevId,backgroundColor:'#f5f5f5'};
+                    chartElevObj = [chartElev,data,options];
+                    drawChartObj(chartAccObj);
+                    drawChartObj(chartPosObj);
+                    drawChartObj(chartTempObj);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
                 checkProgressSingle();
@@ -452,4 +463,7 @@ function addZero(i) { //Voor data en uren enzo
     return i;
 }
 
+function drawChartObj(chartObj) {
+    chartObj[0].draw(chartObj[1],chartObj[2]);
+}
 $(document).ready(initCalendar);
