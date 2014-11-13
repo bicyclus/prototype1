@@ -139,10 +139,14 @@ function showTripInfo(tripId){
         var posData = [];
         var tempData = [];
         var drawCharts = [];
+        var heartbeatData = [];
         var counter_temperature=0;
         var counter_humidity =0;
+        var counter_heartbeat = 0;
         var sum_of_elements_temperature=0;
         var sum_of_elements_humidity=0;
+        var sum_of_elements_heartbeat=0;
+
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
@@ -166,7 +170,7 @@ function showTripInfo(tripId){
                     if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                         if (!(sensorData.data[0].value === undefined)) {
                             var timestampDate = new Date(sensorData.timestamp);
-                            tempData.push([timestampDate,sensorData.data[0].value[0]])
+                            tempData.push([timestampDate,sensorData.data[0].value[0]]);
                             counter_temperature+=1;
                             sum_of_elements_temperature+=parseInt(sensorData.data[0].value);
                         }
@@ -194,17 +198,26 @@ function showTripInfo(tripId){
                 case 8: //Camera
                     break;
                 case 9: //Heartbeat
+                    if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)){
+                        if (!(sensorData.data[0].value === undefined)){
+                            counter_heartbeat +=1;
+                            sum_of_elements_heartbeat+=parseInt(sensorData.data[0].value);
+                            heartbeatData.push([sensorData.data[0].value[0]]);
+                        }
+                    }
                     break;
                 case 10: //Barometer
                     break;
             }
         }
-        // Weergeven van "Average Temperature" and "Average Humidity"
+        // Weergeven van "Average Temperature", "Average Humidity" en "Heart rate Average"
         curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
         $('#tripInfoTemperature').text('Average Temperature: '+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         $('#tripInfoHumidity').text('Average Humidity: '+curHumidityAverage+ ' %');
-        //GPS
+        curHeartbeatAverage = Math.round(sum_of_elements_heartbeat/counter_heartbeat);
+        $('#tripInfoHeartbeat').text('Average Heartbeat: '+curHeartbeatAverage+ 'beats per minute');
+
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
