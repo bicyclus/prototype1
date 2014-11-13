@@ -10,6 +10,8 @@
    Base styles: opinionated defaults
    ========================================================================== */
 
+/*http://erikflowers.github.io/weather-icons/ */
+/*http://fortawesome.github.io/Font-Awesome/icons/*/
 html,
 button,
 input,
@@ -330,4 +332,8 @@ textarea {
 
 .form-filter {
     width: 600px;
+}
+
+#tripInfoHeight,#tripInfoTemperature{
+    cursor: pointer;
 }
