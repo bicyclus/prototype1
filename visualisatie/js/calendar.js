@@ -46,7 +46,7 @@ function initCalendar(){
         $("#timeCaret").toggleClass("fa-caret-square-o-right");
         $("#timeCaret").toggleClass("fa-caret-square-o-down");
     });
-    $('#tripInfoAccel').click(function() {
+    $('#tripInfoAccel').click(function(){
         $("#tripInfoAccelAcc").toggle();
         $("#tripInfoAccelPos").toggle();
         drawChartObj(chartAccObj);
@@ -320,7 +320,7 @@ function showTripInfo(tripId){
         var totaltimesecsplit = curTime.split(':');
         var totaltimesec = (+totaltimesecsplit[0]) * 3600 + (+totaltimesecsplit[1]) * 60 + (+totaltimesecsplit[2]);
         curSpeedAverage = Math.round((totaldist/(totaltimesec/3600))*100)/100;
-        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i>' + 'Average speed: ' +curSpeedAverage+ ' km/h');
+        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' +curSpeedAverage+ ' km/h');
 
         //GPS
         if (tripMapObj.coords.length > 1) {
