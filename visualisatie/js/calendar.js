@@ -141,29 +141,6 @@ function fillCalendar(data){
     checkProgressCal();
 }
 
-function calcCrow(lat1, lon1, lat2, lon2)
-{
-    var R = 6371; // km
-    var dLat = toRad(lat2-lat1);
-    var dLon = toRad(lon2-lon1);
-    var lat1 = toRad(lat1);
-    var lat2 = toRad(lat2);
-
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    var d = R * c;
-    return d;
-}
-
-// Converts numeric degrees to radians
-function toRad(Value)
-{
-    return Value * Math.PI / 180;
-}
-
-
-
 function showTripInfo(tripId){
     //Clean
     $('.tripInfo').empty();
@@ -225,6 +202,7 @@ function showTripInfo(tripId){
         var prevGps = {};
         var speedData = [];
         var totaldist = 0;
+        var curSpeedAverage = 0;
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
@@ -242,11 +220,12 @@ function showTripInfo(tripId){
                             prevGps = sensorData;
                         } else {
                             var timestampDate = new Date(prevGps.timestamp);
-                            var distint =  calcCrow(prevGps.data[0].coordinates[0],prevGps.data[0].coordinates[1],sensorData.data[0].coordinates[0],sensorData.data[0].coordinates[1]);
+                            var distint =  google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
                             var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                            var speedint = ((distint) / (timedif/3600));
+                            var speedint = distint / timedif * 3.6;
                             speedData.push([timestampDate,speedint]);
-                            totaldist += parseFloat(distint);
+                            totaldist += distint;
+                            curSpeedAverage += speedint;
                             prevGps = sensorData;
                         }
                     }
@@ -307,10 +286,8 @@ function showTripInfo(tripId){
 
 
         // Speed (GPS)
-        var totaltimesecsplit = curTime.split(':');
-        var totaltimesec = (+totaltimesecsplit[0]) * 3600 + (+totaltimesecsplit[1]) * 60 + (+totaltimesecsplit[2]);
-        curSpeedAverage = Math.round((totaldist/(totaltimesec/3600))*100)/100;
-        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' +curSpeedAverage+ ' km/h');
+        curSpeedAverage = curSpeedAverage/speedData.length;
+        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-curTmeter">&nbsp;</i>' +curSpeedAverage+ ' km/h');
 
         //GPS
         if (tripMapObj.coords.length > 1) {
