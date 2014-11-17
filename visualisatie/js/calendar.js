@@ -121,7 +121,10 @@ function fillCalendar(data){
                     linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            if (data[i].meta == undefined){
+                linkText += ' Real Time';
+            }
+            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
         }
 
     }
@@ -219,45 +222,32 @@ function showTripInfo(tripId){
         var sum_of_elements_temperature=0;
         var sum_of_elements_humidity=0;
         var sum_of_elements_heartbeat=0;
-        var variab = [];
+        var prevGps = {};
         var speedData = [];
         var totaldist = 0;
-
-
-        for (b = 0; b < curTrip.sensorData.length; b++) {
-            if (curTrip.sensorData[b].sensorID == "1") {
-                if (!(curTrip.sensorData[b].data === undefined)) {
-                    if (!(curTrip.sensorData[b].data[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[1] === undefined)) {
-                        variab.push(b)
-                    }
-                }
-            }
-        }
-
-        for (c = 0; c < (variab.length-1); c++){
-            var timestampDate = new Date(curTrip.sensorData[variab[c]].timestamp);
-            var distint =  calcCrow(curTrip.sensorData[variab[c]].data[0].coordinates[0],curTrip.sensorData[variab[c]].data[0].coordinates[1],curTrip.sensorData[variab[c+1]].data[0].coordinates[0],curTrip.sensorData[variab[c+1]].data[0].coordinates[1]);
-            var timedif = ((new Date(curTrip.sensorData[variab[c+1]].timestamp) - new Date(curTrip.sensorData[variab[c]].timestamp)) / 1000).toString().toHHMMSS();
-            var totalsec = timedif.split(':');
-            var timedifsec = (+totalsec[0]) * 3600 + (+totalsec[1]) * 60 + (+totalsec[2]);
-            var speedint = ((distint) / (timedifsec/3600));
-            speedData.push([timestampDate,speedint]);
-            totaldist += parseFloat(distint);
-            }
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             switch (sensorData.sensorID){
                 case 1: //GPS + Speed
                     if (!(sensorData.data === undefined)) {
-                        for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
-                            var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
-                            if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
-                                if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
-                                    tripMapObj.coords.push(coord);
-                                    bounds.extend(coord);
-                                }
+                        var coord = new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]);
+                        if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                            if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
+                                tripMapObj.coords.push(coord);
+                                bounds.extend(coord);
                             }
+                        }
+                        if ($.isEmptyObject(prevGps)) {
+                            prevGps = sensorData;
+                        } else {
+                            var timestampDate = new Date(prevGps.timestamp);
+                            var distint =  calcCrow(prevGps.data[0].coordinates[0],prevGps.data[0].coordinates[1],sensorData.data[0].coordinates[0],sensorData.data[0].coordinates[1]);
+                            var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
+                            var speedint = ((distint) / (timedif/3600));
+                            speedData.push([timestampDate,speedint]);
+                            totaldist += parseFloat(distint);
+                            prevGps = sensorData;
                         }
                     }
                     break;
