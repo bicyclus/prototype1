@@ -234,7 +234,7 @@ function heartbeat(data) {
                 marker: {
                     enabled: false
                 },
-                pointInterval: 3600000/60*4, // 3 seconds interval
+                pointInterval: 3600000/60/60*4, // 4 seconds interval
 
                 pointStart: Date.UTC(year, month, day, hours, minutes, seconds)
 
