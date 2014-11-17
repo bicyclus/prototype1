@@ -7,6 +7,7 @@ var PROG_STEPS_TRIPS = 7;
 //- Temperature chart
 //- Humidity chart
 //- Elevation plots
+// - Speed chart
 var PROG_STEPS_CAL = 2;
 //- Initfcts
 //- Fill Calendar
