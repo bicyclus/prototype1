@@ -204,6 +204,7 @@ function showTripInfo(tripId){
         var totaldist = 0;
         var curSpeedAverage = 0;
 
+
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             switch (sensorData.sensorID){
@@ -216,17 +217,30 @@ function showTripInfo(tripId){
                                 bounds.extend(coord);
                             }
                         }
-                        if ($.isEmptyObject(prevGps)) {
-                            prevGps = sensorData;
-                        } else {
-                            var timestampDate = new Date(prevGps.timestamp);
-                            var distint =  google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
-                            var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                            var speedint = distint / timedif * 3.6;
-                            speedData.push([timestampDate,speedint]);
-                            totaldist += distint;
-                            curSpeedAverage += speedint;
-                            prevGps = sensorData;
+                        if (!(sensorData.data[0].speed === undefined)){
+                            var timestampDate = new Date(sensorData.timestamp);
+                            speedData.push([timestampDate, sensorData.data[0].speed[0]]);
+                            //var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
+                            //totaldist += distint;
+                            curSpeedAverage += sensorData.data[0].speed[0];
+                        }
+                        if (sensorData.data[0].speed === undefined){
+                            if (sensorData.data[0].unit == 'dmc') {
+                                sensorData.data[0].coordinates[0] = sensorData.data[0].coordinates[0] / 100;
+                                sensorData.data[0].coordinates[1] = sensorData.data[0].coordinates[1] / 100;
+                            }
+                            if ($.isEmptyObject(prevGps)) {
+                                prevGps = sensorData;
+                            } else {
+                                var timestampDate = new Date(prevGps.timestamp);
+                                var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
+                                var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
+                                var speedint = distint / timedif * 3.6;
+                                speedData.push([timestampDate, speedint]);
+                                totaldist += distint;
+                                curSpeedAverage += speedint;
+                                prevGps = sensorData;
+                            }
                         }
                     }
                     break;
@@ -281,12 +295,14 @@ function showTripInfo(tripId){
         $('#tripInfoTemperature').append('<i class="fa fa-caret-square-o-right" id="tempCaret">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         curHeartbeatAverage = Math.round(sum_of_elements_heartbeat/counter_heartbeat);
+        totaldist = Math.round((totaldist/1000)*100)/100;
         $('#tripInfoHeartbeat').text('Average Heartbeat: '+curHeartbeatAverage+ 'beats per minute');
         $('#tripInfoHumidity').append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
+        $('#tripInfoTotaldist').append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i>'+totaldist+ ' km');
 
 
         // Speed (GPS)
-        curSpeedAverage = curSpeedAverage/speedData.length;
+        curSpeedAverage = Math.round(curSpeedAverage/speedData.length * 100)/100;
         $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-curTmeter">&nbsp;</i>' +curSpeedAverage+ ' km/h');
 
         //GPS
