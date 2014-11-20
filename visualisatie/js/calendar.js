@@ -28,7 +28,10 @@ function initCalendar(){
     //Initfcts
     calendarFcts();
     initGMap();
-    $('#tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoClose').click(function(){
+        $(".clickedTrip").removeClass('clickedTrip');
+        $("#tripInfoDiv").hide('blind',ANIM_TIME)
+    });
     $('#tripInfoHeight').click(function(){
         $("#tripInfoElev").toggle();
         drawChartObj(chartElevObj);
@@ -46,7 +49,7 @@ function initCalendar(){
         $("#timeCaret").toggleClass("fa-caret-square-o-right");
         $("#timeCaret").toggleClass("fa-caret-square-o-down");
     });
-    $('#tripInfoAccel').click(function() {
+    $('#tripInfoAccel').click(function(){
         $("#tripInfoAccelAcc").toggle();
         $("#tripInfoAccelPos").toggle();
         drawChartObj(chartAccObj);
@@ -121,7 +124,10 @@ function fillCalendar(data){
                     linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
-            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' +linkText + '</a>';
+            if (data[i].meta == undefined){
+                linkText += ' Real Time';
+            }
+            calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
         }
 
     }
@@ -137,29 +143,6 @@ function fillCalendar(data){
     progressCal = progressCal + 100/PROG_STEPS_CAL;
     checkProgressCal();
 }
-
-function calcCrow(lat1, lon1, lat2, lon2)
-{
-    var R = 6371; // km
-    var dLat = toRad(lat2-lat1);
-    var dLon = toRad(lon2-lon1);
-    var lat1 = toRad(lat1);
-    var lat2 = toRad(lat2);
-
-    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    var d = R * c;
-    return d;
-}
-
-// Converts numeric degrees to radians
-function toRad(Value)
-{
-    return Value * Math.PI / 180;
-}
-
-
 
 function showTripInfo(tripId){
     //Clean
@@ -219,45 +202,34 @@ function showTripInfo(tripId){
         var sum_of_elements_temperature=0;
         var sum_of_elements_humidity=0;
         var sum_of_elements_heartbeat=0;
-        var variab = [];
+        var prevGps = {};
         var speedData = [];
         var totaldist = 0;
-
-
-        for (b = 0; b < curTrip.sensorData.length; b++) {
-            if (curTrip.sensorData[b].sensorID == "1") {
-                if (!(curTrip.sensorData[b].data === undefined)) {
-                    if (!(curTrip.sensorData[b].data[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[0] === undefined) && !(curTrip.sensorData[b].data[0].coordinates[1] === undefined)) {
-                        variab.push(b)
-                    }
-                }
-            }
-        }
-
-        for (c = 0; c < (variab.length-1); c++){
-            var timestampDate = new Date(curTrip.sensorData[variab[c]].timestamp);
-            var distint =  calcCrow(curTrip.sensorData[variab[c]].data[0].coordinates[0],curTrip.sensorData[variab[c]].data[0].coordinates[1],curTrip.sensorData[variab[c+1]].data[0].coordinates[0],curTrip.sensorData[variab[c+1]].data[0].coordinates[1]);
-            var timedif = ((new Date(curTrip.sensorData[variab[c+1]].timestamp) - new Date(curTrip.sensorData[variab[c]].timestamp)) / 1000).toString().toHHMMSS();
-            var totalsec = timedif.split(':');
-            var timedifsec = (+totalsec[0]) * 3600 + (+totalsec[1]) * 60 + (+totalsec[2]);
-            var speedint = ((distint) / (timedifsec/3600));
-            speedData.push([timestampDate,speedint]);
-            totaldist += parseFloat(distint);
-            }
+        var curSpeedAverage = 0;
 
         for (a = 0; a < curTrip.sensorData.length; a++) { //Iterate over all sensorData
             var sensorData = curTrip.sensorData[a];
             switch (sensorData.sensorID){
                 case 1: //GPS + Speed
                     if (!(sensorData.data === undefined)) {
-                        for (b = 0; b < sensorData.data.length; b++) { //Iterate over all data
-                            var coord = new google.maps.LatLng(sensorData.data[b].coordinates[0], sensorData.data[b].coordinates[1]);
-                            if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
-                                if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
-                                    tripMapObj.coords.push(coord);
-                                    bounds.extend(coord);
-                                }
+                        var coord = new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]);
+                        if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
+                            if (!coord.equals(tripMapObj.coords[tripMapObj.coords.length - 1])) {
+                                tripMapObj.coords.push(coord);
+                                bounds.extend(coord);
                             }
+                        }
+                        if ($.isEmptyObject(prevGps)) {
+                            prevGps = sensorData;
+                        } else {
+                            var timestampDate = new Date(prevGps.timestamp);
+                            var distint =  google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
+                            var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
+                            var speedint = distint / timedif * 3.6;
+                            speedData.push([timestampDate,speedint]);
+                            totaldist += distint;
+                            curSpeedAverage += speedint;
+                            prevGps = sensorData;
                         }
                     }
                     break;
@@ -317,10 +289,8 @@ function showTripInfo(tripId){
 
 
         // Speed (GPS)
-        var totaltimesecsplit = curTime.split(':');
-        var totaltimesec = (+totaltimesecsplit[0]) * 3600 + (+totaltimesecsplit[1]) * 60 + (+totaltimesecsplit[2]);
-        curSpeedAverage = Math.round((totaldist/(totaltimesec/3600))*100)/100;
-        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i>' + 'Average speed: ' +curSpeedAverage+ ' km/h');
+        curSpeedAverage = curSpeedAverage/speedData.length;
+        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-curTmeter">&nbsp;</i>' +curSpeedAverage+ ' km/h');
 
         //GPS
         if (tripMapObj.coords.length > 1) {
@@ -484,7 +454,7 @@ function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: a
 }
 
 function initGMap(){
-    map = new google.maps.Map($("#tripInfoMap")[0]);
+    map = new google.maps.Map($("#tripInfoMap")[0],{scrollwheel: false});
     bikeLayer = new google.maps.BicyclingLayer(); //Show bike paths
     bikeLayer.setMap(map);
     elevator = new google.maps.ElevationService();
@@ -529,6 +499,9 @@ function calendarFcts() {
 
     $("body").on("click",".tripEventLink",function(){
         showTripInfo($(this).attr('id'));
+        console.log($(".clickedTrip")[0]);
+        $(".clickedTrip").removeClass('clickedTrip');
+        $(this).addClass('clickedTrip');
     });
 }
 
