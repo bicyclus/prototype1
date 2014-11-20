@@ -25,7 +25,7 @@
     <script src="js/const.js"></script>
     <script src="js/plugins.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/trips2kladmichiel.js"></script>
+    <script src="js/heartbeatdemotrip.js"></script>
 </head>
 <body>
 <!--[if lt IE 7]>
@@ -35,12 +35,13 @@
     <div class="jumbotron">
         <img src="img/Logo.png" class="logo_img">
         <h1>Bicyclus Web interface v0.6</h1>
+        <h2>Demo Realtime Heart rate visualisation </h2>
         <p>PenO.3 – KULeuven – Faculty of Engineering</p>
         <p><a class="btn btn-primary btn-lg" href="http://bicyclus.wordpress.com" target="_blank">Our Blog</a></p>
     </div>
     <p>
     <div class="btn-group">
-        <button id='getTrips' class="btn btn-primary">Get all trips</button>
+        <button id='getTrips' class="btn btn-primary">Show heart rate demo</button>
         <button id='showJSON' class="btn btn-default">Show/Hide JSON Response</button>
     </div>
     <div class="btn-group">
@@ -68,12 +69,6 @@
             </fieldset>
         </form>
     </div>
-    <p><div id='chart_div'></div></p>
-    <p><div id='map_div'></div></p>
-    <p><div id="elevation_chart"></div></p>
-    <p><div id='accel_div'></div></p>
-    <p><div id='temp_div'></div></p>
-    <p><div id='hum_div'></div></p>
     <p><div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div></p>
     <p><div id='myReciever'></div></p>
 </div>

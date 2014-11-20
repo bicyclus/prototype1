@@ -4,6 +4,7 @@ import serial
 from socketIO_client import SocketIO
 import json
 import urllib2
+import os
 
 #DEFINING THE AUXILIARY FUNCTIONS
 def try_connection():
@@ -104,25 +105,83 @@ def create_batch():
     batch = [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
     return batch
 
+def send_data(save_path):
+    """
+    Sends all the data files that are present in the specified path to the Qbike server.
+    :param save_path: Requires the path in which the trips are saved.
+    :return:
+    """
+    end = False
+    Trip_nb = 100
+    while end == False:
+        if not os.path.isfile('C:\Users\Joren\Documents\Ir 1B\P&O\P&O 3\Tryouts\Trips\Trip1.txt'):
+            end = True
+
+        else:
+            for nb in reversed(range(0,100)):
+                Trip = os.path.join(save_path,"Trip"+str(nb)+".txt")
+                Trip_nb = str(nb)
+                if os.path.isfile(Trip):
+                    break
+
+            Trip_path = os.path.join(save_path, r"Trip"+Trip_nb+r".txt")
+
+            with open(Trip_path, "r") as Trip:
+                batch = json.load(Trip)
+
+            info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
+            socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
+            socketIO.on('server_message', on_response)
+            socketIO.emit('start', json.dumps(info), on_response)
+            socketIO.wait(2)
+            socketIO.emit('batch-tripdata', json.dumps(batch), on_response)
+            socketIO.wait(5)
+
+            os.remove(Trip_path)
+
+    print "Sent Data"
+
+def get_trip_nb(save_path):
+    """
+    Gets the trip number for the next trip to be saved. If trips are present, it starts with 1.
+    :param save_path: Requires the path in which the trips should be saved.
+    :return: The Trip number of the trip to be saved.
+    """
+    for nb in range(1,100):
+        trip = os.path.join(save_path,"Trip"+str(nb)+".txt")
+        if not os.path.isfile(trip):
+            trip_nb = str(nb)
+            break
+    return trip_nb
+
+
+def write_trip(tripdata, save_path):
+    """
+    Creates and saves a trip file containing the tripdata of the last trip.
+    :param tripdata: The tripdata collected by the sensors.
+    :param save_path: Requires the path in which the trips should be saved.
+    :return: Nothing, the file is saved in the specified path.
+    """
+    trip = os.path.join(save_path, "Trip"+get_trip_nb(save_path)+".txt")
+    with open(trip, "w") as trip:
+        json.dump(tripdata, trip)
+
+def send(save_path):
+    """
+    Sees if there is a connection present. If that is the case, it sends all the saved data present in the specified
+     path to the server. It does this using the send_data function.
+    :param save_path: Requires the path in which the trips are saved.
+    :return: Nothing, the files are sent to the server.
+    """
+    if try_connection():
+        send_data(save_path)
 
 #MAIN LOOP: RUNS WHEN FILE IS EXECUTED
-k = 0
-while k == 0:
+while True:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    save_path_pi = r'C:\Users\Joren\Documents\Ir 1B\P&O\P&O 3\Tryouts\Trips'
     if ard.readline().strip() == '1337': #the arduino nano sends 1337 to the pi when the gps has a fix so the collection of all data can start
-        k = 1
         batch = create_batch() #creates the batch corresponding to the trip
+        write_trip(batch,save_path_pi)
+    send(save_path_pi)
 
-
-#TESTS CONNECTION AND SENDS BATCH IN THE CORRECT FORMAT TO THE SERVER
-while not try_connection():
-    time.sleep(1)
-
-info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
-
-socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
-socketIO.on('server_message', on_response)
-socketIO.emit('start', json.dumps(info), on_response)
-socketIO.wait(2)
-socketIO.emit('batch-tripdata', json.dumps(batch), on_response)
-socketIO.wait(5)
