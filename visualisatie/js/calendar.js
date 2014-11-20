@@ -118,9 +118,6 @@ function fillCalendar(data){
                     linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
                 }
             }
-            if (data[i].meta == undefined){
-                linkText += ' Real Time';
-            }
             calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
         }
     }
@@ -391,6 +388,12 @@ function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: a
         'path': pathCoords,
         'samples': ELEV_SAMPLE
     };
+    if (pathCoords.length <3){
+        $('#tripInfoDiv').show('blind',ANIM_TIME);
+        progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
+        checkProgressSingle();
+        return;
+    }
     elevator.getElevationAlongPath(pathRequest,
         function(results, status) {
             if (status != google.maps.ElevationStatus.OK) { // google houdt request tegen
