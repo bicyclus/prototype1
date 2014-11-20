@@ -4,7 +4,6 @@ var progressSingle; //Holds percentage for trips progressbar
 var calData; //all calendar events
 var myCal;
 var allTrips;
-var userNames;
 var map;
 var bikeLayer;
 var elevator;
@@ -16,6 +15,7 @@ var chartPosObj;
 var chartTempObj;
 var chartElevObj;
 var chartSpeedObj;
+var userNames;
 
 function initCalendar(){
     $('#calProgress').hide();
@@ -65,6 +65,7 @@ function initCalendar(){
     });
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
+    userNames = {};
     var userFilter = '';
     $('#inputUserName').on('change', function() { //Userselect
         progressCal = 100/PROG_STEPS_CAL;
@@ -77,23 +78,17 @@ function initCalendar(){
         if (userName=="all"){
             userFilter = '';
         } else {
-            userFilter = 'userID=' + userName;
+            userFilter = '&userID=' + userName;
         }
-        var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
-        $.ajax({
-            url: getUrl + userFilter,
-            jsonp: "callback",
-            dataType: "jsonp",
-            success: function(response){
-                allTrips = response;
-                fillCalendar(response);
-            }
-        });
+
+        getJson(userFilter);
     });
-    //GetJson
-    var getUrl = "http://dali.cs.kuleuven.be:8080/qbike/trips";
+    getJson("");
+}
+
+function getJson(url){
     $.ajax({
-        url: getUrl + userFilter,
+        url: GET_URL + url,
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -104,8 +99,7 @@ function initCalendar(){
 }
 
 function fillCalendar(data){
-    calData = {};
-    userNames = {};
+    var calData = {};
     for (var i = 0; i < data.length; i++) {
         if (!(data[i].startTime === undefined)) { //startTime moet bestaan
             userNames[data[i].userID] = data[i].userID;
@@ -129,9 +123,11 @@ function fillCalendar(data){
             }
             calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
         }
-
     }
-    if ($('#inputUserName option').length < 2){
+    progressCal = progressCal + 100/PROG_STEPS_CAL;
+    checkProgressCal();
+    if ($('#inputUserName').val() == "all"){
+        $('#inputUserName').empty().append('<option value="all" selected>All Users</option>');
         $.each( userNames, function( key, value ) {
             $('#inputUserName')
                 .append($("<option></option>")
@@ -279,18 +275,11 @@ function showTripInfo(tripId){
                     break;
             }
         }
-        // Weergeven van "Average Temperature", "Average Humidity" en "Heart rate Average"
-        curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
-        $('#tripInfoTemperature').append('<i class="fa fa-caret-square-o-right" id="tempCaret">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
+        // Weergeven van "Average Humidity" en "Heart rate Average"
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         curHeartbeatAverage = Math.round(sum_of_elements_heartbeat/counter_heartbeat);
         $('#tripInfoHeartbeat').text('Average Heartbeat: '+curHeartbeatAverage+ 'beats per minute');
         $('#tripInfoHumidity').append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
-
-
-        // Speed (GPS)
-        curSpeedAverage = curSpeedAverage/speedData.length;
-        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-curTmeter">&nbsp;</i>' +curSpeedAverage+ ' km/h');
 
         //GPS
         if (tripMapObj.coords.length > 1) {
@@ -322,7 +311,7 @@ function showTripInfo(tripId){
         $('#tripInfoAccel').append('<i class="fa fa-caret-square-o-right" id="accelCaret">&nbsp;</i>'+'Bouncy/Smooth');
         if (accData.length > 0) {
             accData.sort(SortByTimestamp);
-            options = {'title':'Accelerometer acceleration: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+            var accOptions = {title:'Accelerometer acceleration: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
             var chartData = new google.visualization.DataTable();
             chartData.addColumn('string', 'Time');
             chartData.addColumn('number', 'X');
@@ -333,13 +322,13 @@ function showTripInfo(tripId){
             }
 
             var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc')[0]); //Chart aanmaken in div
-            chartAccObj = [chartAccel,chartData,options];
+            chartAccObj = [chartAccel,chartData,accOptions];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         if (posData.length > 0) {
             posData.sort(SortByTimestamp);
-            options = {'title':'Accelerometer orientation: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
+            var posOptions = {title:'Accelerometer orientation: '+tripId,colors:['red','green','blue'],curveType:'function',backgroundColor:'#f5f5f5'};
             var chartData = new google.visualization.DataTable();
             chartData.addColumn('string', 'Time');
             chartData.addColumn('number', 'X');
@@ -350,39 +339,45 @@ function showTripInfo(tripId){
             }
 
             var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos')[0]); //Chart aanmaken in div
-            chartPosObj = [chartPos,chartData,options];
+            chartPosObj = [chartPos,chartData,posOptions];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         //Temp
+        curTemperatureAverage = Math.round(sum_of_elements_temperature/counter_temperature);
+        $('#tripInfoTemperature').append('<i class="fa fa-caret-square-o-right" id="tempCaret">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>'+curTemperatureAverage+' °C');
         if (tempData.length > 0) {
             tempData.sort(SortByTimestamp);
-            options = {'title': 'Temperature: ' + tripId, colors: ['red'], curveType: 'function', backgroundColor: '#f5f5f5'};
+            var tempOptions = {title: 'Temperature: ' + tripId, colors: ['red','#4ab9db'], curveType: 'function', backgroundColor: '#f5f5f5', series: {1: {lineWidth: 1, visibleInLegend: true}}};
             var chartData = new google.visualization.DataTable();
             chartData.addColumn('string', 'Time');
             chartData.addColumn('number', 'Temperature');
+            chartData.addColumn('number', 'Average');
             for (var b = 0; b < tempData.length; b++) {
-                chartData.addRow(['', tempData[b][1]]);
+                chartData.addRow(['', tempData[b][1], curTemperatureAverage]);
             }
 
             var chartTemp = new google.visualization.LineChart($('#tripInfoTemp')[0]); //Chart aanmaken in div
-            chartTempObj = [chartTemp,chartData,options];
+            chartTempObj = [chartTemp,chartData,tempOptions];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
         // Speed
+        curSpeedAverage = Math.round(curSpeedAverage/speedData.length*100)/100;
+        $('#tripInfoAverageSpeed').append('<i class="fa fa-caret-square-o-right" id="speedCaret">&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' +curSpeedAverage+ ' km/h');
         if (speedData.length > 0) {
             speedData.sort(SortByTimestamp);
-            options = {'title': 'Speed: ' + tripId, colors: ['Yellow'], curveType: 'function', backgroundColor: '#f5f5f5'};
+            var speedOptions = {title: 'Speed: ' + tripId, colors: ['red','#4ab9db'], curveType: 'function', backgroundColor: '#f5f5f5', series: {1: {lineWidth: 1, visibleInLegend: true}}};
             var chartData = new google.visualization.DataTable();
             chartData.addColumn('string', 'Time');
             chartData.addColumn('number', 'Speed');
+            chartData.addColumn('number', 'Average');
             for (var b = 0; b < speedData.length; b++) {
-                chartData.addRow(['', speedData[b][1]]);
+                chartData.addRow(['', speedData[b][1], curSpeedAverage]);
             }
 
             var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed')[0]); //Chart aanmaken in div
-            chartSpeedObj = [chartSpeed,chartData,options];
+            chartSpeedObj = [chartSpeed,chartData,speedOptions];
         }
         progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP;
         checkProgressSingle();
@@ -499,7 +494,6 @@ function calendarFcts() {
 
     $("body").on("click",".tripEventLink",function(){
         showTripInfo($(this).attr('id'));
-        console.log($(".clickedTrip")[0]);
         $(".clickedTrip").removeClass('clickedTrip');
         $(this).addClass('clickedTrip');
     });
