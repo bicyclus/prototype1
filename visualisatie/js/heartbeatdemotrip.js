@@ -64,7 +64,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
     $('#temp_div').empty();
     $('#hum_div').empty();
     $.ajax({
-        url: getUrl + userFilter + dateFilter,
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/5464c2f04e4238bc7756c0d6",
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
