@@ -28,7 +28,10 @@ function initCalendar(){
     //Initfcts
     calendarFcts();
     initGMap();
-    $('#tripInfoClose').click(function(){$("#tripInfoDiv").hide('blind',ANIM_TIME)});
+    $('#tripInfoClose').click(function(){
+        $(".clickedTrip").removeClass('clickedTrip');
+        $("#tripInfoDiv").hide('blind',ANIM_TIME)
+    });
     $('#tripInfoHeight').click(function(){
         $("#tripInfoElev").toggle();
         drawChartObj(chartElevObj);
@@ -124,7 +127,7 @@ function fillCalendar(data){
             if (data[i].meta == undefined){
                 linkText += ' Real Time';
             }
-            calData[curDate] = calData[curDate] + '<a href="#singleProgress" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
+            calData[curDate] = calData[curDate] + '<a href="#tripInfoDiv" id='+data[i]._id+' class="tripEventLink">' + linkText + '</a>';
         }
 
     }
@@ -451,7 +454,7 @@ function elev_and_plot(pathCoords,elevId){ //Plot elevation graphs, attention: a
 }
 
 function initGMap(){
-    map = new google.maps.Map($("#tripInfoMap")[0]);
+    map = new google.maps.Map($("#tripInfoMap")[0],{scrollwheel: false});
     bikeLayer = new google.maps.BicyclingLayer(); //Show bike paths
     bikeLayer.setMap(map);
     elevator = new google.maps.ElevationService();
@@ -496,6 +499,9 @@ function calendarFcts() {
 
     $("body").on("click",".tripEventLink",function(){
         showTripInfo($(this).attr('id'));
+        console.log($(".clickedTrip")[0]);
+        $(".clickedTrip").removeClass('clickedTrip');
+        $(this).addClass('clickedTrip');
     });
 }
 

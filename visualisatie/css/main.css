@@ -330,6 +330,11 @@ textarea {
     height: 400px;
 }
 
+.clickedTrip{
+    font-size: 30px !important;
+    text-decoration: underline;
+}
+
 .tripInfoToggle {
     cursor: pointer;
 }
