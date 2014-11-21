@@ -217,8 +217,7 @@ function showTripInfo(tripId){
                             //var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
                             //totaldist += distint;
                             curSpeedAverage += sensorData.data[0].speed[0];
-                        }
-                        if (sensorData.data[0].speed === undefined){
+                        } else {
                             if (sensorData.data[0].unit == 'dmc') {
                                 sensorData.data[0].coordinates[0] = sensorData.data[0].coordinates[0] / 100;
                                 sensorData.data[0].coordinates[1] = sensorData.data[0].coordinates[1] / 100;
