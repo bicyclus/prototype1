@@ -284,13 +284,13 @@ function showTripInfo(tripId){
             }
         }
 
-        // Weergeven van "Average Humidity" en "Heart rate Average"
+        // Weergeven van "Average Humidity" en "Heart rate Average" en distance
         curHumidityAverage = Math.round(sum_of_elements_humidity/counter_humidity);
         curHeartbeatAverage = Math.round(sum_of_elements_heartbeat/counter_heartbeat);
         totaldist = Math.round((totaldist/1000)*100)/100;
         $('#tripInfoHeartbeat').text('Average Heartbeat: '+curHeartbeatAverage+ 'beats per minute');
         $('#tripInfoHumidity').append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>'+curHumidityAverage+ ' %');
-        $('#tripInfoTotaldist').append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i>'+totaldist+ ' km');
+        $('#tripInfoTotaldist').append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>'+totaldist+ ' km');
         //GPS
         if (tripMapObj.coords.length > 1) {
             tripMapObj.marker = new google.maps.Marker({ //Marker op begincoördinaat
