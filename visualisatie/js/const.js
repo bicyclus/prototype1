@@ -7,10 +7,9 @@ var PROG_STEPS_TRIPS = 7;
 //- Temperature chart
 //- Humidity chart
 //- Elevation plots
-var PROG_STEPS_CAL = 3;
+var PROG_STEPS_CAL = 2;
 //- Initfcts
-//- Fill Calendar Data
-//- Fill Calendar Calendar
+//- Fill Calendar
 var PROG_STEPS_SINGLETRIP = 7;
 //- Find trip
 //- GMap + Iterate
