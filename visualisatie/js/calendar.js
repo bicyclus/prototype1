@@ -89,11 +89,23 @@ function getJson(url){
     $.ajax({
         url: GET_URL + url,
         jsonp: "callback",
-        dataType: "jsonp",
-        success: function(response){
-            allTrips = response;
-            fillCalendar(response);
-        }
+        timeout: AJAX_TIMEOUT,
+        dataType: "jsonp"
+        //success: function(response){
+        //    allTrips = response;
+        //    fillCalendar(response);
+        //}
+    }).done(function(data, textStatus, jqXHR){
+        console.log("--- AJAX Succes ---");
+        console.log(textStatus);
+        allTrips = data;
+        fillCalendar(data);
+    }).fail(function(jqXHR, textStatus, errorThrown){
+        alert('AJAX Error, please check console.');
+        console.log("--- AJAX Error ---");
+        console.log(textStatus);
+        console.log(errorThrown);
+        $('#calProgressBar').addClass("progress-bar-danger");
     });
 }
 
