@@ -23,4 +23,4 @@ var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128;//2-512
 var RETRY_COUNT = 50;
 var GET_URL = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
-var AJAX_TIMEOUT = 5000;
+var AJAX_TIMEOUT = 30000;
