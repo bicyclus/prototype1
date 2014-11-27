@@ -64,7 +64,7 @@ function getAllTrips(){ //JSON van alle trips opvragen en naar functies doorgeve
     $('#temp_div').empty();
     $('#hum_div').empty();
     $.ajax({
-        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/5464c2f04e4238bc7756c0d6",
+        url: "http://dali.cs.kuleuven.be:8080/qbike/trips/5473545aaf4f11315967541f",
         jsonp: "callback",
         dataType: "jsonp",
         success: function(response){
@@ -104,7 +104,7 @@ function heartbeat(data) {
     var updatecounter = 0;
 
     for (i = 0; i < data.length; i++){
-        if (data[i]._id == '5464c2f04e4238bc7756c0d6'){
+        if (data[i]._id == '5473545aaf4f11315967541f'){
             curHeartbeatTrip = data[i];
             break;}
 
@@ -191,7 +191,7 @@ function heartbeat(data) {
                     }, { // Light
                         from: 114,
                         to: 133,
-                        color: 'rgba(0, 0, 0, 0)',
+                        color: 'rgba(0, 178, 242, 0.3)',
                         label: {
                             text: 'Light workout',
                             style: {
@@ -201,7 +201,7 @@ function heartbeat(data) {
                     }, { // Moderate
                         from: 133,
                         to: 152,
-                        color: 'rgba(68, 170, 213, 0.1)',
+                        color: 'rgba(209, 210, 0, 0.5)',
                         label: {
                             text: 'Moderate workout',
                             style: {
@@ -211,7 +211,7 @@ function heartbeat(data) {
                     }, { // Hard
                         from: 152,
                         to: 171,
-                        color: 'rgba(0, 0, 0, 0)',
+                        color: 'rgba(209, 100, 0, 0.5)',
                         label: {
                             text: 'Hard workout',
                             style: {
@@ -221,7 +221,7 @@ function heartbeat(data) {
                     }, { // Maximum
                         from: 171,
                         to: 200,
-                        color: 'rgba(68, 170, 213, 0.1)',
+                        color: 'rgba(223, 0, 0, 0.5)',
                         label: {
                             text: 'Maximum workout',
                             style: {

@@ -1,5 +1,5 @@
 import logging
-logging.basicConfig()
+logging.basicConfig() #for viewing logging error messages with urllib2
 import XLoBorg
 import time
 import serial
@@ -14,9 +14,7 @@ def try_connection():
     try:
         response = urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/', timeout=1)
         return True
-    except socket.timeout:
-        pass
-    except urllib2.URLError as err:
+    except:
         pass
     return False
 
@@ -58,13 +56,13 @@ def convert_coordinates(coor):
     coordinates = degrees + "." + dmin
     return coordinates
 
-##def beat_pointdata():
-##    """Collects heartbeat data of a specific moment (one value)."""
-##    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-##    hb = eval(arduino.readline().strip())
-##    st = time.strftime("%Y-%m-%dT%H:%M:%S")
-##    data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
-##    return data
+def beat_pointdata():
+    """Collects heartbeat data of a specific moment (one value)."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    hb = eval(arduino.readline().strip())
+    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
+    return data
 
 def temphum_pointdata():
     """Gets temperature and humidity data at a specific moment."""
@@ -103,64 +101,76 @@ def realtime():
         ard_read = str(arduino.readline().strip())
         if ard_read == '1234':
             temp = temphum_pointdata()
-            print "temphum data", temp
             return temp
         elif ard_read == '1337':
             gps_data = gps_pointdata()
-            print "gps data", gps_data
             return gps_data
-##    elif ard_read == '1996':
-##        return beat_pointdata()
+    elif ard_read == '1996':
+        return beat_pointdata()
         elif ard_read == '1995':
-            print "end"
             return 'END'
 
     
 #CONNECTING TO THE SERVER, STARTING THE TRIP, STORING THE ID AND WAITING FOR THE STARTING SIGNAL
+def connect():
+    """Sends the starting signal to the server."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r0462183"}
+    metadata = {'other':"trip ended"} #string "trip ended" stored in metadata under key 'other' to be able to filter on realtime trips easier on the bicyclus website
+    print "Setting up for server connection ..."
+    while True: #connection tests everywhere they are needed to minimise amount of connection errors
+        if try_connection() == True:
+            socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
+        socketIO.wait(2)
+    while True:
+        if try_connection() == True:
+            socketIO.on('server_message', on_emit)
+        socketIO.wait(2)
+    print "Trying to send start signal for trip ..."
+    while True:
+        if try_connection() == True:
+            socketIO.emit('start', json.dumps(info_start), on_emit)
+            print "Connection verified, start signal sent."
+        socketIO.wait(2)
+    info_end = {"_id":startID, "meta": metadata}
 
-arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-info_start = {'purpose': 'realtime-sender', 'groupID': "cwa2", 'userID': "r0462183"}
-metadata = {'other':"trip ended"} #the set of metadata is empty: no metadata used
-while try_connection() == False: #connection tests before each server interaction to minimise amount of errors
-    time.sleep(2)
-socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
-while try_connection() == False:
-    time.sleep(2)  
-socketIO.on('server_message', on_emit)
-while try_connection() == False:
-    time.sleep(2)  
-socketIO.emit('start', json.dumps(info_start), on_emit)
-socketIO.wait(2)
-info_end = {"_id":startID, "meta": metadata}
-print "checking for start signal"
-while True:
-    arduino_read = arduino.readline().strip()
-    if arduino_read == '1337':
-        break  
-print "start signal given"
 
-#SENDING REALTIME DATA
-condition = realtime()
-print condition
-while condition != 'END':
-    print "i'm in the loop!"
-    if try_connection() == False:
-        print "Cannot send data. Please connect to the internet."
-        time.sleep(2)
-    elif not condition == None:
-        sensordata1 = {"_id":startID, "sensorData":condition}
-        socketIO.emit('rt-sensordata',json.dumps(sensordata1))
-        sensordata2 = {"_id":startID, "sensorData":accelerometer_pointdata()}
-        print json.dumps(sensordata2)
-        socketIO.emit('rt-sensordata',json.dumps(sensordata2))
-        print "data sent"
+def collect_send():
+    """Collects data and immediately sends it to the server (realtime sending of data) over and over again until end signal is read."""
     condition = realtime()
-    print "new data", condition
-print "data sent!"
+    print "Starting to collect data ..."
+    while condition != 'END':
+        if try_connection() == False:
+            print "Cannot send data. Please connect to the internet."
+            time.sleep(2)
+        elif not condition == None:
+            sensordata1 = {"_id":startID, "sensorData":condition}
+            socketIO.emit('rt-sensordata',json.dumps(sensordata1))
+            sensordata2 = {"_id":startID, "sensorData":accelerometer_pointdata()}
+            socketIO.emit('rt-sensordata',json.dumps(sensordata2))
+            print "data sent"
+        condition = realtime()
+    print "End signal given. Trip data collected."
+    
+def end():
+    """Sends the end signal to the server."""
+    print "Trying to send end signal, testing connection ..."
+    while True:
+        if try_connection() == True:
+            print "Connection verified, sending end signal."
+            socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
+            print "End signal sent."
+            socketIO.wait(5)
+            break
+        socketIO.wait(2)
 
-#ENDING THE TRIP
-print "ending this"
-while try_connection() == False:
-    time.sleep(2)  
-socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
-socketIO.wait(5)
+#MAIN LOOP (INFINITE), RUNS WHEN FILE IS RAN
+while True:
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    if arduino.readline().strip() == '1337':
+        print "Start signal for collecting trip data realtime given."
+        connect()
+        collect_send()
+        end()
+        print "Data from trip collected and sent to server succesfully."
+    time.sleep(1)
