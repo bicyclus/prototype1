@@ -28,8 +28,6 @@
     <script src="js/jquery.calendario.js"></script>
     <script src="js/plugins.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/trips.js"></script>
-    <script src="js/data.js"></script>
     <script src="js/calendar.js"></script>
 
 </head>
@@ -40,15 +38,12 @@
 <div class="container clearfix">
     <div class="jumbotron">
         <img src="img/Logo.png" class="logo_img">
-        <h1>Bicyclus Web interface v0.6</h1>
+        <h1>Bicyclus Web interface v0.7</h1>
         <p>PenO.3 – KULeuven – Faculty of Engineering</p>
         <p><a class="btn btn-primary btn-lg" href="http://bicyclus.wordpress.com" target="_blank">Our Blog</a></p>
     </div>
     <div class="progress progress-striped active" id="calProgress">
         <div class="progress-bar" id="calProgressBar"></div>
-    </div>
-    <div class="progress progress-striped active" id="singleProgress">
-        <div class="progress-bar" id="singleProgressBar"></div>
     </div>
     <div class="well">
         <form class="form-filter">
@@ -75,22 +70,59 @@
             </div>
         </div>
     </section>
-    <div id="tripInfoDiv" class="well">
-        <p><div id="tripInfoClose"><i class="fa fa-times"></i></div></p>
-        <p><div id="tripInfoTime" class="tripInfo tripInfoToggle"></div>
-        <blockquote id="tripInfoTimeInfo" class="tripInfo tripInfoExtra"></blockquote></p>
-        <p><div id="tripInfoTotaldist" class="tripInfo"></div></p>
-        <p><div id="tripInfoUser" class="tripInfo"></div></p>
-        <p><div id="tripInfoHeight" class="tripInfo tripInfoToggle"></div>
-        <div id="tripInfoElev" class="tripInfo tripInfoExtra"></div></p>
-        <p><div id="tripInfoTemperature" class="tripInfo tripInfoToggle"></div>
-        <div id="tripInfoTemp" class="tripInfo tripInfoExtra"></div></p>
-        <p><div id="tripInfoAccel" class="tripInfo tripInfoToggle"></div>
-        <div id="tripInfoAccelAcc" class="tripInfo tripInfoExtra"></div>
-        <div id="tripInfoAccelPos" class="tripInfo tripInfoExtra"></div></p>
-        <p><div id="tripInfoHumidity" class="tripInfo"></div></p>
-        <p><div id="tripInfoAverageSpeed" class="tripInfo tripInfoToggle"></div></p>
-        <div id="tripInfoSpeed" class="tripInfo tripInfoExtra"></div></p>
+    <div class="progress progress-striped active" id="singleProgress">
+        <div class="progress-bar" id="singleProgressBar"></div>
+    </div>
+    <div id="tripInfoContainer" class="well">
+        <div id="tripInfoClose"><i class="fa fa-times"></i></div>
+        <div id="tripInfo0" class="tripInfoDiv">
+            <p><div id="tripInfoTime0" class="tripInfo tripInfoToggle"></div>
+            <blockquote id="tripInfoTimeInfo0" class="tripInfo tripInfoExtra"></blockquote></p>
+            <p><div id="tripInfoTotaldist0" class="tripInfo"></div></p>
+            <p><div id="tripInfoUser0" class="tripInfo"></div></p>
+            <p><div id="tripInfoHeight0" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoElev0" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoTemperature0" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoTemp0" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoAccel0" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoAccelAcc0" class="tripInfo tripInfoExtra"></div>
+            <div id="tripInfoAccelPos0" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoHumidity0" class="tripInfo"></div></p>
+            <p><div id="tripInfoAverageSpeed0" class="tripInfo tripInfoToggle"></div></p>
+            <div id="tripInfoSpeed0" class="tripInfo tripInfoExtra"></div></p>
+        </div>
+        <div id="tripInfo1" class="tripInfoDiv">
+            <p><div id="tripInfoTime1" class="tripInfo tripInfoToggle"></div>
+            <blockquote id="tripInfoTimeInfo1" class="tripInfo tripInfoExtra"></blockquote></p>
+            <p><div id="tripInfoTotaldist1" class="tripInfo"></div></p>
+            <p><div id="tripInfoUser1" class="tripInfo"></div></p>
+            <p><div id="tripInfoHeight1" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoElev1" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoTemperature1" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoTemp1" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoAccel1" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoAccelAcc1" class="tripInfo tripInfoExtra"></div>
+            <div id="tripInfoAccelPos1" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoHumidity1" class="tripInfo"></div></p>
+            <p><div id="tripInfoAverageSpeed1" class="tripInfo tripInfoToggle"></div></p>
+            <div id="tripInfoSpeed1" class="tripInfo tripInfoExtra"></div></p>
+        </div>
+        <div id="tripInfo2" class="tripInfoDiv">
+            <p><div id="tripInfoTime2" class="tripInfo tripInfoToggle"></div>
+            <blockquote id="tripInfoTimeInfo2" class="tripInfo tripInfoExtra"></blockquote></p>
+            <p><div id="tripInfoTotaldist2" class="tripInfo"></div></p>
+            <p><div id="tripInfoUser2" class="tripInfo"></div></p>
+            <p><div id="tripInfoHeight2" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoElev2" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoTemperature2" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoTemp2" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoAccel2" class="tripInfo tripInfoToggle"></div>
+            <div id="tripInfoAccelAcc2" class="tripInfo tripInfoExtra"></div>
+            <div id="tripInfoAccelPos2" class="tripInfo tripInfoExtra"></div></p>
+            <p><div id="tripInfoHumidity2" class="tripInfo"></div></p>
+            <p><div id="tripInfoAverageSpeed2" class="tripInfo tripInfoToggle"></div></p>
+            <div id="tripInfoSpeed2" class="tripInfo tripInfoExtra"></div></p>
+        </div>
         <p><div id="tripInfoMap"></div></p>
     </div>
 </div>

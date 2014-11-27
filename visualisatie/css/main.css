@@ -313,9 +313,11 @@ textarea {
 }
 
 #tripInfoClose{
-    float: right;
     text-decoration: none;
     cursor: pointer;
+    position: absolute;
+    top: 5px;
+    right: 10px;
 }
 
 .logo_img {
@@ -339,9 +341,17 @@ textarea {
     cursor: pointer;
 }
 
-#tripInfoTimeInfo{
+#tripInfoTimeInfo0,#tripInfoTimeInfo1,#tripInfoTimeInfo2{
     margin-bottom: 0;
     border-color: #ddd;
+}
+
+#tripInfoContainer{
+    position: relative;
+}
+
+.tripInfoDiv{
+    float:left;
 }
 
 blockquote{
