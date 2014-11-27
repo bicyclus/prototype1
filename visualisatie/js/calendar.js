@@ -32,6 +32,7 @@ function initCalendar(){
     $('#tripInfoClose').click(function(){
         $(".clickedTrip").removeClass('clickedTrip');
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
+        showId = [];
     });
     $('#tripInfoHeight0').click(function(){$("#tripInfoElev0").toggle();drawChartObj(chartElevObj[0]);$("#heightCaret0").toggleClass("fa-caret-square-o-right");$("#heightCaret0").toggleClass("fa-caret-square-o-down");});
     $('#tripInfoTemperature0').click(function(){$("#tripInfoTemp0").toggle();drawChartObj(chartTempObj[0]);$("#tempCaret0").toggleClass("fa-caret-square-o-right");$("#tempCaret0").toggleClass("fa-caret-square-o-down");});
@@ -91,8 +92,7 @@ function getJson(url){
 
 function fillCalendar(data){
     calData = {};
-    data.sort(SortByTimestamp);
-    console.log(end - start);
+    data.sort(SortDataByTime);
     for (var i = 0; i < data.length; i++) {
         tripCal(data[i]);
     }
@@ -618,6 +618,10 @@ function drawChartObj(chartObj) {
 
 function SortByTimestamp(a, b){ //Sorteren
     return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+}
+
+function SortDataByTime(a, b){ //Sorteren
+    return ((a.startTime < b.startTime) ? -1 : ((a.startTime > b.startTime) ? 1 : 0));
 }
 
 $(document).ready(initCalendar);

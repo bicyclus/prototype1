@@ -22,5 +22,5 @@ var BEGIN_PERCENT = 1.618;
 var ANIM_TIME = 200;
 var ELEV_SAMPLE = 128;//2-512
 var RETRY_COUNT = 50;
-var GET_URL = "http://dali.cs.kuleuven.be:8080/qbike/trips?";
+var GET_URL = "http://dali.cs.kuleuven.be:8080/qbike/trips?page=123";
 var AJAX_TIMEOUT = 100*1000; //100s...
