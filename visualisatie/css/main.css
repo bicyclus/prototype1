@@ -352,6 +352,8 @@ textarea {
 
 .tripInfoDiv{
     float:left;
+    border-style: hidden hidden solid hidden;
+    margin-bottom: 5px;
 }
 
 blockquote{

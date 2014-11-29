@@ -23,6 +23,7 @@ function initCalendar(){
     $('#singleProgress').hide();
     $('#tripInfoContainer').hide();
     $('.tripInfoExtra').hide();
+    $('.tripInfoDiv').hide();
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -31,6 +32,7 @@ function initCalendar(){
     initGMap();
     $('#tripInfoClose').click(function(){
         $(".clickedTrip").removeClass('clickedTrip');
+        $(".fa-check-square-o").remove();
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
@@ -135,6 +137,7 @@ function tripCal(trip){
 function showTripInfo(){
     //Clean
     $('.tripInfo').empty();
+    $('.tripInfoDiv').hide();
     progressSingle = BEGIN_PERCENT;
     $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },0);
     $('#singleProgress').show(ANIM_TIME);
@@ -171,7 +174,7 @@ function showTripInfo(){
         var tripStart = new Date(curTrip[i].startTime);
         var tripEnd = new Date(curTrip[i].endTime);
         var curTime = ((tripEnd - tripStart) / 1000).toString().toHHMMSS();
-        $('#tripInfoTime'+i).append('<i class="fa fa-caret-square-o-right" id="timeCaret"+i>&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>' + curTime);
+        $('#tripInfoTime'+i).append('<i class="fa fa-caret-square-o-right" id="timeCaret'+i+'">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>' + curTime);
         if (tripStart.getDate() == tripEnd.getDate()) { //Trip op 1 dag
             var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
         } else {
@@ -307,9 +310,10 @@ function showTripInfo(){
                 });
                 //Random kleur van ID
                 var stringHexNumber = (parseInt(parseInt(tripMapObj[i].id, 36).toExponential().slice(2, -5), 10) & 0xFFFFFF).toString(16).toUpperCase(); //http://stackoverflow.com/questions/17845584/converting-a-random-string-into-a-hex-colour
+                var tripColor = ('000000' + stringHexNumber).slice(-6); //Lengte aanpassen
                 var pathOptions = {
                     path: tripMapObj[i].coords,
-                    strokeColor: '#' + ('000000' + stringHexNumber).slice(-6), //Lengte aanpassen
+                    strokeColor: '#' + tripColor,
                     opacity: 0.4,
                     map: map
                 };
@@ -322,10 +326,11 @@ function showTripInfo(){
                 });
                 curMapBounds = bounds;
             }
+            $('#tripInfo'+i).css("border-color","#"+tripColor);
             progressSingle = progressSingle + 100 / PROG_STEPS_SINGLETRIP / curTrip.length;
             checkProgressSingle();
             //Accel
-            $('#tripInfoAccel'+i).append('<i class="fa fa-caret-square-o-right" id="accelCaret"+i>&nbsp;</i>' + 'Bouncy/Smooth');
+            $('#tripInfoAccel'+i).append('<i class="fa fa-caret-square-o-right" id="accelCaret'+i+'">&nbsp;</i>' + 'Bouncy/Smooth');
             if (accData.length > 0) {
                 accData.sort(SortByTimestamp);
                 var accOptions = {
@@ -372,7 +377,7 @@ function showTripInfo(){
             checkProgressSingle();
             //Temp
             curTemperatureAverage = Math.round(sum_of_elements_temperature / counter_temperature);
-            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret"+i>&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>' + curTemperatureAverage + ' °C');
+            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret'+i+'">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>' + curTemperatureAverage + ' °C');
             if (tempData.length > 0) {
                 tempData.sort(SortByTimestamp);
                 var tempOptions = {
@@ -396,7 +401,7 @@ function showTripInfo(){
             checkProgressSingle();
             // Speed
             curSpeedAverage = Math.round(curSpeedAverage / speedData.length * 100) / 100;
-            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret"+i>&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' + curSpeedAverage + ' km/h');
+            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret'+i+'">&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' + curSpeedAverage + ' km/h');
             if (speedData.length > 0) {
                 speedData.sort(SortByTimestamp);
                 var speedOptions = {
@@ -426,6 +431,7 @@ function showTripInfo(){
             checkProgressSingle();
             //Google  Elev
             elev_and_plot(tripMapObj[i].coords, curTrip[i]._id,i);
+            $("#tripInfo"+i).show();
         }
     }
 }
@@ -480,7 +486,7 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                         }
                     }
                 }
-                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret"+i>&nbsp;</i><i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
+                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i><i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
                 //Chart
                 chartElev = new google.visualization.ColumnChart($('#tripInfoElev'+num)[0]);
                 $('#tripInfoContainer').show('blind',ANIM_TIME,function(){
