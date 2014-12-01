@@ -24,13 +24,21 @@ prev_coor_ln = None
 prev_coor_lt = None
 
 def matching_coor(lst):
-    
-    return
+    for i in len(lst):
+        count = 0
+        k = len(lst)-i
+        while count != k:
+            if abs(float(lst[i])-float(lst[i+count])) > 0.1:
+                return False
+            count += 1
+    return True
 
 def determine_correct_coor(n=5):
     """To prevent sending incorrect coordinates, this function tries to determine whether th gps has a stable fix by waiting for a group of coordinates near each other.
     As soon as n (default is 5) coordinates are seen as near each other (using an arbitrary value), the function exits and the creation of the batch may start."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    ard_read = arduino.readline().strip()
+    coor_list = []
     while len(coor_list) != n: #fetching first five coordinates
         if ard_read == '1337':
             gps = gps_pointdata()
@@ -47,7 +55,7 @@ def determine_correct_coor(n=5):
         #removing oldest coordinate and putting another in place
         coor_list.insert(0,new_coor)
         del coor_list[n]
-    return #if the list with n correct values has been found
+    return #if the list with n correct values has been found, the function exits
 
 def convert_coordinates_ln(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for longitude specifically to be able to compare
