@@ -23,6 +23,32 @@ def on_response(*args):
 prev_coor_ln = None
 prev_coor_lt = None
 
+def matching_coor(lst):
+    
+    return
+
+def determine_correct_coor(n=5):
+    """To prevent sending incorrect coordinates, this function tries to determine whether th gps has a stable fix by waiting for a group of coordinates near each other.
+    As soon as n (default is 5) coordinates are seen as near each other (using an arbitrary value), the function exits and the creation of the batch may start."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    while len(coor_list) != n: #fetching first five coordinates
+        if ard_read == '1337':
+            gps = gps_pointdata()
+            if not gps == False:
+                coor_list.append(gps)
+    while not matching_coor(coor_list) == True: #trying to get a list with n correct gps values
+        #retrieving next coordinate
+        gps = False
+        while gps != True: 
+            if ard_read == '1337':
+                gps = gps_pointdata()
+                if not gps == False:
+                    new_coor = gps
+        #removing oldest coordinate and putting another in place
+        coor_list.insert(0,new_coor)
+        del coor_list[n]
+    return #if the list with n correct values has been found
+
 def convert_coordinates_ln(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for longitude specifically to be able to compare
     the input longitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
@@ -151,7 +177,7 @@ def create_batch():
         if ard_read == '1337':
             gps = gps_pointdata()
             if not gps == False:
-                batch_data += gps_pointdata()
+                batch_data += gps
         if ard_read == '1996':
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
@@ -237,6 +263,7 @@ while True:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     save_path_pi = r'/home/pi/Trips'
     if ard.readline().strip() == '1337': #the arduino nano sends 1337 to the pi when the gps has a fix so the collection of all data can start
+        determine_correct_coor()
         batch = create_batch() #creates the batch corresponding to the trip
         write_trip(batch,save_path_pi)
     send(save_path_pi)
