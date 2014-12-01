@@ -6,6 +6,8 @@ function analyseAccel(data){
     //[1]: Deviation from RMS, same length as data
     //[2]: Deviation average
     //[3]: Standard deviation of deviation
+    //[4]: Points outside
+    //[5]: Percentage which lies outside interval
     //RMS
     var rms = [];
     var dev = [];
@@ -40,5 +42,22 @@ function analyseAccel(data){
         sigma_rmsdev += Math.pow(dev[i]-dev_avg,2);
     }
     sigma_rmsdev = Math.sqrt(sigma_rmsdev/(data.length))*SIGMA_INCREASE;
-    return [rms,dev,dev_avg,sigma_rmsdev];
+    //Third pass:
+    //Points outside sigma_rmsdev+-dev_avg interval
+    var pnts = 0;
+    var outside = [];
+    for (var i = 0; i < data.length; i++) {
+        if (dev[i]>dev_avg+sigma_rmsdev){
+            pnts += 1;
+            outside.push(1);
+        } else
+        if (dev[i]<dev_avg-sigma_rmsdev){
+            pnts += 1;
+            outside.push(1);
+        } else {
+            outside.push(0);
+        }
+    }
+    var pntsPerc = pnts/data.length;
+    return [rms,dev,dev_avg,sigma_rmsdev,outside,pntsPerc];
 }

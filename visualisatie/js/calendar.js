@@ -344,11 +344,7 @@ function showTripInfo(){
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Z');
-                chartData.addColumn('number', 'RMS');
-                chartData.addColumn('number', 'RMS Deviation');
-                chartData.addColumn('number', 'Deviation Average');
-                chartData.addColumn('number', 'Deviation +');
-                chartData.addColumn('number', 'Deviation -');
+                chartData.addColumn('number', 'Shocks');
                 var passData = [];
                 for (var b = 0; b < accData.length; b++) {
                     passData.push([accData[b][0], accData[b][3]]);
@@ -356,7 +352,7 @@ function showTripInfo(){
                 var analysed = analyseAccel(passData);
                 console.log(analysed);
                 for (var b = 0; b < accData.length; b++) {
-                    chartData.addRow([accData[b][0], accData[b][3], analysed[0][b],analysed[1][b],analysed[2],analysed[2]+analysed[3],analysed[2]-analysed[3]]);
+                    chartData.addRow([accData[b][0], accData[b][3],analysed[4][b]]);
                 }
 
                 var chartAccel = new google.visualization.LineChart($('#tripInfoAccData'+i)[0]); //Chart aanmaken in div
