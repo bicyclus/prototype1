@@ -10,12 +10,11 @@ var PROG_STEPS_TRIPS = 7;
 var PROG_STEPS_CAL = 2;
 //- Initfcts
 //- Fill Calendar
-var PROG_STEPS_SINGLETRIP = 7;
+var PROG_STEPS_SINGLETRIP = 6;
 //- Find trip
 //- GMap + Iterate
 //- GElev
 //- Accel acc
-//- Accel pos
 //- Temp
 //- Speed
 var BEGIN_PERCENT = 1.618;
@@ -27,3 +26,4 @@ var GET_URL_PAGE = "http://dali.cs.kuleuven.be:8080/qbike/trips?page=123";
 var GET_URL = "http://dali.cs.kuleuven.be:8443/qbike/trips";
 var AJAX_TIMEOUT = 100*1000; //100s...
 var MAX_COMPARE = 3;
+var SMOOTH = 10;

@@ -11,7 +11,6 @@ var infowindow;
 var tripMapObj;
 var curMapBounds;
 var chartAccObj;
-var chartPosObj;
 var chartTempObj;
 var chartElevObj;
 var chartSpeedObj;
@@ -36,18 +35,10 @@ function initCalendar(){
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
-    $('#tripInfoHeight0').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret0").toggleClass("fa-caret-square-o-right");$("#heightCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature0').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret0").toggleClass("fa-caret-square-o-right");$("#tempCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel0').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret0").toggleClass("fa-caret-square-o-right");$("#accelCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed0').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret0").toggleClass("fa-caret-square-o-right");$("#speedCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoHeight1').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret1").toggleClass("fa-caret-square-o-right");$("#heightCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature1').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret1").toggleClass("fa-caret-square-o-right");$("#tempCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel1').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret1").toggleClass("fa-caret-square-o-right");$("#accelCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed1').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret1").toggleClass("fa-caret-square-o-right");$("#speedCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoHeight2').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret2").toggleClass("fa-caret-square-o-right");$("#heightCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature2').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret2").toggleClass("fa-caret-square-o-right");$("#tempCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel2').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret2").toggleClass("fa-caret-square-o-right");$("#accelCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed2').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret2").toggleClass("fa-caret-square-o-right");$("#speedCaret2").toggleClass("fa-caret-square-o-down");});
+    $("[id^='tripInfoHeight']").click(function(){toggleInfo('tripInfoElev',chartElevObj,'heightCaret');});
+    $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
+    $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
+    $("[id^='tripInfoAverageSpeed']").click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj,'speedCaret');});
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     showId = [];
@@ -161,8 +152,7 @@ function showTripInfo(){
         $("#tripInfoTemp"+i).hide();
         $("#tempCaret"+i).addClass("fa-caret-square-o-right");
         $("#tempCaret"+i).removeClass("fa-caret-square-o-down");
-        $("#tripInfoAccelAcc"+i).hide();
-        $("#tripInfoAccelPos"+i).hide();
+        $("#tripInfoAccData"+i).hide();
         $("#accelCaret"+i).addClass("fa-caret-square-o-right");
         $("#accelCaret"+i).removeClass("fa-caret-square-o-down");
         $("#tripInfoSpeed"+i).hide();
@@ -184,7 +174,6 @@ function showTripInfo(){
     var bounds = new google.maps.LatLngBounds();
     chartAccObj = [];
     chartElevObj = [];
-    chartPosObj = [];
     chartSpeedObj = [];
     chartTempObj = [];
     for (var i = 0; i < curTrip.length; i++) {
@@ -213,7 +202,6 @@ function showTripInfo(){
             tripMapObj[i].id = curTrip[i]._id;
             tripMapObj[i].coords = [];
             var accData = [];
-            var posData = [];
             var tempData = [];
             var drawCharts = [];
             var heartbeatData = [];
@@ -289,7 +277,6 @@ function showTripInfo(){
                             if (!(sensorData.data[0].acceleration === undefined)) {
                                 var timestampDate = new Date(sensorData.timestamp);
                                 accData.push([timestampDate, sensorData.data[0].acceleration[0].x, sensorData.data[0].acceleration[0].y, sensorData.data[0].acceleration[0].z]);
-                                posData.push([timestampDate, sensorData.data[0].orientation[0].mx, sensorData.data[0].orientation[0].my, sensorData.data[0].orientation[0].mz]);
                             }
                         }
                         break;
@@ -352,44 +339,24 @@ function showTripInfo(){
             if (accData.length > 0) {
                 accData.sort(SortByTimestamp);
                 var accOptions = {
-                    title: 'Accelerometer acceleration: ' + curTrip[i]._id,
-                    colors: ['red', 'green', 'blue'],
-                    curveType: 'function',
-                    backgroundColor: '#f5f5f5'
+                    title: 'Accelerometer acceleration: ' + curTrip[i]._id
                 };
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
-                chartData.addColumn('number', 'X');
-                chartData.addColumn('number', 'Y');
                 chartData.addColumn('number', 'Z');
+                chartData.addColumn('number', 'Shocks');
+                var passData = [];
                 for (var b = 0; b < accData.length; b++) {
-                    chartData.addRow([accData[b][0], accData[b][1], accData[b][2], accData[b][3]]);
+                    passData.push([accData[b][0], accData[b][3]]);
+                }
+                var analysed = analyseAccel(passData);
+                console.log(analysed);
+                for (var b = 0; b < accData.length; b++) {
+                    chartData.addRow([accData[b][0], accData[b][3],analysed[4][b]]);
                 }
 
-                var chartAccel = new google.visualization.LineChart($('#tripInfoAccelAcc'+i)[0]); //Chart aanmaken in div
+                var chartAccel = new google.visualization.LineChart($('#tripInfoAccData'+i)[0]); //Chart aanmaken in div
                 chartAccObj.push([chartAccel, chartData, accOptions]);
-            }
-            progressSingle = progressSingle + 100 / PROG_STEPS_SINGLETRIP / curTrip.length;
-            checkProgressSingle();
-            if (posData.length > 0) {
-                posData.sort(SortByTimestamp);
-                var posOptions = {
-                    title: 'Accelerometer orientation: ' + curTrip[i]._id,
-                    colors: ['red', 'green', 'blue'],
-                    curveType: 'function',
-                    backgroundColor: '#f5f5f5'
-                };
-                var chartData = new google.visualization.DataTable();
-                chartData.addColumn('datetime', 'Time');
-                chartData.addColumn('number', 'X');
-                chartData.addColumn('number', 'Y');
-                chartData.addColumn('number', 'Z');
-                for (var b = 0; b < posData.length; b++) {
-                    chartData.addRow([posData[b][0], posData[b][1], posData[b][2], posData[b][3]]);
-                }
-
-                var chartPos = new google.visualization.LineChart($('#tripInfoAccelPos'+i)[0]); //Chart aanmaken in div
-                chartPosObj.push([chartPos, chartData, posOptions]);
             }
             progressSingle = progressSingle + 100 / PROG_STEPS_SINGLETRIP / curTrip.length;
             checkProgressSingle();
@@ -522,10 +489,12 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
     );
 }
 
-function toggleInfo(elem,chart){
+function toggleInfo(elem,chart,caret){
     for (var i = 0; i < MAX_COMPARE; i++){
         if ($("#tripInfo"+i).is(":visible")){
             $("#"+elem+i).toggle();
+            $("#"+caret+i).toggleClass("fa-caret-square-o-right");
+            $("#"+caret+i).toggleClass("fa-caret-square-o-down");
             if ($("#"+elem+i).is(":visible")) {
                 drawChartObj(chart[i]);
             }
