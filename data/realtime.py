@@ -180,7 +180,8 @@ def end(info_end):
                 socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
                 time.sleep(5)
                 print "End signal sent."
-            break
+            except:
+                break
         socketIO.wait(2)
 
 #MAIN LOOP (INFINITE), RUNS WHEN FILE IS RAN
