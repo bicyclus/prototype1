@@ -75,8 +75,21 @@ function initCalendar(){
 }
 
 function getJson(url){
+    var urlParam = getQueryVariable('getUrl');
+    if (urlParam == "DevPage"){
+        var getUrl = GET_URL_PAGE;
+        $("#devPageLink").css("text-decoration","underline");
+    } else if (urlParam == "Dev") {
+        var getUrl = GET_URL_DEV;
+        $("#devLink").css("text-decoration","underline");
+    } else {
+        var getUrl = GET_URL;
+        $("#prodLink").css("text-decoration","underline");
+    }
+    console.log(urlParam);
+    console.log(getUrl);
     $.ajax({
-        url: GET_URL + url,
+        url: getUrl + url,
         jsonp: "callback",
         timeout: AJAX_TIMEOUT,
         dataType: "jsonp"
@@ -628,6 +641,17 @@ function SortByTimestamp(a, b){ //Sorteren
 
 function SortDataByTime(a, b){ //Sorteren
     return ((a.startTime < b.startTime) ? -1 : ((a.startTime > b.startTime) ? 1 : 0));
+}
+
+function getQueryVariable(variable)
+{
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i=0;i<vars.length;i++) {
+        var pair = vars[i].split("=");
+        if(pair[0] == variable){return pair[1];}
+    }
+    return(false);
 }
 
 $(document).ready(initCalendar);
