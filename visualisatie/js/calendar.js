@@ -36,21 +36,18 @@ function initCalendar(){
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
-    $('#tripInfoHeight0').click(function(){$("#tripInfoElev0").toggle();drawChartObj(chartElevObj[0]);$("#heightCaret0").toggleClass("fa-caret-square-o-right");$("#heightCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature0').click(function(){$("#tripInfoTemp0").toggle();drawChartObj(chartTempObj[0]);$("#tempCaret0").toggleClass("fa-caret-square-o-right");$("#tempCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTime0').click(function(){$("#tripInfoTimeInfo0").toggle();$("#timeCaret0").toggleClass("fa-caret-square-o-right");$("#timeCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel0').click(function(){$("#tripInfoAccelAcc0").toggle();$("#tripInfoAccelPos0").toggle();drawChartObj(chartAccObj[0]);drawChartObj(chartPosObj[0]);$("#accelCaret0").toggleClass("fa-caret-square-o-right");$("#accelCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed0').click(function(){$("#tripInfoSpeed0").toggle();drawChartObj(chartSpeedObj[0]);$("#speedCaret0").toggleClass("fa-caret-square-o-right");$("#speedCaret0").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoHeight1').click(function(){$("#tripInfoElev1").toggle();drawChartObj(chartElevObj[1]);$("#heightCaret1").toggleClass("fa-caret-square-o-right");$("#heightCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature1').click(function(){$("#tripInfoTemp1").toggle();drawChartObj(chartTempObj[1]);$("#tempCaret1").toggleClass("fa-caret-square-o-right");$("#tempCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTime1').click(function(){$("#tripInfoTimeInfo1").toggle();$("#timeCaret1").toggleClass("fa-caret-square-o-right");$("#timeCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel1').click(function(){$("#tripInfoAccelAcc1").toggle();$("#tripInfoAccelPos1").toggle();drawChartObj(chartAccObj[1]);drawChartObj(chartPosObj[1]);$("#accelCaret1").toggleClass("fa-caret-square-o-right");$("#accelCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed1').click(function(){$("#tripInfoSpeed1").toggle();drawChartObj(chartSpeedObj[1]);$("#speedCaret1").toggleClass("fa-caret-square-o-right");$("#speedCaret1").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoHeight2').click(function(){$("#tripInfoElev2").toggle();drawChartObj(chartElevObj[2]);$("#heightCaret2").toggleClass("fa-caret-square-o-right");$("#heightCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTemperature2').click(function(){$("#tripInfoTemp2").toggle();drawChartObj(chartTempObj[2]);$("#tempCaret2").toggleClass("fa-caret-square-o-right");$("#tempCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoTime2').click(function(){$("#tripInfoTimeInfo2").toggle();$("#timeCaret2").toggleClass("fa-caret-square-o-right");$("#timeCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAccel2').click(function(){$("#tripInfoAccelAcc2").toggle();$("#tripInfoAccelPos2").toggle();drawChartObj(chartAccObj[2]);drawChartObj(chartPosObj[2]);$("#accelCaret2").toggleClass("fa-caret-square-o-right");$("#accelCaret2").toggleClass("fa-caret-square-o-down");});
-    $('#tripInfoAverageSpeed2').click(function(){$("#tripInfoSpeed2").toggle();drawChartObj(chartSpeedObj[2]);$("#speedCaret2").toggleClass("fa-caret-square-o-right");$("#speedCaret2").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoHeight0').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret0").toggleClass("fa-caret-square-o-right");$("#heightCaret0").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoTemperature0').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret0").toggleClass("fa-caret-square-o-right");$("#tempCaret0").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAccel0').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret0").toggleClass("fa-caret-square-o-right");$("#accelCaret0").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAverageSpeed0').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret0").toggleClass("fa-caret-square-o-right");$("#speedCaret0").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoHeight1').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret1").toggleClass("fa-caret-square-o-right");$("#heightCaret1").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoTemperature1').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret1").toggleClass("fa-caret-square-o-right");$("#tempCaret1").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAccel1').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret1").toggleClass("fa-caret-square-o-right");$("#accelCaret1").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAverageSpeed1').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret1").toggleClass("fa-caret-square-o-right");$("#speedCaret1").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoHeight2').click(function(){toggleInfo('tripInfoElev',chartElevObj);$("#heightCaret2").toggleClass("fa-caret-square-o-right");$("#heightCaret2").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoTemperature2').click(function(){toggleInfo('tripInfoTemp',chartTempObj);$("#tempCaret2").toggleClass("fa-caret-square-o-right");$("#tempCaret2").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAccel2').click(function(){toggleInfo('tripInfoAccelAcc',chartAccObj);$("#accelCaret2").toggleClass("fa-caret-square-o-right");$("#accelCaret2").toggleClass("fa-caret-square-o-down");});
+    $('#tripInfoAverageSpeed2').click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj);$("#speedCaret2").toggleClass("fa-caret-square-o-right");$("#speedCaret2").toggleClass("fa-caret-square-o-down");});
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     showId = [];
@@ -86,8 +83,6 @@ function getJson(url){
         var getUrl = GET_URL;
         $("#prodLink").css("text-decoration","underline");
     }
-    console.log(urlParam);
-    console.log(getUrl);
     $.ajax({
         url: getUrl + url,
         jsonp: "callback",
@@ -159,11 +154,21 @@ function showTripInfo(){
         tripMapObj[i].marker.setMap(null);
         tripMapObj[i].polyline.setMap(null);
     }
-    $("#tripInfoElev0").hide();$("#heightCaret0").addClass("fa-caret-square-o-right");$("#heightCaret0").removeClass("fa-caret-square-o-down");
-    $("#tripInfoTemp0").hide();$("#tempCaret0").addClass("fa-caret-square-o-right");$("#tempCaret0").removeClass("fa-caret-square-o-down");
-    $("#tripInfoTimeInfo0").hide();$("#timeCaret0").addClass("fa-caret-square-o-right");$("#timeCaret0").removeClass("fa-caret-square-o-down");
-    $("#tripInfoAccelAcc0").hide();$("#tripInfoAccelPos0").hide();$("#accelCaret0").addClass("fa-caret-square-o-right");$("#accelCaret0").removeClass("fa-caret-square-o-down");
-    $("#tripInfoSpeed0").hide();$("#speedCaret0").addClass("fa-caret-square-o-right");$("#speedCaret0").removeClass("fa-caret-square-o-down");
+    for (var i = 0; i < MAX_COMPARE; i++) {
+        $("#tripInfoElev"+i).hide();
+        $("#heightCaret"+i).addClass("fa-caret-square-o-right");
+        $("#heightCaret"+i).removeClass("fa-caret-square-o-down");
+        $("#tripInfoTemp"+i).hide();
+        $("#tempCaret"+i).addClass("fa-caret-square-o-right");
+        $("#tempCaret"+i).removeClass("fa-caret-square-o-down");
+        $("#tripInfoAccelAcc"+i).hide();
+        $("#tripInfoAccelPos"+i).hide();
+        $("#accelCaret"+i).addClass("fa-caret-square-o-right");
+        $("#accelCaret"+i).removeClass("fa-caret-square-o-down");
+        $("#tripInfoSpeed"+i).hide();
+        $("#speedCaret"+i).addClass("fa-caret-square-o-right");
+        $("#speedCaret"+i).removeClass("fa-caret-square-o-down");
+    }
     $(".tripInfoDiv").css("width",100/showId.length+'%');
     //Find trip
     var curTrip = [];
@@ -187,7 +192,7 @@ function showTripInfo(){
         var tripStart = new Date(curTrip[i].startTime);
         var tripEnd = new Date(curTrip[i].endTime);
         var curTime = ((tripEnd - tripStart) / 1000).toString().toHHMMSS();
-        $('#tripInfoTime'+i).append('<i class="fa fa-caret-square-o-right" id="timeCaret'+i+'">&nbsp;</i><i class="fa fa-clock-o">&nbsp;</i>' + curTime);
+        $('#tripInfoElap'+i).append('<i class="fa fa-clock-o">&nbsp;</i>' + curTime);
         if (tripStart.getDate() == tripEnd.getDate()) { //Trip op 1 dag
             var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
         } else {
@@ -196,7 +201,7 @@ function showTripInfo(){
                 timeText = timeText + ' - ' + addZero(tripEnd.getDate()) + '/' + addZero(tripEnd.getMonth()) + '/' + addZero(tripEnd.getFullYear()) + ' ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
             }
         }
-        $("#tripInfoTimeInfo"+i).append(timeText);
+        $("#tripInfoTime"+i).append(timeText);
         //UserID
         $('#tripInfoUser'+i).append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-user">&nbsp;</i>' + curTrip[i].userID);
         //Google map trip
@@ -323,10 +328,10 @@ function showTripInfo(){
                 });
                 //Random kleur van ID
                 var stringHexNumber = (parseInt(parseInt(tripMapObj[i].id, 36).toExponential().slice(2, -5), 10) & 0xFFFFFF).toString(16).toUpperCase(); //http://stackoverflow.com/questions/17845584/converting-a-random-string-into-a-hex-colour
-                var tripColor = ('000000' + stringHexNumber).slice(-6); //Lengte aanpassen
+                var tripColor = '#'+('000000' + stringHexNumber).slice(-6); //Lengte aanpassen
                 var pathOptions = {
                     path: tripMapObj[i].coords,
-                    strokeColor: '#' + tripColor,
+                    strokeColor: tripColor,
                     opacity: 0.4,
                     map: map
                 };
@@ -339,7 +344,7 @@ function showTripInfo(){
                 });
                 curMapBounds = bounds;
             }
-            $('#tripInfo'+i).css("border-color","#"+tripColor);
+            $('#tripInfoTime'+i).css("color",tripColor);
             progressSingle = progressSingle + 100 / PROG_STEPS_SINGLETRIP / curTrip.length;
             checkProgressSingle();
             //Accel
@@ -515,6 +520,17 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
             }
         }
     );
+}
+
+function toggleInfo(elem,chart){
+    for (var i = 0; i < MAX_COMPARE; i++){
+        if ($("#tripInfo"+i).is(":visible")){
+            $("#"+elem+i).toggle();
+            if ($("#"+elem+i).is(":visible")) {
+                drawChartObj(chart[i]);
+            }
+        }
+    }
 }
 
 function initGMap(){

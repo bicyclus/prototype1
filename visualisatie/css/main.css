@@ -341,19 +341,16 @@ textarea {
     cursor: pointer;
 }
 
-#tripInfoTimeInfo0,#tripInfoTimeInfo1,#tripInfoTimeInfo2{
-    margin-bottom: 0;
-    border-color: #ddd;
-}
-
 #tripInfoContainer{
     position: relative;
 }
 
 .tripInfoDiv{
     float:left;
-    border-style: hidden hidden solid hidden;
-    margin-bottom: 5px;
+}
+
+.timeHead{
+    font-size: 24px;
 }
 
 blockquote{
