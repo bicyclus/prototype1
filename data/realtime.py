@@ -105,8 +105,8 @@ def realtime():
         elif ard_read == '1337':
             gps_data = gps_pointdata()
             return gps_data
-    elif ard_read == '1996':
-        return beat_pointdata()
+        elif ard_read == '1996':
+            return beat_pointdata()
         elif ard_read == '1995':
             return 'END'
 
@@ -121,19 +121,23 @@ def connect():
     while True: #connection tests everywhere they are needed to minimise amount of connection errors
         if try_connection() == True:
             socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
-        socketIO.wait(2)
+            break
+        time.sleep(2)
     while True:
         if try_connection() == True:
             socketIO.on('server_message', on_emit)
+            break
         socketIO.wait(2)
     print "Trying to send start signal for trip ..."
     while True:
         if try_connection() == True:
             socketIO.emit('start', json.dumps(info_start), on_emit)
             print "Connection verified, start signal sent."
+            socketIO.wait(2)
+            break
         socketIO.wait(2)
     info_end = {"_id":startID, "meta": metadata}
-
+    return info_end
 
 def collect_send():
     """Collects data and immediately sends it to the server (realtime sending of data) over and over again until end signal is read."""
@@ -141,26 +145,41 @@ def collect_send():
     print "Starting to collect data ..."
     while condition != 'END':
         if try_connection() == False:
-            print "Cannot send data. Please connect to the internet."
-            time.sleep(2)
-        elif not condition == None:
+            print "Connection error. Could not open webpage server."
+        elif condition != None:
             sensordata1 = {"_id":startID, "sensorData":condition}
-            socketIO.emit('rt-sensordata',json.dumps(sensordata1))
+            while True:
+                try:
+                    socketIO.emit('rt-sensordata',json.dumps(sensordata1))
+                    break
+                except:
+                    print "Connection refused or previous data not yet processed by server. Data not sent."
+                    time.sleep(0.4)
+
             sensordata2 = {"_id":startID, "sensorData":accelerometer_pointdata()}
-            socketIO.emit('rt-sensordata',json.dumps(sensordata2))
+            while True:
+                try:
+                    socketIO.emit('rt-sensordata',json.dumps(sensordata2))
+                    break
+                except:
+                    print "Connection error. Data not sent."
+                    time.sleep(0.4)
+                
             print "data sent"
         condition = realtime()
     print "End signal given. Trip data collected."
     
-def end():
+def end(info_end):
     """Sends the end signal to the server."""
+    time.sleep(2) #to try to prevent broken pipe errors
     print "Trying to send end signal, testing connection ..."
     while True:
         if try_connection() == True:
             print "Connection verified, sending end signal."
-            socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
-            print "End signal sent."
-            socketIO.wait(5)
+            try:
+                socketIO.emit('endBikeTrip', json.dumps(info_end), on_response)
+                time.sleep(5)
+                print "End signal sent."
             break
         socketIO.wait(2)
 

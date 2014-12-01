@@ -20,8 +20,15 @@ def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
 
-def convert_coordinates(coor):
-    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format."""
+prev_coor_ln = None
+prev_coor_lt = None
+
+def convert_coordinates_ln(coor):
+    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for longitude specifically to be able to compare
+    the input longitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
+    global prev_coor_ln
+    global wrong_list_ln
+
     k = 0
     coor = str(coor)
 
@@ -45,6 +52,49 @@ def convert_coordinates(coor):
 
     #adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
+
+    if prev_coor_lt == None:
+        pass
+    elif abs(float(prev_coor_ln)-float(coordinates)) > 0.1:
+        return False
+    prev_coor_ln = coordinates
+    return coordinates
+
+def convert_coordinates_lt(coor):
+    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for latitude specifically to be able to compare
+    the input latitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
+    global prev_coor_lt
+    global wrong_list_lt
+
+    k = 0
+    coor = str(coor)
+
+    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    for i in range(0, len(coor)):
+        if coor[i] == ".":
+            k = i
+            break
+    minutes = int(coor[k + 1:len(coor)])
+    degrees = (coor[0:k])
+    dmin = str(minutes / 60.0)
+
+    #removing the . in the original format(second step in obtaining dmin)
+    for s in range(0, len(dmin)):
+        if dmin[s] == ".":
+            k = s
+            break    
+    dmin1 = dmin[0:k]
+    dmin2 = dmin[k + 1:len(dmin)]
+    dmin = dmin1 + dmin2
+
+    #adding degrees and dmin together in the desired format
+    coordinates = degrees + "." + dmin
+
+    if prev_coor_lt == None:
+        pass
+    elif abs(float(prev_coor_lt)-float(coordinates)) > 0.1:
+        return False
+    prev_coor_lt = coordinates
     return coordinates
 
 def beat_pointdata():
@@ -70,8 +120,10 @@ def gps_pointdata():
     ln = eval(arduino.readline().strip())/100
     lt = eval(arduino.readline().strip())/100
     st = time.strftime("%Y-%m-%dT%H:%M:%S")
-    ln = convert_coordinates(ln)
-    lt = convert_coordinates(lt)
+    ln = convert_coordinates_ln(ln)
+    lt = convert_coordinates_lt(lt)
+    if ln == False or lt == False:
+        return False
     data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
     return data
 
@@ -97,7 +149,9 @@ def create_batch():
         if ard_read == '1234':
             batch_data += temphum_pointdata()
         if ard_read == '1337':
-            batch_data += gps_pointdata()
+            gps = gps_pointdata()
+            if not gps == False:
+                batch_data += gps_pointdata()
         if ard_read == '1996':
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
