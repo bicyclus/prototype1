@@ -10,7 +10,9 @@ datetime.datetime.now().strftime("%H:%M:%S.%f")
 
 #DEFINING THE AUXILIARY FUNCTIONS
 def try_connection():
-    """Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8080/qbike/."""
+    """
+    Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8080/qbike/.
+    """
     try:
         response = urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/', timeout=1)
         return True
@@ -23,7 +25,7 @@ def on_response(*args):
     print 'server_message', args
 
 def matching_coor(lst):
-    for i in len(lst):
+    for i in range(0, len(lst)):
         count = 0
         k = len(lst)-i
         while count != k:
@@ -33,12 +35,15 @@ def matching_coor(lst):
     return True
 
 def determine_correct_coor(n=5):
-    """To prevent sending incorrect coordinates, this function tries to determine whether th gps has a stable fix by waiting for a group of coordinates near each other.
-    As soon as n (default is 5) coordinates are seen as near each other (using an arbitrary value), the function exits and the creation of the batch may start."""
+    """
+    To prevent sending incorrect coordinates, this function tries to determine whether th gps has a stable fix by
+    waiting for a group of coordinates near each other. As soon as n (default is 5) coordinates are seen as near each
+    other (using an arbitrary value), the function exits and the creation of the batch may start.
+    """
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    ard_read = arduino.readline().strip()
     coor_list = []
     while len(coor_list) != n: #fetching first five coordinates
+        ard_read = arduino.readline().strip()
         if ard_read == '1337':
             gps = gps_pointdata()
             if not gps == False:
@@ -46,28 +51,32 @@ def determine_correct_coor(n=5):
     while not matching_coor(coor_list) == True: #trying to get a list with n correct gps values
         #retrieving next coordinate
         gps = False
-        while gps == False: 
+        while gps == False:
+            ard_read = arduino.readline().strip()
             if ard_read == '1337':
                 gps = gps_pointdata_nofilter() #returns unfiltered longitude gps coordinate, so gps = ln
         #removing oldest coordinate and putting another in place
-        coor_list.insert(0,new_coor)
+        coor_list.insert(0, gps)
         del coor_list[n]
-    return #if the list with n correct values has been found, the function exits
+    return  # if the list with n correct values has been found, the function exits
 
-#Defining variables for coordinate transformation functions with filter implemented
+# Defining variables for coordinate transformation functions with filter implemented
 prev_coor_ln = None
 prev_coor_lt = None
 
+
 def convert_coordinates_ln(coor):
-    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for longitude specifically to be able to compare
-    the input longitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
+    """
+    Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This
+    function is written for longitude specifically to be able to compare the input longitude coordinate value to
+    the previous input one, attempting to detect a single large offset coordinate point.
+    """
     global prev_coor_ln
-    global wrong_list_ln
 
     k = 0
     coor = str(coor)
 
-    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
             k = i
@@ -76,16 +85,16 @@ def convert_coordinates_ln(coor):
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
 
-    #removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
-            break    
+            break
     dmin1 = dmin[0:k]
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
 
-    #adding degrees and dmin together in the desired format
+    # Adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
 
     if prev_coor_lt == None:
@@ -95,14 +104,18 @@ def convert_coordinates_ln(coor):
     prev_coor_ln = coordinates
     return coordinates
 
+
 def convert_coordinates_ln_nofilter(coor):
-    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for determine_correct_coor and
-    gps_pointdata_nofilter to be able to let determine_correct_coor work properly."""
+    """
+    Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format.
+    This function is written for determine_correct_coor and gps_pointdata_nofilter to be able to
+    let determine_correct_coor work properly.
+    """
 
     k = 0
     coor = str(coor)
 
-    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
             k = i
@@ -111,7 +124,7 @@ def convert_coordinates_ln_nofilter(coor):
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
 
-    #removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -120,7 +133,7 @@ def convert_coordinates_ln_nofilter(coor):
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
 
-    #adding degrees and dmin together in the desired format
+    # Adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
     return coordinates
 
@@ -304,4 +317,3 @@ while True:
         batch = create_batch() #creates the batch corresponding to the trip
         write_trip(batch,save_path_pi)
     send(save_path_pi)
-
