@@ -301,7 +301,7 @@ function showTripInfo(){
             // Weergeven van "Average Humidity" en "Heart rate Average" en distance
             curHumidityAverage = Math.round(sum_of_elements_humidity / counter_humidity);
             curHeartbeatAverage = Math.round(sum_of_elements_heartbeat / counter_heartbeat);
-            totaldist = Math.round((totaldist / 1000) * 100) / 100;
+            totaldist = Math.round(totaldist / 10) / 100;
             $('#tripInfoHeartbeat'+i).text('Average Heartbeat: ' + curHeartbeatAverage + 'beats per minute');
             $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>' + curHumidityAverage + ' %');
             $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>' + totaldist + ' km');
@@ -339,12 +339,13 @@ function showTripInfo(){
             progressSingle = progressSingle + 100 / PROG_STEPS_SINGLETRIP / curTrip.length;
             checkProgressSingle();
             //Accel
-            $('#tripInfoAccel'+i).append('<i class="fa fa-caret-square-o-right" id="accelCaret'+i+'">&nbsp;</i>' + 'Bouncy/Smooth');
             if (accData.length > 0) {
                 accData.sort(SortByTimestamp);
                 var accOptions = {
-                    titleY: 'Z-acceleration',
-                    backgroundColor: '#f5f5f5'
+                    titleY: 'Z-acceleration (G)',
+                    backgroundColor: '#f5f5f5',
+                    seriesType: 'line',
+                    series: {1: {type: "scatter"}}
                 };
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
@@ -357,9 +358,9 @@ function showTripInfo(){
                 var analysed = analyseAccel(passData);
                 console.log(analysed);
                 for (var b = 0; b < accData.length; b++) {
-                    chartData.addRow([accData[b][0], accData[b][3],analysed[4][b]]);
+                    chartData.addRow([accData[b][0], accData[b][3],analysed[0][b]]);
                 }
-
+                $('#tripInfoAccel'+i).append('<i class="fa fa-caret-square-o-right" id="accelCaret'+i+'">&nbsp;</i>' + analysed[1]+analysed[2]+' (#'+analysed[3]+' bumps detected)');
                 var chartAccel = new google.visualization.LineChart($('#tripInfoAccData'+i)[0]); //Chart aanmaken in div
                 chartAccObj.push([chartAccel, chartData, accOptions]);
             }
@@ -476,7 +477,7 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                         }
                     }
                 }
-                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
+                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up*100)/100+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down*100)/100+' m')
                 //Chart
                 chartElev = new google.visualization.ColumnChart($('#tripInfoElev'+num)[0]);
                 $('#tripInfoContainer').show('blind',ANIM_TIME,function(){
