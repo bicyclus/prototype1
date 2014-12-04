@@ -6,7 +6,6 @@ from socketIO_client import SocketIO
 import json
 import urllib2
 import os
-datetime.datetime.now().strftime("%H:%M:%S.%f")
 
 #DEFINING THE AUXILIARY FUNCTIONS FOR SERVER CONNECTION/RESPONSE
 def try_connection():
@@ -17,8 +16,7 @@ def try_connection():
         response = urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/', timeout=1)
         return True
     except:
-        pass
-    return False
+        return False
 
 def on_response(*args):
     """Prints the server message."""
@@ -247,19 +245,15 @@ def send_data(save_path):
         if not os.path.isfile('/home/pi/Trips/Trip1.txt'):
             end = True
             print "No Data"
-
         else:
             for nb in reversed(range(0,100)):
                 Trip = os.path.join(save_path,"Trip"+str(nb)+".txt")
                 Trip_nb = str(nb)
                 if os.path.isfile(Trip):
                     break
-
             Trip_path = os.path.join(save_path, r"Trip"+Trip_nb+r".txt")
-
             with open(Trip_path, "r") as Trip:
                 batch = json.load(Trip)
-
             info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
             socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
             socketIO.on('server_message', on_response)
@@ -267,7 +261,6 @@ def send_data(save_path):
             socketIO.wait(2)
             socketIO.emit('batch-tripdata', json.dumps(batch), on_response)
             socketIO.wait(5)
-
             os.remove(Trip_path)
 
 def get_trip_nb(save_path):
