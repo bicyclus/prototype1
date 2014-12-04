@@ -17,12 +17,15 @@ var chartSpeedObj;
 var userNames;
 var showId;
 
+//Initialisatie
 function initCalendar(){
+    //Hiden van onnodige elementen
     $('#calProgress').hide();
     $('#singleProgress').hide();
     $('#tripInfoContainer').hide();
     $('.tripInfoExtra').hide();
     $('.tripInfoDiv').hide();
+    //Init progressbar
     progressCal = BEGIN_PERCENT;
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
@@ -35,6 +38,7 @@ function initCalendar(){
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
+    //Klik functies
     $("[id^='tripInfoHeight']").click(function(){toggleInfo('tripInfoElev',chartElevObj,'heightCaret');});
     $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
     $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
@@ -44,8 +48,10 @@ function initCalendar(){
     showId = [];
     userNames = {};
     var userFilter = '';
+    //Get data
     getJson("");
-    $('#inputUserName').on('change', function() { //Userselect
+    //User select
+    $('#inputUserName').on('change', function() {
         progressCal = 100/PROG_STEPS_CAL;
         $('#calProgressBar').animate({ width: '0%' },0);
         $('#calProgress').show(ANIM_TIME);
@@ -62,7 +68,9 @@ function initCalendar(){
     });
 }
 
+//Get data from server
 function getJson(url){
+    //Get URL
     var urlParam = getQueryVariable('getUrl');
     if (urlParam == "DevPage"){
         var getUrl = GET_URL_PAGE;
@@ -74,6 +82,7 @@ function getJson(url){
         var getUrl = GET_URL;
         $("#prodLink").css("text-decoration","underline");
     }
+    //Ajax
     $.ajax({
         url: getUrl + url,
         jsonp: "callback",
@@ -92,11 +101,13 @@ function getJson(url){
 }
 
 function fillCalendar(data){
+    //Get all data in the calendar
     calData = {};
     data.sort(SortDataByTime);
     for (var i = 0; i < data.length; i++) {
         tripCal(data[i]);
     }
+    //Fill user select
     if ($('#inputUserName').val() == "all"){
         $('#inputUserName').empty().append('<option value="all" selected>All Users</option>');
         $.each( userNames, function( key, value ) {
@@ -112,6 +123,7 @@ function fillCalendar(data){
 }
 
 function tripCal(trip){
+    //Get text for calendar and add it
     if (!(trip.startTime === undefined)) { //startTime moet bestaan
         userNames[trip.userID] = trip.userID;
         var tripStart = new Date(trip.startTime);
@@ -350,7 +362,7 @@ function showTripInfo(){
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Z');
-                chartData.addColumn('number', 'Shocks');
+                chartData.addColumn('number', 'Bumps');
                 var passData = [];
                 for (var b = 0; b < accData.length; b++) {
                     passData.push([accData[b][0], accData[b][3]]);
@@ -517,6 +529,7 @@ function initGMap(){
     tripMapObj = [];
 }
 
+//Calendar: https://github.com/codrops/Calendario
 function calendarFcts() {
     var transEndEventNames = {
             'WebkitTransition' : 'webkitTransitionEnd',
@@ -554,11 +567,16 @@ function calendarFcts() {
     $("body").on("click",".tripEventLink",function(){
         var thisId = $(this).attr('id');
         if ($(this).hasClass("clickedTrip") == false){
-            if ($.inArray(thisId,showId) == -1){
-                showId.push(thisId);
-                showTripInfo();
-                $(this).addClass('clickedTrip');
-                $(this).prepend('<i class="fa fa-check-square-o">&nbsp;</i>');
+            if (showId.length == MAX_COMPARE){
+                alert("You can compare a maximum of "+MAX_COMPARE+" trips.");
+            } else {
+                if ($.inArray(thisId,showId) == -1){
+
+                    showId.push(thisId);
+                    showTripInfo();
+                    $(this).addClass('clickedTrip');
+                    $(this).prepend('<i class="fa fa-check-square-o">&nbsp;</i>');
+                }
             }
         } else {
             if ($.inArray(thisId,showId) > -1){
@@ -575,6 +593,7 @@ function calendarFcts() {
     });
 }
 
+//Show event overlay
 function showEvents( $contentEl, dateProperties ) {
     hideEvents();
 
@@ -588,6 +607,8 @@ function showEvents( $contentEl, dateProperties ) {
     }, 25 );
 
 }
+
+//Hide event overlay
 function hideEvents() {
 
     var $events = $( '#custom-content-reveal' );
@@ -597,6 +618,7 @@ function hideEvents() {
     }
 }
 
+//Progressbar calendar
 function checkProgressCal(){
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     if (progressCal >= 99.9) {
@@ -606,6 +628,7 @@ function checkProgressCal(){
     }
 }
 
+//Progressbar trip
 function checkProgressSingle(){
     $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },ANIM_TIME);
     if (progressSingle >= 99.9) {
@@ -615,6 +638,7 @@ function checkProgressSingle(){
     }
 }
 
+//Add zeros x => 0x and xx => xx
 function addZero(i) { //Voor data en uren enzo
     if (i < 10) {
         i = "0" + i;
@@ -622,6 +646,7 @@ function addZero(i) { //Voor data en uren enzo
     return i;
 }
 
+//Draw chart
 function drawChartObj(chartObj) {
     chartObj[0].draw(chartObj[1],chartObj[2]);
 }
@@ -634,6 +659,7 @@ function SortDataByTime(a, b){ //Sorteren
     return ((a.startTime < b.startTime) ? -1 : ((a.startTime > b.startTime) ? 1 : 0));
 }
 
+//Get variable from url
 function getQueryVariable(variable)
 {
     var query = window.location.search.substring(1);
