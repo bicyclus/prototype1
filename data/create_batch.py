@@ -22,9 +22,6 @@ def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
 
-prev_coor_ln = None
-prev_coor_lt = None
-
 def matching_coor(lst):
     for i in len(lst):
         count = 0
@@ -49,15 +46,17 @@ def determine_correct_coor(n=5):
     while not matching_coor(coor_list) == True: #trying to get a list with n correct gps values
         #retrieving next coordinate
         gps = False
-        while gps != True: 
+        while gps == False: 
             if ard_read == '1337':
-                gps = gps_pointdata()
-                if not gps == False:
-                    new_coor = gps
+                gps = gps_pointdata_nofilter() #returns unfiltered longitude gps coordinate, so gps = ln
         #removing oldest coordinate and putting another in place
         coor_list.insert(0,new_coor)
         del coor_list[n]
     return #if the list with n correct values has been found, the function exits
+
+#Defining variables for coordinate transformation functions with filter implemented
+prev_coor_ln = None
+prev_coor_lt = None
 
 def convert_coordinates_ln(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for longitude specifically to be able to compare
@@ -96,11 +95,39 @@ def convert_coordinates_ln(coor):
     prev_coor_ln = coordinates
     return coordinates
 
+def convert_coordinates_ln_nofilter(coor):
+    """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for determine_correct_coor and
+    gps_pointdata_nofilter to be able to let determine_correct_coor work properly."""
+
+    k = 0
+    coor = str(coor)
+
+    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    for i in range(0, len(coor)):
+        if coor[i] == ".":
+            k = i
+            break
+    minutes = int(coor[k + 1:len(coor)])
+    degrees = (coor[0:k])
+    dmin = str(minutes / 60.0)
+
+    #removing the . in the original format(second step in obtaining dmin)
+    for s in range(0, len(dmin)):
+        if dmin[s] == ".":
+            k = s
+            break    
+    dmin1 = dmin[0:k]
+    dmin2 = dmin[k + 1:len(dmin)]
+    dmin = dmin1 + dmin2
+
+    #adding degrees and dmin together in the desired format
+    coordinates = degrees + "." + dmin
+    return coordinates
+
 def convert_coordinates_lt(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for latitude specifically to be able to compare
     the input latitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
     global prev_coor_lt
-    global wrong_list_lt
 
     k = 0
     coor = str(coor)
@@ -138,8 +165,7 @@ def beat_pointdata():
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     hb = eval(arduino.readline().strip())
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
-    return data
+    return [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
 
 def temphum_pointdata():
     """Gets temperature and humidity data at a specific moment."""
@@ -147,8 +173,7 @@ def temphum_pointdata():
     humi = eval(arduino.readline().strip())
     temp = eval(arduino.readline().strip())
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    data = [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
-    return data
+    return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
 
 def gps_pointdata():
     """Gets gps data at a specific moment and uses convert_coordinates(coor) to transfrom them into the right format."""
@@ -160,8 +185,12 @@ def gps_pointdata():
     lt = convert_coordinates_lt(lt)
     if ln == False or lt == False:
         return False
-    data = [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
-    return data
+    return [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
+
+def gps_pointdata_nofilter():
+    """Gets gps data at a specific moment and uses convert_coordinates(coor) to transfrom them into the right format."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    return convert_coordinates_ln_nofilter(eval(arduino.readline().strip())/100)
 
 def accelerometer_pointdata():
     """Reads the accelerometer data at a specific moment and puts them in the desired format."""
@@ -170,8 +199,7 @@ def accelerometer_pointdata():
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
-    return data
+    return [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
 
 def create_batch():
     """Collects all the data for the batch (whereafter the batch itself is to be created with create_batch())."""
@@ -192,8 +220,7 @@ def create_batch():
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
     endtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    batch = [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
-    return batch
+    return [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
 
 def send_data(save_path):
     """
