@@ -135,14 +135,15 @@ function tripCal(trip){
 
 function showTripInfo(){
     //Clean
-    $('.tripInfo').empty();
-    $('.tripInfoDiv').hide();
+    $(".tripInfo").empty();
+    $(".tripInfoDiv").hide();
     progressSingle = BEGIN_PERCENT;
-    $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },0);
-    $('#singleProgress').show(ANIM_TIME);
-    $('#singleProgressBar').animate({ width: progressSingle.toString()+'%' },ANIM_TIME);
+    $("#singleProgressBar").animate({ width: progressSingle.toString()+'%' },0);
+    $("#singleProgress").show(ANIM_TIME);
+    $("#singleProgressBar").animate({ width: progressSingle.toString()+'%' },ANIM_TIME);
     for (var i = 0; i < tripMapObj.length; i++) {
-        tripMapObj[i].marker.setMap(null);
+        tripMapObj[i].markerStart.setMap(null);
+        tripMapObj[i].markerEnd.setMap(null);
         tripMapObj[i].polyline.setMap(null);
     }
     for (var i = 0; i < MAX_COMPARE; i++) {
@@ -181,7 +182,7 @@ function showTripInfo(){
         var tripStart = new Date(curTrip[i].startTime);
         var tripEnd = new Date(curTrip[i].endTime);
         var curTime = ((tripEnd - tripStart) / 1000).toString().toHHMMSS();
-        $('#tripInfoElap'+i).append('<i class="fa fa-clock-o">&nbsp;</i>' + curTime);
+        $('#tripInfoElap'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-clock-o">&nbsp;</i>' + curTime);
         if (tripStart.getDate() == tripEnd.getDate()) { //Trip op 1 dag
             var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
         } else {
@@ -218,6 +219,7 @@ function showTripInfo(){
 
             for (a = 0; a < curTrip[i].sensorData.length; a++) { //Iterate over all sensorData
                 var sensorData = curTrip[i].sensorData[a];
+                var timestampDate = new Date(sensorData.timestamp);
                 switch (sensorData.sensorID) {
                     case 1: //GPS + Speed
                         if (!(sensorData.data === undefined)) {
@@ -229,10 +231,7 @@ function showTripInfo(){
                                 }
                             }
                             if (!(sensorData.data[0].speed === undefined)) {
-                                var timestampDate = new Date(sensorData.timestamp);
                                 speedData.push([timestampDate, sensorData.data[0].speed[0]]);
-                                //var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
-                                //totaldist += distint;
                                 curSpeedAverage += sensorData.data[0].speed[0];
                             } else {
                                 if (sensorData.data[0].unit == 'dmc') {
@@ -245,11 +244,13 @@ function showTripInfo(){
                                     var timestampDate = new Date(prevGps.timestamp);
                                     var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
                                     var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                                    var speedint = distint / timedif * 3.6;
-                                    speedData.push([timestampDate, speedint]);
-                                    totaldist += distint;
-                                    curSpeedAverage += speedint;
-                                    prevGps = sensorData;
+                                    if (timedif != 0){
+                                        var speedint = distint / timedif * 3.6;
+                                        speedData.push([timestampDate, speedint]);
+                                        totaldist += distint;
+                                        curSpeedAverage += speedint;
+                                        prevGps = sensorData;
+                                    }
                                 }
                             }
                         }
@@ -259,7 +260,6 @@ function showTripInfo(){
                     case 3: //Temperature
                         if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                             if (!(sensorData.data[0].value === undefined)) {
-                                var timestampDate = new Date(sensorData.timestamp);
                                 tempData.push([timestampDate, sensorData.data[0].value[0]]);
                                 counter_temperature += 1;
                                 sum_of_elements_temperature += parseInt(sensorData.data[0].value);
@@ -275,7 +275,6 @@ function showTripInfo(){
                     case 5: //Accelerometer
                         if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                             if (!(sensorData.data[0].acceleration === undefined)) {
-                                var timestampDate = new Date(sensorData.timestamp);
                                 accData.push([timestampDate, sensorData.data[0].acceleration[0].x, sensorData.data[0].acceleration[0].y, sensorData.data[0].acceleration[0].z]);
                             }
                         }
@@ -308,10 +307,15 @@ function showTripInfo(){
             $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>' + totaldist + ' km');
             //GPS
             if (tripMapObj[i].coords.length > 1) {
-                tripMapObj[i].marker = new google.maps.Marker({ //Marker op begincoördinaat
+                tripMapObj[i].markerStart = new google.maps.Marker({ //Marker op begincoördinaat
                     position: tripMapObj[i].coords[0],
                     map: map,
-                    title: tripMapObj[i].id
+                    title: 'Start'
+                });
+                tripMapObj[i].markerEnd = new google.maps.Marker({ //Marker op begincoördinaat
+                    position: tripMapObj[i].coords[tripMapObj[i].coords.length-1],
+                    map: map,
+                    title: 'End'
                 });
                 //Random kleur van ID
                 var stringHexNumber = (parseInt(parseInt(tripMapObj[i].id, 36).toExponential().slice(2, -5), 10) & 0xFFFFFF).toString(16).toUpperCase(); //http://stackoverflow.com/questions/17845584/converting-a-random-string-into-a-hex-colour
@@ -339,7 +343,8 @@ function showTripInfo(){
             if (accData.length > 0) {
                 accData.sort(SortByTimestamp);
                 var accOptions = {
-                    title: 'Accelerometer acceleration: ' + curTrip[i]._id
+                    titleY: 'Z-acceleration',
+                    backgroundColor: '#f5f5f5'
                 };
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
@@ -362,11 +367,11 @@ function showTripInfo(){
             checkProgressSingle();
             //Temp
             curTemperatureAverage = Math.round(sum_of_elements_temperature / counter_temperature);
-            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret'+i+'">&nbsp;</i><i class="wi wi-thermometer">&nbsp;</i>' + curTemperatureAverage + ' °C');
+            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret'+i+'">&nbsp;</i>&nbsp;<i class="wi wi-thermometer">&nbsp;</i>' + curTemperatureAverage + ' °C');
             if (tempData.length > 0) {
                 tempData.sort(SortByTimestamp);
                 var tempOptions = {
-                    title: 'Temperature: ' + curTrip[i]._id,
+                    titleY: 'Temperature (°C)',
                     colors: ['red', '#4ab9db'],
                     curveType: 'function',
                     backgroundColor: '#f5f5f5',
@@ -386,11 +391,11 @@ function showTripInfo(){
             checkProgressSingle();
             // Speed
             curSpeedAverage = Math.round(curSpeedAverage / speedData.length * 100) / 100;
-            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret'+i+'">&nbsp;</i><i class="fa fa-tachometer">&nbsp;</i>' + curSpeedAverage + ' km/h');
+            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-tachometer">&nbsp;</i>' + curSpeedAverage + ' km/h');
             if (speedData.length > 0) {
                 speedData.sort(SortByTimestamp);
                 var speedOptions = {
-                    title: 'Speed: ' + curTrip[i]._id,
+                    titleY: 'Speed (km/h)',
                     colors: ['red', '#4ab9db'],
                     curveType: 'function',
                     backgroundColor: '#f5f5f5',
@@ -471,14 +476,14 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                         }
                     }
                 }
-                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i><i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
+                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up)+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down)+' m')
                 //Chart
                 chartElev = new google.visualization.ColumnChart($('#tripInfoElev'+num)[0]);
                 $('#tripInfoContainer').show('blind',ANIM_TIME,function(){
                     //Callback
                     google.maps.event.trigger(map, 'resize');
                     map.fitBounds(curMapBounds);
-                    options = {legend: 'none',titleY: 'Elevation (m)',title: elevId,backgroundColor:'#f5f5f5'};
+                    options = {legend: 'none',titleY: 'Elevation (m)',backgroundColor:'#f5f5f5'};
                     chartElevObj.push([chartElev,data,options]);
                     drawChartObj(chartSpeedObj[num]);
                 });
@@ -621,7 +626,7 @@ function drawChartObj(chartObj) {
 }
 
 function SortByTimestamp(a, b){ //Sorteren
-    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    return ((a[0] < b[0]) ? -1 : ((a[0] > b[0]) ? 1 : 0));
 }
 
 function SortDataByTime(a, b){ //Sorteren

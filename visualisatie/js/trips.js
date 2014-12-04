@@ -12,7 +12,7 @@ function tripInit(){
             event.preventDefault();
             $('#myReciever').toggle(); //Show/Hide
         });
-    $("#calendarButton").click(function visitPage(){window.location='calendar.html'}); //Buttonlink
+    $("#calendarButton").click(function visitPage(){window.location='../index.html'}); //Buttonlink
     initDatepickers();
     $('#myReciever').hide();
     $('#tripProgress').hide();

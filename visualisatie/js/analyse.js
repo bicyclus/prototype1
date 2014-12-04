@@ -24,9 +24,13 @@ function analyseAccel(data){
         sq_sum = Math.pow(data[i][1],2);
         cnt = 1;
         for (var b = 1; b < RMS_POINTS; b++) {
-            if (!( ((i-b)<0) || ((i+b+1)>data.length) )){
-                sq_sum += Math.pow(data[i-b][1],2) + Math.pow(data[i+b][1],2);
-                cnt += 2;
+            if (!( ((i-b)<0))){
+                sq_sum += Math.pow(data[i-b][1],2);
+                cnt += 1;
+            }
+            if (!(((i+b+1)>data.length))){
+                sq_sum += Math.pow(data[i+b][1],2);
+                cnt += 1;
             }
         }
         rms_cur = Math.sqrt(sq_sum/(cnt));
