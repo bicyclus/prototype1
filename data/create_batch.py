@@ -1,10 +1,12 @@
 import XLoBorg
 import time
+import datetime
 import serial
 from socketIO_client import SocketIO
 import json
 import urllib2
 import os
+datetime.datetime.now().strftime("%H:%M:%S.%f")
 
 #DEFINING THE AUXILIARY FUNCTIONS
 def try_connection():
@@ -135,7 +137,7 @@ def beat_pointdata():
     """Collects heartbeat data of a specific moment (one value)."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     hb = eval(arduino.readline().strip())
-    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     data = [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
     return data
 
@@ -144,7 +146,7 @@ def temphum_pointdata():
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     humi = eval(arduino.readline().strip())
     temp = eval(arduino.readline().strip())
-    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     data = [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
     return data
 
@@ -153,7 +155,7 @@ def gps_pointdata():
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     ln = eval(arduino.readline().strip())/100
     lt = eval(arduino.readline().strip())/100
-    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     ln = convert_coordinates_ln(ln)
     lt = convert_coordinates_lt(lt)
     if ln == False or lt == False:
@@ -167,7 +169,7 @@ def accelerometer_pointdata():
     XLoBorg.Init()
     x, y, z = XLoBorg.ReadAccelerometer()
     mx, my, mz = XLoBorg.ReadCompassRaw()
-    st = time.strftime("%Y-%m-%dT%H:%M:%S")
+    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     data = [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
     return data
 
@@ -175,7 +177,7 @@ def create_batch():
     """Collects all the data for the batch (whereafter the batch itself is to be created with create_batch())."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     batch_data = []
-    starttime = time.strftime("%Y-%m-%dT%H:%M:%S") #the gps already has a fix when the function is executed so this is the correct start time
+    starttime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") #the gps already has a fix when the function is executed so this is the correct start time
     ard_read = arduino.readline().strip() #added to prevent error first run of the while-loop
     while ard_read != '1995': #Stop condition: arduino sending '1995' to the Pi
         #adds accelerometer data and most of the time data from one sensor (GPS, humidity, temperature or heartbeat) to the batch_data list
@@ -189,7 +191,7 @@ def create_batch():
         if ard_read == '1996':
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
-    endtime = time.strftime("%Y-%m-%dT%H:%M:%S")
+    endtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     batch = [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
     return batch
 
