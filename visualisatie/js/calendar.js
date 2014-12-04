@@ -357,7 +357,14 @@ function showTripInfo(){
                     titleY: 'Z-acceleration (G)',
                     backgroundColor: '#f5f5f5',
                     seriesType: 'line',
-                    series: {1: {type: "scatter"}}
+                    series: {1: {type: "scatter"}},
+                    vAxis: {
+                        viewWindowMode: 'explicit',
+                        viewWindow: {
+                            min: -4,
+                            max: 4
+                        }
+                    }
                 };
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
@@ -388,7 +395,14 @@ function showTripInfo(){
                     colors: ['red', '#4ab9db'],
                     curveType: 'function',
                     backgroundColor: '#f5f5f5',
-                    series: {1: {lineWidth: 1, visibleInLegend: true}}
+                    series: {1: {lineWidth: 1, visibleInLegend: true}},
+                    vAxis: {
+                        viewWindowMode: 'explicit',
+                        viewWindow: {
+                            min: -20,
+                            max: 40
+                        }
+                    }
                 };
                 var chartData = new google.visualization.DataTable();
                 chartData.addColumn('datetime', 'Time');
@@ -416,7 +430,8 @@ function showTripInfo(){
                     vAxis: {
                         viewWindowMode: 'explicit',
                         viewWindow: {
-                            min: 0
+                            min: 0,
+                            max: 50
                         }
                     }
                 };
