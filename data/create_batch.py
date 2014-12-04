@@ -10,10 +10,10 @@ import os
 #DEFINING THE AUXILIARY FUNCTIONS FOR SERVER CONNECTION/RESPONSE
 def try_connection():
     """
-    Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8080/qbike/.
+    Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8443/qbike/.
     """
     try:
-        response = urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/', timeout=1)
+        response = urllib2.urlopen('http://dali.cs.kuleuven.be:8443/qbike/', timeout=1)
         return True
     except:
         return False
@@ -255,7 +255,7 @@ def send_data(save_path):
             with open(Trip_path, "r") as Trip:
                 batch = json.load(Trip)
             info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
-            socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
+            socketIO = SocketIO('dali.cs.kuleuven.be', 8443)
             socketIO.on('server_message', on_response)
             socketIO.emit('start', json.dumps(info), on_response)
             socketIO.wait(2)
