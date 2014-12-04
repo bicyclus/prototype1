@@ -8,7 +8,7 @@ import urllib2
 import os
 datetime.datetime.now().strftime("%H:%M:%S.%f")
 
-#DEFINING THE AUXILIARY FUNCTIONS
+#DEFINING THE AUXILIARY FUNCTIONS FOR SERVER CONNECTION/RESPONSE
 def try_connection():
     """
     Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8080/qbike/.
@@ -23,6 +23,40 @@ def try_connection():
 def on_response(*args):
     """Prints the server message."""
     print 'server_message', args
+
+#DEFINING AUXILIARY FUNCTIONS FOR CHECKING WHETHER THE GPS HAS A STABLE, CORRECT FIX
+def convert_coordinates_ln_nofilter(coor):
+    """
+    Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format.
+    This function is written for determine_correct_coor and gps_pointdata_nofilter to be able to
+    let determine_correct_coor work properly.
+    """
+    k = 0
+    coor = str(coor)
+    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    for i in range(0, len(coor)):
+        if coor[i] == ".":
+            k = i
+            break
+    minutes = int(coor[k + 1:len(coor)])
+    degrees = (coor[0:k])
+    dmin = str(minutes / 60.0)
+    # Removing the . in the original format(second step in obtaining dmin)
+    for s in range(0, len(dmin)):
+        if dmin[s] == ".":
+            k = s
+            break    
+    dmin1 = dmin[0:k]
+    dmin2 = dmin[k + 1:len(dmin)]
+    dmin = dmin1 + dmin2
+    # Adding degrees and dmin together in the desired format
+    coordinates = degrees + "." + dmin
+    return coordinates
+
+def gps_pointdata_nofilter():
+    """Gets gps data at a specific moment and uses convert_coordinates(coor) to transfrom them into the right format."""
+    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
+    return convert_coordinates_ln_nofilter(eval(arduino.readline().strip())/100)
 
 def matching_coor(lst):
     for i in range(0, len(lst)):
@@ -60,10 +94,10 @@ def determine_correct_coor(n=5):
         del coor_list[n]
     return  # if the list with n correct values has been found, the function exits
 
-# Defining variables for coordinate transformation functions with filter implemented
+#DEFINING FUNCTIONS FOR TRANSFORMING COORDINATES TOO GOOGLE FORM, WITH A FILTER FOR FILTERING OFFSET GPS VALUES
+#Defining variables for coordinate transformation functions with filter implemented
 prev_coor_ln = None
 prev_coor_lt = None
-
 
 def convert_coordinates_ln(coor):
     """
@@ -72,10 +106,8 @@ def convert_coordinates_ln(coor):
     the previous input one, attempting to detect a single large offset coordinate point.
     """
     global prev_coor_ln
-
     k = 0
     coor = str(coor)
-
     # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
@@ -84,7 +116,6 @@ def convert_coordinates_ln(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-
     # Removing the . in the original format(second step in obtaining dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
@@ -93,10 +124,8 @@ def convert_coordinates_ln(coor):
     dmin1 = dmin[0:k]
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
-
     # Adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
-
     if prev_coor_lt == None:
         pass
     elif abs(float(prev_coor_ln)-float(coordinates)) > 0.1:
@@ -104,47 +133,12 @@ def convert_coordinates_ln(coor):
     prev_coor_ln = coordinates
     return coordinates
 
-
-def convert_coordinates_ln_nofilter(coor):
-    """
-    Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format.
-    This function is written for determine_correct_coor and gps_pointdata_nofilter to be able to
-    let determine_correct_coor work properly.
-    """
-
-    k = 0
-    coor = str(coor)
-
-    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
-    for i in range(0, len(coor)):
-        if coor[i] == ".":
-            k = i
-            break
-    minutes = int(coor[k + 1:len(coor)])
-    degrees = (coor[0:k])
-    dmin = str(minutes / 60.0)
-
-    # Removing the . in the original format(second step in obtaining dmin)
-    for s in range(0, len(dmin)):
-        if dmin[s] == ".":
-            k = s
-            break    
-    dmin1 = dmin[0:k]
-    dmin2 = dmin[k + 1:len(dmin)]
-    dmin = dmin1 + dmin2
-
-    # Adding degrees and dmin together in the desired format
-    coordinates = degrees + "." + dmin
-    return coordinates
-
 def convert_coordinates_lt(coor):
     """Changes GPS coordinates from degrees-minutes.decimals (dmc) format to degrees.decimals (google) format. This function is written for latitude specifically to be able to compare
     the input latitude coordinate value to the previous input one, attempting to detect a single large offset coordinate point."""
     global prev_coor_lt
-
     k = 0
     coor = str(coor)
-
     #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
@@ -153,7 +147,6 @@ def convert_coordinates_lt(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-
     #removing the . in the original format(second step in obtaining dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
@@ -162,10 +155,8 @@ def convert_coordinates_lt(coor):
     dmin1 = dmin[0:k]
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
-
     #adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
-
     if prev_coor_lt == None:
         pass
     elif abs(float(prev_coor_lt)-float(coordinates)) > 0.1:
@@ -173,6 +164,7 @@ def convert_coordinates_lt(coor):
     prev_coor_lt = coordinates
     return coordinates
 
+#DEFINING FUNCTIONS THAT MEASURE THE DATA FROM THE SENSORS
 def beat_pointdata():
     """Collects heartbeat data of a specific moment (one value)."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
@@ -188,22 +180,28 @@ def temphum_pointdata():
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
 
+count_samepoint = 0
 def gps_pointdata():
     """Gets gps data at a specific moment and uses convert_coordinates(coor) to transfrom them into the right format."""
+    global count_samepoint
+    global prev_coor_ln
+    global prev_coor_lt
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     ln = eval(arduino.readline().strip())/100
     lt = eval(arduino.readline().strip())/100
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    backup_prev_ln = prev_coor_ln
+    backup_prev_lt = prev_coor_lt
     ln = convert_coordinates_ln(ln)
     lt = convert_coordinates_lt(lt)
-    if ln == False or lt == False:
+    if (ln == False or lt == False):#sending false to create_batch function when offset coordinate detected in convert_coordinates_ln/lt
         return False
+    elif backup_prev_ln == ln and backup_prev_lt == lt and count_samepoint < 3:#exra fail condition to prevent sending same gps coordinate multiple times while (!) still biking.
+        count_samepoint += 1
+        return False
+    elif backup_prev_ln != ln and backup_prev_lt != lt and count_samepoint > 0:#count_samepoint reset when moving again
+        count_samepoint = 0
     return [{"sensorID": 1, "timestamp": st, "data": [{"type": "Point", "coordinates": [ln, lt]}], "unit": "google"}, ]
-
-def gps_pointdata_nofilter():
-    """Gets gps data at a specific moment and uses convert_coordinates(coor) to transfrom them into the right format."""
-    arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    return convert_coordinates_ln_nofilter(eval(arduino.readline().strip())/100)
 
 def accelerometer_pointdata():
     """Reads the accelerometer data at a specific moment and puts them in the desired format."""
@@ -214,6 +212,7 @@ def accelerometer_pointdata():
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     return [{"sensorID": 5, "timestamp": st,"data": [{"acceleration": [{"x": x, "y": y, "z": z}], "orientation": [{"mx": mx, "my": my, "mz": mz}]}]}, ]
 
+#DEFINING THE FUNCTION THAT CREATES THE BATCH WHICH IS TO BE SENT TO THE SERVER
 def create_batch():
     """Collects all the data for the batch (whereafter the batch itself is to be created with create_batch())."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
@@ -235,6 +234,7 @@ def create_batch():
     endtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
     return [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
 
+#DEFINING FUNCTIONS TO SAVE A TRIP TO A NUMBERED .TXT FILE, WHICH CAN BE READ AND SENT LATER ON
 def send_data(save_path):
     """
     Sends all the data files that are present in the specified path to the Qbike server.
@@ -270,8 +270,6 @@ def send_data(save_path):
 
             os.remove(Trip_path)
 
-
-
 def get_trip_nb(save_path):
     """
     Gets the trip number for the next trip to be saved. If trips are present, it starts with 1.
@@ -284,7 +282,6 @@ def get_trip_nb(save_path):
             trip_nb = str(nb)
             break
     return trip_nb
-
 
 def write_trip(tripdata, save_path):
     """
@@ -308,7 +305,7 @@ def send(save_path):
     if try_connection():
         send_data(save_path)
 
-#MAIN LOOP: RUNS WHEN FILE IS EXECUTED
+#MAIN LOOP: RUNS WHEN FILE IS EXECUTED, USES DEFINED FUNCTIONS TO CREATE BIKE TRIP BATCHES AND SEND THEM ALL TO THE SERVER ONCE A CONNECTION WITH SAID SERVER IS ESTABLISHED
 while True:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     save_path_pi = r'/home/pi/Trips'
