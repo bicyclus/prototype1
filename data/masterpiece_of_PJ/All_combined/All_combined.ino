@@ -58,7 +58,9 @@ void read_GPS(){
 timer_GPS = millis();
 if (GPS.fix) { //only print sensordata if the gps has a fix
 Serial.println("1337"); // print a key, so the arduino knows its the GPS
+delay(2);
 Serial.println(GPS.latitude,4);
+delay(2);
 Serial.println(GPS.longitude,4);
 }
 }
@@ -77,7 +79,9 @@ void read_HUMI_TEMP(){
   }  
    timer_HUMI_TEMP = millis();
    Serial.println("1234"); //prints the key for temp_hump 
+   delay(2);
    Serial.println((float)dht.readHumidity(), 2);
+   delay(2);
    Serial.println((float)dht.readTemperature(), 2);
 
 }
