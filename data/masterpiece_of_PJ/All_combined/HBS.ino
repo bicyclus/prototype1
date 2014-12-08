@@ -12,15 +12,16 @@ volatile boolean firstBeat = true;        // used to seed rate array so we start
 volatile boolean secondBeat = false;      // used to seed rate array so we startup with reasonable BPM
 
 uint32_t time_bpm = millis();
-uint32_t wanted_interval = 100;
+uint32_t HBS_interval = 107;  //the minimum interval between the prints of heart beat data
+                                 //it's a prime number to drastically decrease the change of overlapping with other timers
 
 void something(){
   Signal = analogRead(pulsePin);              // read the Pulse Sensor 
-  uint32_t interval;
+  uint32_t interval;                          //defines the current interval
   if (time_bpm > millis()) time_bpm = millis();
   interval = millis() - time_bpm;
   
-  if (interval < wanted_interval){
+  if (interval < HBS_interval){   //only go through the function if the interval is bigger then the wanted interval
     return;
   }
   time_bpm = millis();                        // keep track of the time in mS with this variable
@@ -39,7 +40,7 @@ void something(){
 
   //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
   // signal surges up in value every time there is a pulse
-  if (N > 250){                                   // avoid high frequency noise£
+  if (N > 251){                                   // avoid high frequency noise£
     if ( (Signal > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){        
       Pulse = true;                               // set the Pulse flag when we think there is a pulse
       IBI = N ;                              // measure time between beats in mS
@@ -98,7 +99,7 @@ void something(){
 void read_HBS(){
   something();
   if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
-  Serial.println("1996");
+  Serial.println("1996");                //the key of the heartbeat sensor  
   Serial.println(BPM);
   QS = false; 
 }
