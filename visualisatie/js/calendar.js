@@ -14,8 +14,8 @@ var userNames;
 var showId;
 var elevMax;
 var elevMin;
-//ChartObj:
-//[0]: Google Charts
+//Chart Objects:
+//[0]: Google Chart (gelinkt aan div)
 //[1]: Data
 //[2]: Options
 var chartAccObj;
@@ -36,15 +36,15 @@ function initCalendar(){
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     //Initfcts
-    calendarFcts();
-    initGMap();
-    $('#tripInfoClose').click(function(){
+    calendarFcts();//Calendar
+    initGMap(); //Google map
+    $('#tripInfoClose').click(function(){ //Close trip vergelijker
         $(".clickedTrip").removeClass('clickedTrip');
         $(".fa-check-square-o").remove();
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
-    //Klik functies
+    //Klik functies => toggelen grafieken en extra info
     $("[id^='tripInfoHeight']").click(function(){
         for (var i = 0; i < chartElevObj.length; i++) {//MinMax
             chartElevObj[i][2] = {legend: 'none',titleY: 'Elevation (m)',backgroundColor:'#f5f5f5',vAxis: {viewWindowMode: 'explicit',viewWindow: {min: Math.round(elevMin - 5), max: Math.round(elevMax + 5)}}};
@@ -61,12 +61,13 @@ function initCalendar(){
     //Get data
     getJson("");
     //User select
-    $('#inputUserName').on('change', function() {
+    $('#inputUserName').on('change', function() { //Select box verandert
         progressCal = 100/PROG_STEPS_CAL;
         $('#calProgressBar').animate({ width: '0%' },0);
         $('#calProgress').show(ANIM_TIME);
         checkProgressCal();
         hideEvents();
+        showId = [];
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         var userName = $(this).val();
         if (userName=="all"){
@@ -127,13 +128,15 @@ function fillCalendar(data){
                     .text(value));
         });
     }
+    //Set calendar data
+    //setNewData is de calendario setData functie aangepast in de library zelf zodat de data niet wordt toegevoegd maar opnieuw leeggemaakt wordt bij toevoeging.
     myCal.setNewData(calData);
     progressCal = progressCal + 100/PROG_STEPS_CAL;
     checkProgressCal();
 }
 
 function tripCal(trip){
-    //Get text for calendar and add it
+    //Get text for calendar and add it to the slide up window
     if (!(trip.startTime === undefined)) { //startTime moet bestaan
         userNames[trip.userID] = trip.userID;
         var tripStart = new Date(trip.startTime);
@@ -685,6 +688,9 @@ function addZero(i) { //Voor data en uren enzo
 }
 
 //Draw chart
+//[0]: Google Chart (gelinkt aan div)
+//[1]: Data
+//[2]: Options
 function drawChartObj(chartObj) {
     chartObj[0].draw(chartObj[1],chartObj[2]);
 }
