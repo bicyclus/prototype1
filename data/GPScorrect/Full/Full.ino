@@ -77,7 +77,7 @@ void setup()
 
 
 // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
-SIGNAL(TIMER0_COMPA_vect) {
+SIGNAL(TIMER0_COMPB_vect) {
   char c = GPS.read();
   // if you want to debug, this is a good time to do it!
 #ifdef UDR0
@@ -92,12 +92,12 @@ void useInterrupt(boolean v) {
   if (v) {
     // Timer0 is already used for millis() - we'll just interrupt somewhere
     // in the middle and call the "Compare A" function above
-    OCR0A = 0xAF;
-    TIMSK0 |= _BV(OCIE0A);
+    OCR0B = 0xAF;
+    TIMSK0 |= _BV(OCIE0B);
     usingInterrupt = true;
   } else {
     // do not call the interrupt function COMPA anymore
-    TIMSK0 &= ~_BV(OCIE0A);
+    TIMSK0 &= ~_BV(OCIE0B);
     usingInterrupt = false;
   }
 }
@@ -147,6 +147,7 @@ void loop()                     // run over and over again
   }  
     if (sensorValue == HIGH) {
     delay(250);  
+    
     if (GPS.fix) {
       Serial.println("1337");
       delay(500);
