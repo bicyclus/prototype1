@@ -41,7 +41,7 @@ void GPSsetup(){
 }
 
 uint32_t timer_GPS = millis();
-#define GPS_INTERVAL 269 //the minimum time we want between the prints of a gps- coördinate
+#define GPS_INTERVAL 503 //the minimum time we want between the prints of a gps- coördinate
                          // it's a prime number to drastically decrease the change of overlapping with other timers
 
 void read_GPS(){
@@ -58,10 +58,10 @@ void read_GPS(){
 timer_GPS = millis();
 if (GPS.fix) { //only print sensordata if the gps has a fix
 Serial.println("1337"); // print a key, so the arduino knows its the GPS
-delay(2);
+delay(100);
 Serial.println(GPS.latitude,4);
-delay(2);
 Serial.println(GPS.longitude,4);
+delay(50);    
 }
 }
 
@@ -79,10 +79,10 @@ void read_HUMI_TEMP(){
   }  
    timer_HUMI_TEMP = millis();
    Serial.println("1234"); //prints the key for temp_hump 
-   delay(2);
+   delay(100);
    Serial.println((float)dht.readHumidity(), 2);
-   delay(2);
    Serial.println((float)dht.readTemperature(), 2);
+   delay(50);
 
 }
 

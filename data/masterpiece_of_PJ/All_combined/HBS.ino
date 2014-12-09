@@ -100,8 +100,9 @@ void read_HBS(){
   something();
   if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
   Serial.println("1996");                //the key of the heartbeat sensor  
-  delay(2);
+  delay(100);
   Serial.println(BPM);
+  delay(50);
   QS = false; 
 }
 }
