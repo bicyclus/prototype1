@@ -10,16 +10,22 @@ var elevator;
 var infowindow;
 var tripMapObj;
 var curMapBounds;
+var userNames;
+var showId;
+var elevMax;
+var elevMin;
+//Chart Objects:
+//[0]: Google Chart (gelinkt aan div)
+//[1]: Data
+//[2]: Options
 var chartAccObj;
 var chartTempObj;
 var chartElevObj;
 var chartSpeedObj;
-var userNames;
-var showId;
 
 //Initialisatie
 function initCalendar(){
-    //Hiden van onnodige elementen
+    //Verbergen van onnodige elementen
     $('#calProgress').hide();
     $('#singleProgress').hide();
     $('#tripInfoContainer').hide();
@@ -30,16 +36,20 @@ function initCalendar(){
     $('#calProgress').show(ANIM_TIME);
     $('#calProgressBar').animate({ width: progressCal.toString()+'%' },ANIM_TIME);
     //Initfcts
-    calendarFcts();
-    initGMap();
-    $('#tripInfoClose').click(function(){
+    calendarFcts();//Calendar
+    initGMap(); //Google map
+    $('#tripInfoClose').click(function(){ //Close trip vergelijker
         $(".clickedTrip").removeClass('clickedTrip');
         $(".fa-check-square-o").remove();
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         showId = [];
     });
-    //Klik functies
-    $("[id^='tripInfoHeight']").click(function(){toggleInfo('tripInfoElev',chartElevObj,'heightCaret');});
+    //Klik functies => toggelen grafieken en extra info
+    $("[id^='tripInfoHeight']").click(function(){
+        for (var i = 0; i < chartElevObj.length; i++) {//MinMax
+            chartElevObj[i][2] = {legend: 'none',titleY: 'Elevation (m)',backgroundColor:'#f5f5f5',vAxis: {viewWindowMode: 'explicit',viewWindow: {min: Math.round(elevMin - 5), max: Math.round(elevMax + 5)}}};
+        }
+        toggleInfo('tripInfoElev',chartElevObj,'heightCaret');});
     $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
     $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
     $("[id^='tripInfoAverageSpeed']").click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj,'speedCaret');});
@@ -51,12 +61,13 @@ function initCalendar(){
     //Get data
     getJson("");
     //User select
-    $('#inputUserName').on('change', function() {
+    $('#inputUserName').on('change', function() { //Select box verandert
         progressCal = 100/PROG_STEPS_CAL;
         $('#calProgressBar').animate({ width: '0%' },0);
         $('#calProgress').show(ANIM_TIME);
         checkProgressCal();
         hideEvents();
+        showId = [];
         $("#tripInfoContainer").hide('blind',ANIM_TIME);
         var userName = $(this).val();
         if (userName=="all"){
@@ -117,13 +128,15 @@ function fillCalendar(data){
                     .text(value));
         });
     }
+    //Set calendar data
+    //setNewData is de calendario setData functie aangepast in de library zelf zodat de data niet wordt toegevoegd maar opnieuw leeggemaakt wordt bij toevoeging.
     myCal.setNewData(calData);
     progressCal = progressCal + 100/PROG_STEPS_CAL;
     checkProgressCal();
 }
 
 function tripCal(trip){
-    //Get text for calendar and add it
+    //Get text for calendar and add it to the slide up window
     if (!(trip.startTime === undefined)) { //startTime moet bestaan
         userNames[trip.userID] = trip.userID;
         var tripStart = new Date(trip.startTime);
@@ -141,7 +154,11 @@ function tripCal(trip){
                 linkText = linkText+' - '+addZero(tripEnd.getDate())+'/'+addZero(tripEnd.getMonth())+'/'+addZero(tripEnd.getFullYear())+' '+addZero(tripEnd.getHours())+':'+addZero(tripEnd.getMinutes());
             }
         }
-        calData[curDate] = calData[curDate] + '<a href="#custom-inner" id='+trip._id+' class="tripEventLink">'+ linkText + '</a>';//href="#tripInfoContainer"
+        //Real time? => no meta data
+        //if (typeof trip != "object"){
+        //    linkText = linkText + "Real Time";
+        //}
+        calData[curDate] = calData[curDate] + '<a href="#custom-inner" id='+trip._id+' class="tripEventLink realTime">'+ linkText + '</a>';
     }
 }
 
@@ -189,6 +206,8 @@ function showTripInfo(){
     chartElevObj = [];
     chartSpeedObj = [];
     chartTempObj = [];
+    elevMax = 0;
+    elevMin = 9999;
     for (var i = 0; i < curTrip.length; i++) {
         //Elap time
         var tripStart = new Date(curTrip[i].startTime);
@@ -238,33 +257,36 @@ function showTripInfo(){
                             var coord = new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]);
                             if (!(isNaN(coord.lat()) || isNaN(coord.lng()))) {
                                 if (!coord.equals(tripMapObj[i].coords[tripMapObj[i].coords.length - 1])) {
-                                    tripMapObj[i].coords.push(coord);
-                                    bounds.extend(coord);
-                                }
-                            }
-                            if (!(sensorData.data[0].speed === undefined)) {
-                                speedData.push([timestampDate, sensorData.data[0].speed[0]]);
-                                curSpeedAverage += sensorData.data[0].speed[0];
-                            } else {
-                                if (sensorData.data[0].unit == 'dmc') {
-                                    sensorData.data[0].coordinates[0] = sensorData.data[0].coordinates[0] / 100;
-                                    sensorData.data[0].coordinates[1] = sensorData.data[0].coordinates[1] / 100;
-                                }
-                                if ($.isEmptyObject(prevGps)) {
-                                    prevGps = sensorData;
-                                } else {
-                                    var timestampDate = new Date(prevGps.timestamp);
-                                    var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
-                                    var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                                    if (timedif != 0){
-                                        var speedint = distint / timedif * 3.6;
-                                        speedData.push([timestampDate, speedint]);
-                                        totaldist += distint;
-                                        curSpeedAverage += speedint;
-                                        prevGps = sensorData;
+                                    if (!((sensorData.data[0].coordinates[0]==0)||(sensorData.data[0].coordinates[1]==0))){ //FlorisFilter
+                                        tripMapObj[i].coords.push(coord);
+                                        bounds.extend(coord);
+                                        if (!(sensorData.data[0].speed === undefined)) {
+                                            speedData.push([timestampDate, sensorData.data[0].speed[0]]);
+                                            curSpeedAverage += sensorData.data[0].speed[0];
+                                        } else {
+                                            if (sensorData.data[0].unit == 'dmc') {
+                                                sensorData.data[0].coordinates[0] = sensorData.data[0].coordinates[0] / 100;
+                                                sensorData.data[0].coordinates[1] = sensorData.data[0].coordinates[1] / 100;
+                                            }
+                                            if ($.isEmptyObject(prevGps)) {
+                                                prevGps = sensorData;
+                                            } else {
+                                                var timestampDate = new Date(prevGps.timestamp);
+                                                var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
+                                                var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
+                                                if (timedif != 0){
+                                                    var speedint = distint / timedif * 3.6;
+                                                    speedData.push([timestampDate, speedint]);
+                                                    totaldist += distint;
+                                                    curSpeedAverage += speedint;
+                                                    prevGps = sensorData;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
+
                         }
                         break;
                     case 2: //Light
@@ -375,7 +397,6 @@ function showTripInfo(){
                     passData.push([accData[b][0], accData[b][3]]);
                 }
                 var analysed = analyseAccel(passData);
-                console.log(analysed);
                 for (var b = 0; b < accData.length; b++) {
                     chartData.addRow([accData[b][0], accData[b][3],analysed[0][b]]);
                 }
@@ -503,6 +524,13 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                             down +=  -(elevations[i].elevation-elevations[i-1].elevation);
                         }
                     }
+                    //maxElev for same axis
+                    if (elevations[i].elevation > elevMax){
+                        elevMax = elevations[i].elevation;
+                    }
+                    if (elevations[i].elevation < elevMin){
+                        elevMin = elevations[i].elevation;
+                    }
                 }
                 $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up*100)/100+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down*100)/100+' m')
                 //Chart
@@ -511,9 +539,7 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                     //Callback
                     google.maps.event.trigger(map, 'resize');
                     map.fitBounds(curMapBounds);
-                    options = {legend: 'none',titleY: 'Elevation (m)',backgroundColor:'#f5f5f5'};
-                    chartElevObj.push([chartElev,data,options]);
-                    drawChartObj(chartSpeedObj[num]);
+                    chartElevObj.push([chartElev,data,{}]);
                 });
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP / showId.length;
                 checkProgressSingle();
@@ -662,6 +688,9 @@ function addZero(i) { //Voor data en uren enzo
 }
 
 //Draw chart
+//[0]: Google Chart (gelinkt aan div)
+//[1]: Data
+//[2]: Options
 function drawChartObj(chartObj) {
     chartObj[0].draw(chartObj[1],chartObj[2]);
 }
