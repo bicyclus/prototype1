@@ -31,6 +31,9 @@
     <script src="js/analyse.js"></script>
     <script src="js/calendar.js"></script>
 
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
 </head>
 <body>
 <!--[if lt IE 7]>
@@ -39,9 +42,13 @@
 <div class="container clearfix">
     <div class="jumbotron">
         <img src="img/Logo.png" class="logo_img">
-        <h1>Bicyclus Web interface v0.7</h1>
-        <p>PenO.3 – KULeuven – Faculty of Engineering</p>
-        <p><ul class="nav nav-pills">
+        <h1>Bicyclus Web interface v0.8</h1>
+        <p class="text-info">PenO.3 – KULeuven – Faculty of Engineering</p>
+        <p>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#home" data-toggle="tab" aria-expanded="true">What we do</a></li>
+            <li class=""><a href="#profile" data-toggle="tab" aria-expanded="true">Who we are</a></li></ul>
+        <ul class="nav nav-pills">
         <li class="active"><a href="index.html">Home</a></li>
         <li class=""><a href="http://bicyclus.wordpress.com" target="_blank">Blog</a></li>
         <li class="dropdown">
@@ -54,6 +61,20 @@
                 <li><a href="index.html?getUrl=DevPage" id="devPageLink">Development Server with pagination (faster: 6/11/14)</a></li>
             </ul>
         </li></ul></p>
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade active in" id="home">
+                <h4>Bicylcus gives users feedback on their biketrips, based on data collected with different types of sensors</h4>
+            </div>
+            <div class="tab-pane fade" id="profile">
+                <h4> The teammembers of P&O team CW1A2</h4>
+                <h5> •	Beerden Pieterjan  </h5>
+                <h5> •	Bulteel Lennart  </h5>
+                <h5> •	D'Hont Joren </h5>
+                <h5> •	De Deken Michiel </h5>
+                <h5> •	De Winter Brent </h5>
+                <h5> •	Etienne Evert </h5>
+            </div>
+        </div>
     </div>
     <div class="progress progress-striped active" id="calProgress">
         <div class="progress-bar" id="calProgressBar"></div>
@@ -102,6 +123,8 @@
             <p><div id="tripInfoAccel0" class="tripInfo tripInfoToggle"></div>
             <div id="tripInfoAccData0" class="tripInfo tripInfoExtra"></div></p>
             <p><div id="tripInfoHumidity0" class="tripInfo"></div></p>
+            <p><div id="tripInfoHeartbeat0" class="tripInfo"></div></p>
+            <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
         </div></p>
         <p><div id="tripInfo1" class="tripInfoDiv">
             <p><div id="tripInfoTime1" class="tripInfo timeHead"></div></p>
