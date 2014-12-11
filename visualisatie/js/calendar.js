@@ -711,6 +711,7 @@ function showEvents( $contentEl, dateProperties ) {
 
     $('.tripEventLink').each(function(){
         if  ($.inArray($(this).attr('id'),showId) != -1){
+            $(this).children(".fa-check-square-o").remove();
             $(this).addClass("clickedTrip");
             $(this).prepend('<i class="fa fa-check-square-o">&nbsp;</i>');
         } else {
