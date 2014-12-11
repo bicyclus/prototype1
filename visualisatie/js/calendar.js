@@ -304,14 +304,14 @@ function showTripInfo(){
                             if (!(sensorData.data[0].value === undefined)) {
                                 tempData.push([timestampDate, sensorData.data[0].value[0]]);
                                 counter_temperature += 1;
-                                sum_of_elements_temperature += (sensorData.data[0].value);
+                                sum_of_elements_temperature += parseInt(sensorData.data[0].value);
                             }
                         }
                         break;
                     case 4: //Humidity
                         if (!(sensorData.data[0] === undefined)) {
                             counter_humidity += 1;
-                            sum_of_elements_humidity += sensorData.data[0].value;
+                            sum_of_elements_humidity += parseInt(sensorData.data[0].value);
                         }
                         break;
                     case 5: //Accelerometer
@@ -331,7 +331,7 @@ function showTripInfo(){
                         if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                             if (!(sensorData.data[0].value === undefined)) {
                                 counter_heartbeat += 1;
-                                sum_of_elements_heartbeat += (sensorData.data[0].value);
+                                sum_of_elements_heartbeat += parseInt(sensorData.data[0].value);
                                 heartbeatData.push([timestampDate,sensorData.data[0].value]);
 
                             }
