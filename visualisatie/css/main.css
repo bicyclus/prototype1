@@ -326,6 +326,12 @@ textarea {
     width: 20%;
 }
 
+.cyclus_img {
+    float:right;
+    margin: 10px;
+    width: 20%;
+}
+
 #map_div, #tripInfoMap {
     display: block;
     width: 100%;
