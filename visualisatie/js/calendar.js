@@ -14,7 +14,6 @@ var userNames;
 var showId;
 var elevMax;
 var elevMin;
-var tempVis;
 //Chart Objects:
 //[0]: Google Chart (gelinkt aan div)
 //[1]: Data
@@ -23,6 +22,7 @@ var chartAccObj;
 var chartTempObj;
 var chartElevObj;
 var chartSpeedObj;
+var chartHeartbeatObj;
 
 
 //Initialisatie
@@ -55,7 +55,7 @@ function initCalendar(){
     $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
     $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
     $("[id^='tripInfoAverageSpeed']").click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj,'speedCaret');});
-    $("[id^='tripInfoHeartbeat']").click(function(){toggleInfo('container','heartbeatCaret');});
+    $("[id^='tripInfoHeartbeat']").click(function(){toggleInfo('tripInfoHeart',chartHeartbeatObj,'heartbeatCaret');});
 
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
@@ -192,7 +192,7 @@ function showTripInfo(){
         $("#tripInfoSpeed"+i).hide();
         $("#speedCaret"+i).addClass("fa-caret-square-o-right");
         $("#speedCaret"+i).removeClass("fa-caret-square-o-down");
-        $("tripInfoHeartbeat"+i).hide();
+        $("tripInfoHeart"+i).hide();
         $("#heartbeatCaret"+i).addClass("fa-caret-square-o-right");
         $("#heartbeatCaret"+i).removeClass("fa-caret-square-o-down");
     }
@@ -213,6 +213,7 @@ function showTripInfo(){
     chartElevObj = [];
     chartSpeedObj = [];
     chartTempObj = [];
+    chartHeartbeatObj=[];
     elevMax = 0;
     elevMin = 9999;
     for (var i = 0; i < curTrip.length; i++) {
@@ -247,7 +248,6 @@ function showTripInfo(){
             var counter_temperature = 0;
             var counter_humidity = 0;
             var counter_heartbeat = 0;
-            var heartbeatStartDate = [];
             var sum_of_elements_temperature = 0;
             var sum_of_elements_humidity = 0;
             var sum_of_elements_heartbeat = 0;
@@ -288,6 +288,7 @@ function showTripInfo(){
                                                     totaldist += distint;
                                                     curSpeedAverage += speedint;
                                                     prevGps = sensorData;
+                                                    console.log(timedif+' , '+speedint);
                                                 }
                                             }
                                         }
@@ -468,8 +469,8 @@ function showTripInfo(){
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Speed');
                 chartData.addColumn('number', 'Average');
-                for (var b = SPEED_ROUND; b < speedData.length-SPEED_ROUND; b=b+2) {
-                    chartData.addRow([speedData[b][0], (speedData[b-2][1]+speedData[b-1][1]+speedData[b][1]+speedData[b+1][1]+speedData[b+2][1])/(2*SPEED_ROUND+1), curSpeedAverage]);
+                for (var b = 0; b < speedData.length; b++) {
+                    chartData.addRow([speedData[b][0], speedData[b][1], curSpeedAverage]);
                 }
                 var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed'+i)[0]); //Chart aanmaken in div
                 chartSpeedObj.push([chartSpeed, chartData, speedOptions]);
@@ -479,6 +480,36 @@ function showTripInfo(){
             //Google  Elev
             elev_and_plot(tripMapObj[i].coords, curTrip[i]._id,i);
             $("#tripInfo"+i).show();
+
+            // Heart rate
+
+            $('#tripInfoHeartbeat'+i).append('<i class="fa fa-caret-square-o-right" id="heartbeatCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-heart">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
+            if (heartbeatData.length > 0) {
+                heartbeatData.sort(SortByTimestamp);
+                var heartbeatOptions = {
+                    titleY: 'Heart rate (bpm)',
+                    colors: ['red', '#4ab9db'],
+                    curveType: 'function',
+                    backgroundColor: '#f5f5f5',
+                    series: {1: {lineWidth: 1, visibleInLegend: true}},
+                    vAxis: {
+                        viewWindowMode: 'explicit',
+                        viewWindow: {
+                            min: 0,
+                            max: 250
+                        }
+                    }
+                };
+                var chartData = new google.visualization.DataTable();
+                chartData.addColumn('datetime', 'Time');
+                chartData.addColumn('number', 'Heartbeat');
+                chartData.addColumn('number', 'Average');
+                for (var b = 0; b < heartbeatData.length; b++) {
+                    chartData.addRow([heartbeatData[b][0], heartbeatData[b][1], curHeartbeatAverage]);
+                }
+                var chartHeartbeat = new google.visualization.LineChart($('#tripInfoHeart'+i)[0]); //Chart aanmaken in div
+                chartHeartbeatObj.push([chartHeartbeat, chartData, heartbeatOptions]);
+            }
 
         }
     }
