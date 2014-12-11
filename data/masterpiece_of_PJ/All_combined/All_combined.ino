@@ -57,7 +57,7 @@ void read_GPS(){
   }
 timer_GPS = millis();
 if (GPS.fix) { //only print sensordata if the gps has a fix
-Serial.println("1337"); // print a key, so the arduino knows its the GPS
+Serial.println("GPS"); // print a key, so the arduino knows its the GPS
 delay(100);
 Serial.println(GPS.latitude,4);
 Serial.println(GPS.longitude,4);
@@ -78,7 +78,7 @@ void read_HUMI_TEMP(){
     return;
   }  
    timer_HUMI_TEMP = millis();
-   Serial.println("1234"); //prints the key for temp_hump 
+   Serial.println("TEMP"); //prints the key for temp_hump 
    delay(100);
    Serial.println((float)dht.readHumidity(), 2);
    Serial.println((float)dht.readTemperature(), 2);
@@ -92,7 +92,7 @@ void loop()           // run over and over again
 
   sensorValue = digitalRead(button);
   if (sensorValue == LOW) { 
-    Serial.println("1995");//prints the key when the user isn't collecting trips
+    Serial.println("STOP");//prints the key when the user isn't collecting trips
     delay(100);
   }  
     if (sensorValue == HIGH) { //print out all the sensordata is their timer is ok

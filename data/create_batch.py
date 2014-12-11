@@ -76,7 +76,7 @@ def determine_correct_coor(n=5):
     coor_list = []
     while len(coor_list) != n: #fetching first five coordinates
         ard_read = arduino.readline().strip()
-        if ard_read == '1337':
+        if ard_read == 'GPS':
             gps = gps_pointdata_nofilter()
             if not gps == False:
                 coor_list.append(gps)
@@ -85,7 +85,7 @@ def determine_correct_coor(n=5):
         gps = False
         while gps == False:
             ard_read = arduino.readline().strip()
-            if ard_read == '1337':
+            if ard_read == 'GPS':
                 gps = gps_pointdata_nofilter() #returns unfiltered longitude gps coordinate, so gps = ln
         #removing oldest coordinate and putting another in place
         coor_list.insert(0, gps)
@@ -227,16 +227,16 @@ def create_batch():
     batch_data = []
     starttime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") #the gps already has a fix when the function is executed so this is the correct start time
     ard_read = arduino.readline().strip() #added to prevent error first run of the while-loop
-    while ard_read != '1995': #Stop condition: arduino sending '1995' to the Pi
+    while ard_read != 'STOP': #Stop condition: arduino sending 'STOP' to the Pi
         #adds accelerometer data and most of the time data from one sensor (GPS, humidity, temperature or heartbeat) to the batch_data list
         ard_read = arduino.readline().strip()
-        if ard_read == '1234':
+        if ard_read == 'TEMP':
             batch_data += temphum_pointdata()
-        if ard_read == '1337':
+        if ard_read == 'GPS':
             gps = gps_pointdata()
             if not gps == False:
                 batch_data += gps
-        if ard_read == '1996':
+        if ard_read == 'HBS':
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
     endtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
@@ -313,7 +313,7 @@ print "Received User ID. Happy cycling!"
 while True:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     save_path_pi = r'/home/pi/Trips'
-    if ard.readline().strip() == '1337': #the arduino nano sends 1337 to the pi when the gps has a fix so the collection of all data can start
+    if ard.readline().strip() == 'GPS': #the arduino nano sends GPS to the pi when the gps has a fix so the collection of all data can start
         determine_correct_coor()
         batch = create_batch() #creates the batch corresponding to the trip
         write_trip(batch,save_path_pi)
