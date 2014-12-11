@@ -277,12 +277,13 @@ function showTripInfo(){
                                                 var timestampDate = new Date(prevGps.timestamp);
                                                 var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
                                                 var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                                                if (timedif != 0){
+                                                if (timedif > 0){
                                                     var speedint = distint / timedif * 3.6;
                                                     speedData.push([timestampDate, speedint]);
                                                     totaldist += distint;
                                                     curSpeedAverage += speedint;
                                                     prevGps = sensorData;
+                                                    console.log(timedif+' , '+speedint);
                                                 }
                                             }
                                         }
