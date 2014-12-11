@@ -22,6 +22,7 @@ var chartAccObj;
 var chartTempObj;
 var chartElevObj;
 var chartSpeedObj;
+var chartHeartbeatObj;
 
 //Initialisatie
 function initCalendar(){
@@ -53,6 +54,7 @@ function initCalendar(){
     $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
     $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
     $("[id^='tripInfoAverageSpeed']").click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj,'speedCaret');});
+
     progressCal = progressCal + 100/PROG_STEPS_CAL-BEGIN_PERCENT;
     checkProgressCal();
     showId = [];
@@ -240,6 +242,7 @@ function showTripInfo(){
             var counter_temperature = 0;
             var counter_humidity = 0;
             var counter_heartbeat = 0;
+            var heartbeatStartDate = [];
             var sum_of_elements_temperature = 0;
             var sum_of_elements_humidity = 0;
             var sum_of_elements_heartbeat = 0;
@@ -274,12 +277,13 @@ function showTripInfo(){
                                                 var timestampDate = new Date(prevGps.timestamp);
                                                 var distint = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(prevGps.data[0].coordinates[0], prevGps.data[0].coordinates[1]), new google.maps.LatLng(sensorData.data[0].coordinates[0], sensorData.data[0].coordinates[1]));
                                                 var timedif = ((new Date(sensorData.timestamp) - new Date(prevGps.timestamp)) / 1000);
-                                                if (timedif != 0){
+                                                if (timedif > 0){
                                                     var speedint = distint / timedif * 3.6;
                                                     speedData.push([timestampDate, speedint]);
                                                     totaldist += distint;
                                                     curSpeedAverage += speedint;
                                                     prevGps = sensorData;
+                                                    console.log(timedif+' , '+speedint);
                                                 }
                                             }
                                         }
@@ -324,7 +328,10 @@ function showTripInfo(){
                             if (!(sensorData.data[0].value === undefined)) {
                                 counter_heartbeat += 1;
                                 sum_of_elements_heartbeat += parseInt(sensorData.data[0].value);
-                                heartbeatData.push([sensorData.data[0].value[0]]);
+                                heartbeatData.push([sensorData.data[0].value]);
+                                if (counter_heartbeat == 1 || counter_heartbeat ==5) {
+                                    heartbeatStartDate.push(timestampDate);
+                                }
                             }
                         }
                         break;
@@ -336,9 +343,9 @@ function showTripInfo(){
             curHumidityAverage = Math.round(sum_of_elements_humidity / counter_humidity);
             curHeartbeatAverage = Math.round(sum_of_elements_heartbeat / counter_heartbeat);
             totaldist = Math.round(totaldist / 10) / 100;
-            $('#tripInfoHeartbeat'+i).text('Average Heartbeat: ' + curHeartbeatAverage + 'beats per minute');
             $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>' + curHumidityAverage + ' %');
             $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>' + totaldist + ' km');
+            $('#tripInfoHeartbeat'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-heart">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
             //GPS
             if (tripMapObj[i].coords.length > 1) {
                 tripMapObj[i].markerStart = new google.maps.Marker({ //Marker op begincoördinaat
@@ -471,6 +478,162 @@ function showTripInfo(){
             //Google  Elev
             elev_and_plot(tripMapObj[i].coords, curTrip[i]._id,i);
             $("#tripInfo"+i).show();
+            // Heart rate
+
+                var start;
+                var secondtime;
+                var year;
+                var month;
+                var day;
+                var hours;
+                var minutes;
+                var seconds;
+                var year2nd;
+                var month2nd;
+                var day2nd;
+                var hours2nd;
+                var minutes2nd;
+                var seconds2nd;
+
+                start = new Date(heartbeatStartDate[0]);
+                secondtime = new Date(heartbeatStartDate[1]);
+
+                year = start.getFullYear();
+                month = start.getMonth();
+                day = start.getDate();
+                hours = start.getHours();
+                minutes = start.getMinutes();
+                seconds = start.getSeconds();
+
+                year2nd = secondtime.getFullYear();
+                month2nd = secondtime.getMonth();
+                day2nd = secondtime.getDate();
+                hours2nd = secondtime.getHours();
+                minutes2nd = secondtime.getMinutes();
+                seconds2nd  = secondtime.getSeconds();
+
+                var heartbeatchart = {
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: 'Heart rate'
+                    },
+                    subtitle: {
+                        text: ''
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Heart rate (bbp)'
+                        },
+                        min: 50,
+                        minorGridLineWidth: 0,
+                        gridLineWidth: 0,
+                        alternateGridColor: null,
+                        plotBands: [
+                            { // Rest
+                                from: 60,
+                                to: 104,
+                                color: 'rgba(0 , 0, 0, 0)',
+                                label: {
+                                    text: 'Rest',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            },
+                            { // Very light
+                                from: 104,
+                                to: 114,
+                                color: 'rgba(68, 170, 213, 0.1)',
+                                label: {
+                                    text: 'Very light workout',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            }, { // Light
+                                from: 114,
+                                to: 133,
+                                color: 'rgba(0, 178, 242, 0.3)',
+                                label: {
+                                    text: 'Light workout',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            }, { // Moderate
+                                from: 133,
+                                to: 152,
+                                color: 'rgba(209, 210, 0, 0.5)',
+                                label: {
+                                    text: 'Moderate workout',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            }, { // Hard
+                                from: 152,
+                                to: 171,
+                                color: 'rgba(209, 100, 0, 0.5)',
+                                label: {
+                                    text: 'Hard workout',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            }, { // Maximum
+                                from: 171,
+                                to: 200,
+                                color: 'rgba(223, 0, 0, 0.5)',
+                                label: {
+                                    text: 'Maximum workout',
+                                    style: {
+                                        color: '#606060'
+                                    }
+                                }
+                            }]
+                    },
+                    tooltip: {
+                        valueSuffix: ' bpm'
+                    },
+                    plotOptions: {
+                        spline: {
+                            lineWidth: 2,
+                            states: {
+                                hover: {
+                                    lineWidth: 5
+                                }
+                            },
+                            marker: {
+                                enabled: false
+                            },
+                            pointInterval: (-Date.UTC(year, month, day, hours, minutes, seconds)            // Interval opstellen
+                                +Date.UTC(year2nd, month2nd, day2nd, hours2nd, minutes2nd, seconds2nd))/4, // (tijdstip eerste hartslagmeting - tijdstip 5de hartslag meting)/4
+                            pointStart: Date.UTC(year, month, day, hours, minutes, seconds),
+                        }
+                    },
+
+                    series: [{
+                        name: 'Heart rate',
+                        data: heartbeatData
+
+                    }],
+                    navigation: {
+                        menuItemStyle: {
+                            fontSize: '10px'
+                        }
+                    }
+                };
+
+                $('#container').highcharts(heartbeatchart);
+
         }
     }
 }

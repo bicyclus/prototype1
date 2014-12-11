@@ -10,10 +10,10 @@ import os
 #DEFINING THE AUXILIARY FUNCTIONS FOR SERVER CONNECTION/RESPONSE
 def try_connection():
     """
-    Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8443/qbike/.
+    Checks if we can connect to the server by checking the availability of the page http://dali.cs.kuleuven.be:8080/qbike/.
     """
     try:
-        response = urllib2.urlopen('http://dali.cs.kuleuven.be:8443/qbike/', timeout=1)
+        response = urllib2.urlopen('http://dali.cs.kuleuven.be:8080/qbike/', timeout=1)
         return True
     except:
         return False
@@ -39,7 +39,7 @@ def convert_coordinates_ln_nofilter(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    # Removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -77,7 +77,7 @@ def determine_correct_coor(n=5):
     while len(coor_list) != n: #fetching first five coordinates
         ard_read = arduino.readline().strip()
         if ard_read == '1337':
-            gps = gps_pointdata()
+            gps = gps_pointdata_nofilter()
             if not gps == False:
                 coor_list.append(gps)
     while not matching_coor(coor_list) == True: #trying to get a list with n correct gps values
@@ -114,7 +114,7 @@ def convert_coordinates_ln(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    # Removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -137,7 +137,7 @@ def convert_coordinates_lt(coor):
     global prev_coor_lt
     k = 0
     coor = str(coor)
-    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
             k = i
@@ -145,7 +145,7 @@ def convert_coordinates_lt(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    #removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -153,7 +153,7 @@ def convert_coordinates_lt(coor):
     dmin1 = dmin[0:k]
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
-    #adding degrees and dmin together in the desired format
+    # Adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
     if prev_coor_lt == None:
         pass
@@ -163,20 +163,27 @@ def convert_coordinates_lt(coor):
     return coordinates
 
 #DEFINING FUNCTIONS THAT MEASURE THE DATA FROM THE SENSORS
-def beat_pointdata():
+def beat_pointdata(minfilter=30,maxfilter=220):
     """Collects heartbeat data of a specific moment (one value)."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    hb = eval(arduino.readline().strip())
-    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
+    hb = arduino.readline()
+    hb = eval(hb.strip())
+    print "BPM: ",hb
+    if hb > minfilter or hb < maxfilter:
+        st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        return [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
 
-def temphum_pointdata():
+def temphum_pointdata(minfilter=-70,maxfilter=70):
     """Gets temperature and humidity data at a specific moment."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    humi = eval(arduino.readline().strip())
-    temp = eval(arduino.readline().strip())
-    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
+    humi = arduino.readline()
+    temp = arduino.readline()
+    humi = eval(humi.strip())
+    temp = eval(temp.strip())
+    print "Temphum: ",humi,":",temp
+    if temp < maxfilter and temp > minfilter: # Humidity is only displayed as an average on the website so a basic humidity filter isn't necessary
+        st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
 
 count_samepoint = 0
 def gps_pointdata():
@@ -185,16 +192,19 @@ def gps_pointdata():
     global prev_coor_ln
     global prev_coor_lt
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
-    ln = eval(arduino.readline().strip())/100
-    lt = eval(arduino.readline().strip())/100
+    ln = arduino.readline()
+    lt = arduino.readline()
     st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+    print "GPS: ",ln,":",lt
+    ln = eval(ln.strip())/100
+    lt = eval(lt.strip())/100
     backup_prev_ln = prev_coor_ln
     backup_prev_lt = prev_coor_lt
     ln = convert_coordinates_ln(ln)
     lt = convert_coordinates_lt(lt)
     if (ln == False or lt == False):#sending false to create_batch function when offset coordinate detected in convert_coordinates_ln/lt
         return False
-    elif backup_prev_ln == ln and backup_prev_lt == lt and count_samepoint < 3:#exra fail condition to prevent sending same gps coordinate multiple times while (!) still biking.
+    elif backup_prev_ln == ln and backup_prev_lt == lt and count_samepoint < 3:#exra fail condition to prevent sending same gps coordinate multiple times while (!) still biking
         count_samepoint += 1
         return False
     elif backup_prev_ln != ln and backup_prev_lt != lt and count_samepoint > 0:#count_samepoint reset when moving again
@@ -230,7 +240,7 @@ def create_batch():
             batch_data += beat_pointdata()
         batch_data += accelerometer_pointdata()
     endtime = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": "r0462183", "sensorData": batch_data,"meta": {}}]
+    return [{"startTime": starttime, "endTime": endtime, "groupID": "cwa2", "userID": ID, "sensorData": batch_data,"meta": {}}]
 
 #DEFINING FUNCTIONS TO SAVE A TRIP TO A NUMBERED .TXT FILE, WHICH CAN BE READ AND SENT LATER ON
 def send_data(save_path):
@@ -244,7 +254,6 @@ def send_data(save_path):
     while end == False:
         if not os.path.isfile('/home/pi/Trips/Trip1.txt'):
             end = True
-            print "No Data"
         else:
             for nb in reversed(range(0,100)):
                 Trip = os.path.join(save_path,"Trip"+str(nb)+".txt")
@@ -254,8 +263,8 @@ def send_data(save_path):
             Trip_path = os.path.join(save_path, r"Trip"+Trip_nb+r".txt")
             with open(Trip_path, "r") as Trip:
                 batch = json.load(Trip)
-            info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': "r0462183"}
-            socketIO = SocketIO('dali.cs.kuleuven.be', 8443)
+            info = {'purpose': 'batch-sender', 'groupID': "cwa2", 'userID': ID}
+            socketIO = SocketIO('dali.cs.kuleuven.be', 8080)
             socketIO.on('server_message', on_response)
             socketIO.emit('start', json.dumps(info), on_response)
             socketIO.wait(2)
@@ -299,6 +308,8 @@ def send(save_path):
         send_data(save_path)
 
 #MAIN LOOP: RUNS WHEN FILE IS EXECUTED, USES DEFINED FUNCTIONS TO CREATE BIKE TRIP BATCHES AND SEND THEM ALL TO THE SERVER ONCE A CONNECTION WITH SAID SERVER IS ESTABLISHED
+ID = raw_input("Enter user ID: ")
+print "Received User ID. Happy cycling!"
 while True:
     ard = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     save_path_pi = r'/home/pi/Trips'
