@@ -713,6 +713,9 @@ function showEvents( $contentEl, dateProperties ) {
         if  ($.inArray($(this).attr('id'),showId) != -1){
             $(this).addClass("clickedTrip");
             $(this).prepend('<i class="fa fa-check-square-o">&nbsp;</i>');
+        } else {
+            $(this).removeClass('clickedTrip');
+            $(this).children(".fa-check-square-o").remove();
         }
     });
 
