@@ -232,7 +232,7 @@ function showTripInfo(){
         }
         $("#tripInfoTime"+i).append(timeText);
         //UserID
-        $('#tripInfoUser'+i).append('<i class="fa fa-square-o">&nbsp;</i><i class="fa fa-user">&nbsp;</i>' + curTrip[i].userID);
+        $('#tripInfoUser'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-user">&nbsp;</i>' + curTrip[i].userID);
         //Google map trip
         var coords;
         if (!(curTrip[i].sensorData === undefined)) {
@@ -288,7 +288,6 @@ function showTripInfo(){
                                                     totaldist += distint;
                                                     curSpeedAverage += speedint;
                                                     prevGps = sensorData;
-                                                    console.log(timedif+' , '+speedint);
                                                 }
                                             }
                                         }
@@ -346,7 +345,7 @@ function showTripInfo(){
             curHumidityAverage = Math.round(sum_of_elements_humidity / counter_humidity);
             curHeartbeatAverage = Math.round(sum_of_elements_heartbeat / counter_heartbeat);
             totaldist = Math.round(totaldist / 10) / 100;
-            $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i><i class="wi wi-sprinkles">&nbsp;</i>' + curHumidityAverage + ' %');
+            $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="wi wi-sprinkles">&nbsp;</i>' + curHumidityAverage + ' %');
             $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>' + totaldist + ' km');
             //GPS
             if (tripMapObj[i].coords.length > 1) {
@@ -482,7 +481,6 @@ function showTripInfo(){
             $("#tripInfo"+i).show();
 
             // Heart rate
-
             $('#tripInfoHeartbeat'+i).append('<i class="fa fa-caret-square-o-right" id="heartbeatCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-heart">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
             if (heartbeatData.length > 0) {
                 heartbeatData.sort(SortByTimestamp);
