@@ -29,7 +29,6 @@ def convert_coordinates_ln_nofilter(coor):
     This function is written for determine_correct_coor and gps_pointdata_nofilter to be able to
     let determine_correct_coor work properly.
     """
-
     k = 0
     coor = str(coor)
     # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
@@ -40,7 +39,7 @@ def convert_coordinates_ln_nofilter(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    # Removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -115,7 +114,7 @@ def convert_coordinates_ln(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    # Removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -138,7 +137,7 @@ def convert_coordinates_lt(coor):
     global prev_coor_lt
     k = 0
     coor = str(coor)
-    #get the degrees and perform the first step in obtaining the transformed minutes (dmin)
+    # Get the degrees and perform the first step in obtaining the transformed minutes (dmin)
     for i in range(0, len(coor)):
         if coor[i] == ".":
             k = i
@@ -146,7 +145,7 @@ def convert_coordinates_lt(coor):
     minutes = int(coor[k + 1:len(coor)])
     degrees = (coor[0:k])
     dmin = str(minutes / 60.0)
-    #removing the . in the original format(second step in obtaining dmin)
+    # Removing the . in the original format(second step in obtaining the transformed minutes, dmin)
     for s in range(0, len(dmin)):
         if dmin[s] == ".":
             k = s
@@ -154,7 +153,7 @@ def convert_coordinates_lt(coor):
     dmin1 = dmin[0:k]
     dmin2 = dmin[k + 1:len(dmin)]
     dmin = dmin1 + dmin2
-    #adding degrees and dmin together in the desired format
+    # Adding degrees and dmin together in the desired format
     coordinates = degrees + "." + dmin
     if prev_coor_lt == None:
         pass
@@ -164,16 +163,17 @@ def convert_coordinates_lt(coor):
     return coordinates
 
 #DEFINING FUNCTIONS THAT MEASURE THE DATA FROM THE SENSORS
-def beat_pointdata():
+def beat_pointdata(minfilter=30,maxfilter=220):
     """Collects heartbeat data of a specific moment (one value)."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     hb = arduino.readline()
     hb = eval(hb.strip())
     print "BPM: ",hb
-    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
+    if hb > minfilter or hb < maxfilter:
+        st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        return [{"sensorID": 9, "timestamp": st, "data": [{"value": [hb]}]},]
 
-def temphum_pointdata():
+def temphum_pointdata(minfilter=-70,maxfilter=70):
     """Gets temperature and humidity data at a specific moment."""
     arduino = serial.Serial('/dev/serial/by-id/usb-Gravitech_ARDUINO_NANO_13BP1066-if00-port0', 115200)
     humi = arduino.readline()
@@ -181,8 +181,9 @@ def temphum_pointdata():
     humi = eval(humi.strip())
     temp = eval(temp.strip())
     print "Temphum: ",humi,":",temp
-    st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
+    if temp < maxfilter and temp > minfilter: # Humidity is only displayed as an average on the website so a basic humidity filter isn't necessary
+        st = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+        return [{"sensorID": 3, "timestamp": st, "data": [{"value": [temp]}]}, {"sensorID": 4, "timestamp": st, "data": [{"value": [humi]}]}, ]
 
 count_samepoint = 0
 def gps_pointdata():
@@ -203,7 +204,7 @@ def gps_pointdata():
     lt = convert_coordinates_lt(lt)
     if (ln == False or lt == False):#sending false to create_batch function when offset coordinate detected in convert_coordinates_ln/lt
         return False
-    elif backup_prev_ln == ln and backup_prev_lt == lt and count_samepoint < 3:#exra fail condition to prevent sending same gps coordinate multiple times while (!) still biking.
+    elif backup_prev_ln == ln and backup_prev_lt == lt and count_samepoint < 3:#exra fail condition to prevent sending same gps coordinate multiple times while (!) still biking
         count_samepoint += 1
         return False
     elif backup_prev_ln != ln and backup_prev_lt != lt and count_samepoint > 0:#count_samepoint reset when moving again
