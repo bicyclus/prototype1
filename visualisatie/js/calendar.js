@@ -221,7 +221,7 @@ function showTripInfo(){
         var tripStart = new Date(curTrip[i].startTime);
         var tripEnd = new Date(curTrip[i].endTime);
         var curTime = ((tripEnd - tripStart) / 1000).toString().toHHMMSS();
-        $('#tripInfoElap'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-clock-o">&nbsp;</i>' + curTime);
+        $('#tripInfoElap'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-clock-o" data-toggle="tooltip" data-placement="top" title="" data-original-title="Trip Time">&nbsp;</i>' + curTime);
         if (tripStart.getDate() == tripEnd.getDate()) { //Trip op 1 dag
             var timeText = addZero(tripStart.getHours()) + ':' + addZero(tripStart.getMinutes()) + ' - ' + addZero(tripEnd.getHours()) + ':' + addZero(tripEnd.getMinutes());
         } else {
@@ -232,7 +232,7 @@ function showTripInfo(){
         }
         $("#tripInfoTime"+i).append(timeText);
         //UserID
-        $('#tripInfoUser'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-user">&nbsp;</i>' + curTrip[i].userID);
+        $('#tripInfoUser'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-user" data-toggle="tooltip" data-placement="top" title="" data-original-title="User ID">&nbsp;</i>' + curTrip[i].userID);
         //Google map trip
         var coords;
         if (!(curTrip[i].sensorData === undefined)) {
@@ -304,14 +304,14 @@ function showTripInfo(){
                             if (!(sensorData.data[0].value === undefined)) {
                                 tempData.push([timestampDate, sensorData.data[0].value[0]]);
                                 counter_temperature += 1;
-                                sum_of_elements_temperature += parseInt(sensorData.data[0].value);
+                                sum_of_elements_temperature += (sensorData.data[0].value);
                             }
                         }
                         break;
                     case 4: //Humidity
                         if (!(sensorData.data[0] === undefined)) {
                             counter_humidity += 1;
-                            sum_of_elements_humidity += parseInt(sensorData.data[0].value);
+                            sum_of_elements_humidity += sensorData.data[0].value;
                         }
                         break;
                     case 5: //Accelerometer
@@ -331,7 +331,7 @@ function showTripInfo(){
                         if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                             if (!(sensorData.data[0].value === undefined)) {
                                 counter_heartbeat += 1;
-                                sum_of_elements_heartbeat += parseInt(sensorData.data[0].value);
+                                sum_of_elements_heartbeat += (sensorData.data[0].value);
                                 heartbeatData.push([timestampDate,sensorData.data[0].value]);
 
                             }
@@ -345,8 +345,8 @@ function showTripInfo(){
             curHumidityAverage = Math.round(sum_of_elements_humidity / counter_humidity);
             curHeartbeatAverage = Math.round(sum_of_elements_heartbeat / counter_heartbeat);
             totaldist = Math.round(totaldist / 10) / 100;
-            $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="wi wi-sprinkles">&nbsp;</i>' + curHumidityAverage + ' %');
-            $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle">&nbsp;</i>' + totaldist + ' km');
+            $('#tripInfoHumidity'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;<i class="fa fa-tint" data-toggle="tooltip" data-placement="top" title="" data-original-title="Humidity">&nbsp;</i>' + curHumidityAverage + ' %');
+            $('#tripInfoTotaldist'+i).append('<i class="fa fa-square-o">&nbsp;</i>&nbsp;</i><i class="fa fa-bicycle"  data-toggle="tooltip" data-placement="top" title="" data-original-title="Total Distance">&nbsp;</i>' + totaldist + ' km');
             //GPS
             if (tripMapObj[i].coords.length > 1) {
                 tripMapObj[i].markerStart = new google.maps.Marker({ //Marker op begincoördinaat
@@ -416,7 +416,7 @@ function showTripInfo(){
             checkProgressSingle();
             //Temp
             curTemperatureAverage = Math.round(sum_of_elements_temperature / counter_temperature);
-            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret'+i+'">&nbsp;</i>&nbsp;<i class="wi wi-thermometer">&nbsp;</i>' + curTemperatureAverage + ' °C');
+            $('#tripInfoTemperature'+i).append('<i class="fa fa-caret-square-o-right" id="tempCaret'+i+'">&nbsp;</i>&nbsp;<i class="wi wi-thermometer" data-toggle="tooltip" data-placement="top" title="" data-original-title="Temperature">&nbsp;</i>' + curTemperatureAverage + ' °C');
             if (tempData.length > 0) {
                 tempData.sort(SortByTimestamp);
                 var tempOptions = {
@@ -447,7 +447,7 @@ function showTripInfo(){
             checkProgressSingle();
             // Speed
             curSpeedAverage = Math.round(curSpeedAverage / speedData.length * 100) / 100;
-            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-tachometer">&nbsp;</i>' + curSpeedAverage + ' km/h');
+            $('#tripInfoAverageSpeed'+i).append('<i class="fa fa-caret-square-o-right" id="speedCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-tachometer" data-toggle="tooltip" data-placement="top" title="" data-original-title="Speed">&nbsp;</i>' + curSpeedAverage + ' km/h');
             if (speedData.length > 0) {
                 speedData.sort(SortByTimestamp);
                 var speedOptions = {
@@ -481,7 +481,7 @@ function showTripInfo(){
             $("#tripInfo"+i).show();
 
             // Heart rate
-            $('#tripInfoHeartbeat'+i).append('<i class="fa fa-caret-square-o-right" id="heartbeatCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-heart">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
+            $('#tripInfoHeartbeat'+i).append('<i class="fa fa-caret-square-o-right" id="heartbeatCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-heart" data-toggle="tooltip" data-placement="top" title="" data-original-title="Heartbeat">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
             if (heartbeatData.length > 0) {
                 heartbeatData.sort(SortByTimestamp);
                 var heartbeatOptions = {
@@ -508,9 +508,9 @@ function showTripInfo(){
                 var chartHeartbeat = new google.visualization.LineChart($('#tripInfoHeart'+i)[0]); //Chart aanmaken in div
                 chartHeartbeatObj.push([chartHeartbeat, chartData, heartbeatOptions]);
             }
-
         }
     }
+    $("[data-toggle='tooltip']").tooltip();//Tooltips
 }
 
 function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attention: async
