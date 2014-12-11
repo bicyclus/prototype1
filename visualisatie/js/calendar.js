@@ -14,6 +14,7 @@ var userNames;
 var showId;
 var elevMax;
 var elevMin;
+var tempVis;
 //Chart Objects:
 //[0]: Google Chart (gelinkt aan div)
 //[1]: Data
@@ -287,7 +288,6 @@ function showTripInfo(){
                                                     totaldist += distint;
                                                     curSpeedAverage += speedint;
                                                     prevGps = sensorData;
-                                                    console.log(timedif+' , '+speedint);
                                                 }
                                             }
                                         }
@@ -468,8 +468,8 @@ function showTripInfo(){
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Speed');
                 chartData.addColumn('number', 'Average');
-                for (var b = 0; b < speedData.length; b++) {
-                    chartData.addRow([speedData[b][0], speedData[b][1], curSpeedAverage]);
+                for (var b = SPEED_ROUND; b < speedData.length-SPEED_ROUND; b=b+2) {
+                    chartData.addRow([speedData[b][0], (speedData[b-2][1]+speedData[b-1][1]+speedData[b][1]+speedData[b+1][1]+speedData[b+2][1])/(2*SPEED_ROUND+1), curSpeedAverage]);
                 }
                 var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed'+i)[0]); //Chart aanmaken in div
                 chartSpeedObj.push([chartSpeed, chartData, speedOptions]);

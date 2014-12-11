@@ -1,14 +1,14 @@
 var RMS_POINTS = 7;
 var SIGMA_INCREASE = 1.5;
 var ROAD_TYPES = [[0.0,"Very smooth "], //Standaarddeviatie
-    [0.2,"Pretty smooth ride "],
-    [0.4,"Pretty bumpy ride "],
-    [0.6,"Really bumpy ride "],
-    [0.8,"Insanely bumpy ride "],
+    [0.05,"Pretty smooth ride "],
+    [0.2,"Pretty bumpy ride "],
+    [0.27,"Really bumpy ride "],
+    [0.35,"Insanely bumpy ride "],
     [Infinity,""]];
 var ROAD_CONDITION = [[0.0,"on a perfect road."], //Procent bumps
     [0.005,"on an almost perfect road."],
-    [0.02,"on an average road surface."],
+    [0.03,"on an average road surface."],
     [0.05,"with minor bumps."],
     [0.08,"with lots of obstacles."],
     [0.1,"on a true belgian road."],
@@ -80,19 +80,21 @@ function analyseAccel(data){
         }
     }
     var pntsPerc = pnts/data.length;
+    //Text for analysation
     var typeText = ROAD_TYPES[0][1];
-    var conditionText = ROAD_TYPES[0][1];
     for (var i = 1; i<ROAD_TYPES.length; i++){
         if (sigma_rmsdev<ROAD_TYPES[i][0]){
             typeText = ROAD_TYPES[i-1][1];
             break;
         }
     }
+    var conditionText = ROAD_TYPES[0][1];
     for (var i = 1; i<ROAD_CONDITION.length; i++){
         if (pntsPerc<ROAD_CONDITION[i][0]){
             conditionText = ROAD_CONDITION[i-1][1];
             break;
         }
     }
+    console.log(sigma_rmsdev);
     return [outside,typeText,conditionText,pnts];
 }

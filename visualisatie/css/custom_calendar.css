@@ -234,7 +234,7 @@
 }
 
 .fc-calendar .fc-row > div.fc-content:after {
-	content: '\00B7';
+	content: "·";
 	text-align: center;
 	width: 20px;
 	margin-left: -10px;
@@ -257,8 +257,6 @@
 .fc-calendar .fc-row > div.fc-today.fc-content:hover:after{
 	color: #fff;
 }
-
-
 
 .fc-calendar .fc-row > div > div a,
 .fc-calendar .fc-row > div > div span {
