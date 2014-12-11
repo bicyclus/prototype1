@@ -14,6 +14,7 @@ var userNames;
 var showId;
 var elevMax;
 var elevMin;
+var tempVis;
 //Chart Objects:
 //[0]: Google Chart (gelinkt aan div)
 //[1]: Data
@@ -52,7 +53,7 @@ function initCalendar(){
             chartElevObj[i][2] = {legend: 'none',titleY: 'Elevation (m)',backgroundColor:'#f5f5f5',vAxis: {viewWindowMode: 'explicit',viewWindow: {min: Math.round(elevMin - 5), max: Math.round(elevMax + 5)}}};
         }
         toggleInfo('tripInfoElev',chartElevObj,'heightCaret');});
-    $("[id^='tripInfoTemperature']").click(function(){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');});
+    $("[id^='tripInfoTemperature']").click(function(){if (tempVis){toggleInfo('tripInfoTemp',chartTempObj,'tempCaret');}});
     $("[id^='tripInfoAccel']").click(function(){toggleInfo('tripInfoAccData',chartAccObj,'accelCaret');});
     $("[id^='tripInfoAverageSpeed']").click(function(){toggleInfo('tripInfoSpeed',chartSpeedObj,'speedCaret');});
     $("[id^='tripInfoHeartbeat']").click(function(){toggleInfo('tripInfoHeart',chartHeartbeatObj,'heartbeatCaret');});
@@ -216,6 +217,7 @@ function showTripInfo(){
     chartHeartbeatObj=[];
     elevMax = 0;
     elevMin = 9999;
+    tempVis = true;
     for (var i = 0; i < curTrip.length; i++) {
         //Elap time
         var tripStart = new Date(curTrip[i].startTime);
@@ -437,8 +439,19 @@ function showTripInfo(){
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Temperature');
                 chartData.addColumn('number', 'Average');
+                var tempMax = tempData[0][1];
+                var tempMin = tempData[0][1];
                 for (var b = 0; b < tempData.length; b++) {
                     chartData.addRow([tempData[b][0], tempData[b][1], curTemperatureAverage]);
+                    if (tempData[b][1]>tempMax){
+                        tempMax = tempData[b][1];
+                    }
+                    if (tempData[b][1]<tempMin){
+                        tempMin = tempData[b][1];
+                    }
+                }
+                if (tempMax-tempMin<TEMP_DIFF){
+                    tempVis = false;
                 }
                 var chartTemp = new google.visualization.LineChart($('#tripInfoTemp'+i)[0]); //Chart aanmaken in div
                 chartTempObj.push([chartTemp, chartData, tempOptions]);
@@ -468,8 +481,8 @@ function showTripInfo(){
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Speed');
                 chartData.addColumn('number', 'Average');
-                for (var b = 0; b < speedData.length; b++) {
-                    chartData.addRow([speedData[b][0], speedData[b][1], curSpeedAverage]);
+                for (var b = SPEED_ROUND; b < speedData.length-SPEED_ROUND; b=b+2) {
+                    chartData.addRow([speedData[b][0], (speedData[b-2][1]+speedData[b-1][1]+speedData[b][1]+speedData[b+1][1]+speedData[b+2][1])/(2*SPEED_ROUND+1), curSpeedAverage]);
                 }
                 var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed'+i)[0]); //Chart aanmaken in div
                 chartSpeedObj.push([chartSpeed, chartData, speedOptions]);
@@ -479,7 +492,6 @@ function showTripInfo(){
             //Google  Elev
             elev_and_plot(tripMapObj[i].coords, curTrip[i]._id,i);
             $("#tripInfo"+i).show();
-
             // Heart rate
             $('#tripInfoHeartbeat'+i).append('<i class="fa fa-caret-square-o-right" id="heartbeatCaret'+i+'">&nbsp;</i>&nbsp;<i class="fa fa-heart" data-toggle="tooltip" data-placement="top" title="" data-original-title="Heartbeat">&nbsp;</i>' + curHeartbeatAverage + ' bpm');
             if (heartbeatData.length > 0) {
@@ -650,7 +662,6 @@ function calendarFcts() {
                 alert("You can compare a maximum of "+MAX_COMPARE+" trips.");
             } else {
                 if ($.inArray(thisId,showId) == -1){
-
                     showId.push(thisId);
                     showTripInfo();
                     $(this).addClass('clickedTrip');
