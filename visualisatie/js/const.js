@@ -26,3 +26,4 @@ var GET_URL_PAGE = "http://dali.cs.kuleuven.be:8080/qbike/trips?page=123";
 var GET_URL = "http://dali.cs.kuleuven.be:8443/qbike/trips?";
 var AJAX_TIMEOUT = 100*1000; //100s...
 var MAX_COMPARE = 3;
+var SPEED_ROUND = 2;
