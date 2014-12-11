@@ -217,7 +217,7 @@ function showTripInfo(){
     chartHeartbeatObj=[];
     elevMax = 0;
     elevMin = 9999;
-    tempVis = true;
+    tempVis = false;
     for (var i = 0; i < curTrip.length; i++) {
         //Elap time
         var tripStart = new Date(curTrip[i].startTime);
@@ -304,7 +304,7 @@ function showTripInfo(){
                     case 3: //Temperature
                         if (!(sensorData.data === undefined) && !(sensorData.data[0] === undefined)) {
                             if (!(sensorData.data[0].value === undefined)) {
-                                tempData.push([timestampDate, sensorData.data[0].value[0]]);
+                                tempData.push([timestampDate, parseInt(sensorData.data[0].value)]);
                                 counter_temperature += 1;
                                 sum_of_elements_temperature += parseInt(sensorData.data[0].value);
                             }
@@ -450,9 +450,10 @@ function showTripInfo(){
                         tempMin = tempData[b][1];
                     }
                 }
-                if (tempMax-tempMin<TEMP_DIFF){
-                    tempVis = false;
+                if (tempMax-tempMin>TEMP_DIFF){
+                    tempVis = true;
                 }
+                console.log(tempMax,tempMin);
                 var chartTemp = new google.visualization.LineChart($('#tripInfoTemp'+i)[0]); //Chart aanmaken in div
                 chartTempObj.push([chartTemp, chartData, tempOptions]);
             }
@@ -523,6 +524,23 @@ function showTripInfo(){
         }
     }
     $("[data-toggle='tooltip']").tooltip();//Tooltips
+    if (tempVis){
+        $("[id^='tripInfoTemperature']").addClass("tripInfoToggle");
+        for (var i = 0; i < MAX_COMPARE; i++) {
+            $("#tripInfoTemp" + i).hide();
+            $("#tempCaret" + i).removeClass("fa-square-o");
+            $("#tempCaret" + i).removeClass("fa-caret-square-o-down");
+            $("#tempCaret" + i).addClass("fa-caret-square-o-right");
+        }
+    } else {
+        $("[id^='tripInfoTemperature']").removeClass("tripInfoToggle");
+        for (var i = 0; i < MAX_COMPARE; i++) {
+            $("#tripInfoTemp"+i).hide();
+            $("#tempCaret"+i).addClass("fa-square-o");
+            $("#tempCaret"+i).removeClass("fa-caret-square-o-down");
+            $("#tempCaret"+i).removeClass("fa-caret-square-o-right");
+        }
+    }
 }
 
 function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attention: async
