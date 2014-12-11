@@ -453,7 +453,6 @@ function showTripInfo(){
                 if (tempMax-tempMin>TEMP_DIFF){
                     tempVis = true;
                 }
-                console.log(tempMax,tempMin);
                 var chartTemp = new google.visualization.LineChart($('#tripInfoTemp'+i)[0]); //Chart aanmaken in div
                 chartTempObj.push([chartTemp, chartData, tempOptions]);
             }
@@ -709,6 +708,13 @@ function showEvents( $contentEl, dateProperties ) {
     var $close = $( '<span class="custom-content-close"><i class="fa fa-times"></i></span>' ).on( 'click', hideEvents );
 
     $events.append( $contentEl.html() , $close ).insertAfter( $wrapper );
+
+    $('.tripEventLink').each(function(){
+        if  ($.inArray($(this).attr('id'),showId) != -1){
+            $(this).addClass("clickedTrip");
+            $(this).prepend('<i class="fa fa-check-square-o">&nbsp;</i>');
+        }
+    });
 
     setTimeout( function() {
         $events.css( 'top', '0%' );
