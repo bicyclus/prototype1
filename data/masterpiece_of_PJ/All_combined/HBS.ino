@@ -15,7 +15,7 @@ uint32_t time_bpm = millis();
 uint32_t HBS_interval = 107;  //the minimum interval between the prints of heart beat data
                                  //it's a prime number to drastically decrease the change of overlapping with other timers
 
-void something(){
+void get_BPM(){
   Signal = analogRead(pulsePin);              // read the Pulse Sensor 
   uint32_t interval;                          //defines the current interval
   if (time_bpm > millis()) time_bpm = millis();
@@ -97,12 +97,11 @@ void something(){
 }
 
 void read_HBS(){
-  something();
+  get_BPM();
   if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
   Serial.println("HBS");                //the key of the heartbeat sensor  
   delay(100);
   Serial.println(BPM);
-  delay(50);
   QS = false; 
 }
 }

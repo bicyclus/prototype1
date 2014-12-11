@@ -95,6 +95,5 @@ function analyseAccel(data){
             break;
         }
     }
-    console.log(sigma_rmsdev);
     return [outside,typeText,conditionText,pnts];
 }
