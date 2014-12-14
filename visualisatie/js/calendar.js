@@ -663,7 +663,7 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                         elevMin = elevations[i].elevation;
                     }
                 }
-                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up">&nbsp;</i>'+Math.round(up*100)/100+' m '+'<i class="fa fa-arrow-down">&nbsp;</i>'+Math.round(down*100)/100+' m')
+                $("#tripInfoHeight"+num).append('<i class="fa fa-caret-square-o-right" id="heightCaret'+num+'">&nbsp;</i>&nbsp;<i class="fa fa-arrow-up" data-toggle="tooltip" data-placement="top" title="" data-original-title="Level up">&nbsp;</i>'+Math.round(up*100)/100+' m '+'<i class="fa fa-arrow-down" data-toggle="tooltip" data-placement="top" title="" data-original-title="Level down">&nbsp;</i>'+Math.round(down*100)/100+' m')
                 //Chart
                 chartElev = new google.visualization.ColumnChart($('#tripInfoElev'+num)[0]);
                 $('#tripInfoContainer').show('blind',ANIM_TIME,function(){
