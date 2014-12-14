@@ -334,7 +334,12 @@ function showTripInfo(){
                             if (!(sensorData.data[0].value === undefined)) {
                                 counter_heartbeat += 1;
                                 sum_of_elements_heartbeat += parseInt(sensorData.data[0].value);
-                                heartbeatData.push([timestampDate,sensorData.data[0].value]);
+                                if (!(sensorData.data[0].value[0] === undefined)){
+                                    heartbeatData.push([timestampDate,(sensorData.data[0].value[0])]);
+                                }
+                                else {
+                                    heartbeatData.push([timestampDate,(sensorData.data[0].value)]);
+                                }
 
                             }
                         }
@@ -501,7 +506,59 @@ function showTripInfo(){
                     colors: ['red', '#4ab9db'],
                     curveType: 'function',
                     backgroundColor: '#f5f5f5',
-                    series: {1: {lineWidth: 1, visibleInLegend: true}},
+                    isStacked: true,
+                    series: {1: {lineWidth: 3, visibleInLegend: true},
+                        2: {
+                        lineWidth: 0,
+                        type: 'area',
+                        visibleInLegend: false,
+                        color: '#f5f5f5',
+                        enableInteractivity: false
+                    },  3: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#000000',
+                            enableInteractivity: false
+
+                        },
+                        4: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#44aad5',
+                            enableInteractivity: false
+
+                        },
+                        5: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#00b2f2',
+                            enableInteractivity: false
+                        },
+                        6: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#d1d200',
+                            enableInteractivity: false
+                        },
+                        7: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#d16400',
+                            enableInteractivity: false
+                        },
+
+                        8: {
+                            lineWidth: 0,
+                            type: 'area',
+                            visibleInLegend: true,
+                            color: '#df0000',
+                            enableInteractivity: false
+                        }},
                     vAxis: {
                         viewWindowMode: 'explicit',
                         viewWindow: {
@@ -514,10 +571,17 @@ function showTripInfo(){
                 chartData.addColumn('datetime', 'Time');
                 chartData.addColumn('number', 'Heartbeat');
                 chartData.addColumn('number', 'Average');
+                chartData.addColumn('number', 'color band 1');
+                chartData.addColumn('number', 'Rest');
+                chartData.addColumn('number', 'Very light workout');
+                chartData.addColumn('number', 'Light workout');
+                chartData.addColumn('number', 'Moderate workout');
+                chartData.addColumn('number', 'Hard workout');
+                chartData.addColumn('number', 'Maximum workout');
                 for (var b = 0; b < heartbeatData.length; b++) {
-                    chartData.addRow([heartbeatData[b][0], heartbeatData[b][1], curHeartbeatAverage]);
+                    chartData.addRow([heartbeatData[b][0], heartbeatData[b][1], curHeartbeatAverage,60,44,15,20,20,20,30]);
                 }
-                var chartHeartbeat = new google.visualization.LineChart($('#tripInfoHeart'+i)[0]); //Chart aanmaken in div
+                var chartHeartbeat = new google.visualization.ComboChart($('#tripInfoHeart'+i)[0]); //Chart aanmaken in div
                 chartHeartbeatObj.push([chartHeartbeat, chartData, heartbeatOptions]);
             }
         }
@@ -757,7 +821,7 @@ function checkProgressSingle(){
 }
 
 //Add zeros x => 0x and xx => xx
-function addZero(i) { //Voor data en uren enzo
+function addZero(i) { //Bugfix voor data en uren
     if (i < 10) {
         i = "0" + i;
     }
