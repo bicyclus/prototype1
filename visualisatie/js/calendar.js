@@ -503,9 +503,10 @@ function showTripInfo(){
                 heartbeatData.sort(SortByTimestamp);
                 var heartbeatOptions = {
                     titleY: 'Heart rate (bpm)',
-                    colors: ['red', '#4ab9db'],
+                    colors: ['red', '#00FF00'],
                     curveType: 'function',
                     backgroundColor: '#f5f5f5',
+                    legend: 'bottom',
                     isStacked: true,
                     series: {1: {lineWidth: 3, visibleInLegend: true},
                         2: {
@@ -579,14 +580,13 @@ function showTripInfo(){
                 chartData.addColumn('number', 'Hard workout');
                 chartData.addColumn('number', 'Maximum workout');
                 for (var b = 0; b < heartbeatData.length; b++) {
-                    chartData.addRow([heartbeatData[b][0], heartbeatData[b][1], curHeartbeatAverage,60,44,15,20,20,20,30]);
+                    chartData.addRow([heartbeatData[b][0], heartbeatData[b][1], curHeartbeatAverage,HEARTINACTIVE,HEARTREST,HEARTVLWORK,HEARTLWORK,HEARTMODWORK,HEARTHARDWORK,HEARTMAXWORK]);
                 }
                 var chartHeartbeat = new google.visualization.ComboChart($('#tripInfoHeart'+i)[0]); //Chart aanmaken in div
                 chartHeartbeatObj.push([chartHeartbeat, chartData, heartbeatOptions]);
             }
         }
     }
-    $("[data-toggle='tooltip']").tooltip();//Tooltips
     if (tempVis){
         $("[id^='tripInfoTemperature']").addClass("tripInfoToggle");
         for (var i = 0; i < MAX_COMPARE; i++) {
@@ -672,6 +672,8 @@ function elev_and_plot(pathCoords,elevId,num){ //Plot elevation graphs, attentio
                     map.fitBounds(curMapBounds);
                     chartElevObj.push([chartElev,data,{}]);
                 });
+                $("[data-toggle='tooltip']").tooltip();//Tooltips
+
                 progressSingle = progressSingle + 100/PROG_STEPS_SINGLETRIP / showId.length;
                 checkProgressSingle();
             }

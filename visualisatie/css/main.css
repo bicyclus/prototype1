@@ -363,3 +363,10 @@ blockquote{
     padding: 5px 20px;
     font-size: 14px;
 }
+/* font voor titel onderverdeling van informatie in groepen bv. Health, Road condition, etc. */
+h7 {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    line-height: 1.1;
+    font-size: 14px;
+    color: #4ab9db;
+}
