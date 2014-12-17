@@ -487,7 +487,7 @@ function showTripInfo(){
                 chartData.addColumn('number', 'Speed');
                 chartData.addColumn('number', 'Average');
                 for (var b = SPEED_ROUND; b < speedData.length-SPEED_ROUND; b=b+2) {
-                    chartData.addRow([speedData[b][0], (speedData[b-2][1]+speedData[b-1][1]+speedData[b][1]+speedData[b+1][1]+speedData[b+2][1])/(2*SPEED_ROUND+1), curSpeedAverage]);
+                    chartData.addRow([speedData[b][0], Math.round((speedData[b-2][1]+speedData[b-1][1]+speedData[b][1]+speedData[b+1][1]+speedData[b+2][1])/(2*SPEED_ROUND+1)), curSpeedAverage]);
                 }
                 var chartSpeed = new google.visualization.LineChart($('#tripInfoSpeed'+i)[0]); //Chart aanmaken in div
                 chartSpeedObj.push([chartSpeed, chartData, speedOptions]);
